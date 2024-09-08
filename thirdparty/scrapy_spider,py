@@ -1,0 +1,30 @@
+from scrapy import Spider
+from scrapy.crawler import CrawlerProcess
+
+class MySpider(Spider):
+    name = "default"
+    start_urls = ['https://example.com']
+
+    def parse(self, response):
+        urls = response.css('a::attr(href)').extract()
+        for url in urls:
+            yield {'url': url}
+
+def run_scrapy(output_file):
+    """Run Scrapy spider and append output to the file."""
+    process = CrawlerProcess()
+    process.crawl(MySpider)
+    process.start()
+    
+    # Assuming the Scrapy output is stored in a file (scrapy_output.txt)
+    with open('scrapy_output.txt', 'r') as src:
+        urls = src.readlines()
+
+    with open(output_file, 'a') as dest:
+        for url in urls:
+            if not any(url.endswith(ext) for ext in ['.jpg', '.jpeg', '.png', '.pdf', '.js', '.css']):
+                dest.write(f"{url.strip()}\n")
+
+    print(f"[*] URLs from Scrapy appended to {output_file}")
+
+
