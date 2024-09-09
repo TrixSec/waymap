@@ -1,12 +1,14 @@
+import os
 from thirdparty.urlcrazy import run_urlcrazy
 from thirdparty.scrapy_spider import run_scrapy
 from thirdparty.spiderfoot import run_spiderfoot
 from thirdparty.httrack import run_httrack
 from thirdparty.wayback_machine import run_wayback_machine
 from modules.url_filter.remove_duplicates import remove_duplicates
+from modules.url_filter.status_code_filter import filter_status_200
+from modules.url_filter.param_filter import filter_urls_with_parameters
 from thirdparty.waf_detection import run_waf_detection
 import requests
-import os
 
 def test_connection(domain):
     """Test connection to the target domain."""
@@ -36,7 +38,6 @@ def retry_request(domain, max_retries=3):
     print("[!] Maximum retries reached. Aborting.")
     return False
 
-
 def run_waf_check(domain):
     """Check for WAF and ask the user if they want to continue if WAF is detected."""
     print(f"[*] Checking for WAF protection on {domain}...")
@@ -50,15 +51,17 @@ def run_waf_check(domain):
             return False
     return True
 
-
 def run_scraping(domain):
-    # Create a session directory in the SQLMap style
+    """Run URL scraping and filtering."""
+    # Create a session directory
     session_dir = f"sessions/{domain}"
     os.makedirs(session_dir, exist_ok=True)
 
-    # Define the output file where all URLs will be appended
+    # Define the output files
     all_urls_file = f"{session_dir}/all_urls.txt"
     unique_urls_file = f"{session_dir}/unique_urls.txt"
+    status_filtered_file = f"{session_dir}/status_filtered_urls.txt"
+    param_filtered_file = f"{session_dir}/param_filtered_urls.txt"
     
     # Clear the file at the start to ensure fresh collection of URLs
     open(all_urls_file, 'w').close()
@@ -70,12 +73,31 @@ def run_scraping(domain):
     run_httrack(domain, all_urls_file)
     run_wayback_machine(domain, all_urls_file)
 
-    # Remove duplicate URLs from the collected list
+    # Remove duplicate URLs
     remove_duplicates(all_urls_file, unique_urls_file)
 
-    print(f"[*] Scraping completed. Unique URLs saved to {unique_urls_file}")
+    # Filter URLs with status code 200
+    filter_status_200(unique_urls_file, status_filtered_file)
+
+    # Filter URLs with valid parameters
+    filter_urls_with_parameters(status_filtered_file, param_filtered_file)
+
+    # Check if any valid URLs were found
+    if os.path.getsize(param_filtered_file) > 0:
+        print(f"{'[__]':<4} Valid URLs found during crawling.")
+        user_input = input("Do you want to do further testing? (y/N): ").strip().lower()
+        if user_input == 'y' or user_input == '':
+            print(f"[*] Proceeding with further testing on valid URLs.")
+            # Call further testing functions here
+        else:
+            print("[*] Aborting further testing.")
+    else:
+        print("[!] No valid URLs found.")
+        print("[*] Exiting.")
+        return
 
 def run_waymap(domain):
+    """Main function to run Waymap."""
     # Test the initial connection
     if not test_connection(domain):
         print("[*] Unable to connect to the target domain.")
@@ -93,3 +115,6 @@ def run_waymap(domain):
     run_scraping(domain)
 
     print("[*] Scraping process completed.")
+
+
+
