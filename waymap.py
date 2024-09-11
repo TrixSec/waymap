@@ -1,7 +1,5 @@
 import tempfile
-import os
 import logging
-from datetime import datetime
 import requests
 from cmdline import parse_args
 from thirdparty.scraper import run_scrapy_spider
