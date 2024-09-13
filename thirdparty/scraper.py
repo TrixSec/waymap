@@ -29,7 +29,11 @@ VALID_SYMBOLS = ["=", "&", "?", "'", '"', "(", ")", ";", "--", "/*", "*/", "+", 
 
 def contains_valid_symbol(url):
     """Check if the URL contains any of the valid symbols for filtering."""
+    if not url:
+        return False
     for symbol in VALID_SYMBOLS:
+        if symbol is None:
+            raise ValueError("VALID_SYMBOLS contains a null element")
         if symbol in url:
             return True
     return False
