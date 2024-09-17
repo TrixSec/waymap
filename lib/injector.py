@@ -1,133 +1,95 @@
-import os
 import requests
-from urllib.parse import urlparse, parse_qs, urlencode
+import os
+import re
+import xml.etree.ElementTree as ET
+from termcolor import colored
 import random
+from urllib.parse import urlparse, parse_qs, urlunparse, urlencode
 
-# Load SQLi payloads from file
-def load_payloads(file_name):
-    if os.path.exists(file_name):
-        with open(file_name, 'r') as f:
-            return [line.strip() for line in f.readlines()]
-    else:
-        print(f"Payload file {file_name} not found.")
-        return []
+# Directory paths for payloads, user-agents, and errors
+data_dir = '/waymap/data/'
+session_dir = '/waymap/session/'
 
-# Load user-agents from ua.txt
-def load_user_agents(file_name):
-    if os.path.exists(file_name):
-        with open(file_name, 'r') as f:
-            return [line.strip() for line in f.readlines()]
-    else:
-        print(f"User-agent file {file_name} not found.")
-        return []
+# Load payloads from files
+def load_payloads(file_path):
+    with open(file_path, 'r') as f:
+        return [line.strip() for line in f.readlines()]
 
-# Load URLs from crawl.txt
-def load_urls(domain):
-    file_path = f'/waymap/session/{domain}/crawl.txt'
-    if os.path.exists(file_path):
-        with open(file_path, 'r') as f:
-            return [url.strip() for url in f.readlines()]
-    else:
-        print(f"No crawl file found for domain: {domain}")
-        return []
+# Load user agents from ua.txt
+def load_user_agents():
+    ua_file = os.path.join(data_dir, 'ua.txt')
+    return load_payloads(ua_file)
 
-# Select a random user-agent from the list
-def get_random_user_agent(user_agents):
-    return random.choice(user_agents)
+# Load DBMS error patterns from errors.xml
+def load_errors_xml(xml_file):
+    tree = ET.parse(xml_file)
+    root = tree.getroot()
+    error_dict = {}
 
-# Inject payload into URL parameters
-def inject_payload(url, payload):
+    for dbms in root.findall('dbms'):
+        dbms_name = dbms.attrib['value']
+        errors = [error.attrib['regexp'] for error in dbms.findall('error')]
+        error_dict[dbms_name] = errors
+
+    return error_dict
+
+# Function to match DBMS based on error patterns
+def match_dbms(response_text, error_dict):
+    for dbms_name, errors in error_dict.items():
+        for error_regex in errors:
+            if re.search(error_regex, response_text):
+                return dbms_name
+    return None
+
+# Function to inject payload into a URL's parameters
+def test_injection(url, headers, payloads, error_dict):
     parsed_url = urlparse(url)
     query_params = parse_qs(parsed_url.query)
 
-    # Inject payload into each parameter
-    injected_urls = []
     for param in query_params:
-        injected_params = query_params.copy()
-        injected_params[param] = payload
-        new_query = urlencode(injected_params, doseq=True)
-        injected_url = parsed_url._replace(query=new_query).geturl()
-        injected_urls.append(injected_url)
+        for payload in random.sample(payloads, 10):  # Randomly select 10 payloads
+            modified_params = query_params.copy()
+            modified_params[param] = payload
+            modified_query = urlencode(modified_params, doseq=True)
 
-    return injected_urls
+            test_url = urlunparse(parsed_url._replace(query=modified_query))
+            response = requests.get(test_url, headers=headers)
 
-# Send HTTP request with random user-agent
-def send_request(url, user_agents):
-    headers = {'User-Agent': get_random_user_agent(user_agents)}
-    try:
-        response = requests.get(url, headers=headers, timeout=5)
-        return response.text, response.status_code
-    except requests.RequestException as e:
-        print(f"Request failed for {url}: {e}")
-        return None, None
+            if match_dbms(response.text, error_dict):  # Check if any DBMS error matches
+                print_vulnerable_url(test_url)
+                return True  # Stop testing further if vulnerable
 
-# Check if the parameter is dynamic by analyzing response
-def is_parameter_dynamic(response, payload):
-    return payload in response
+    return False
 
-# Check if the response is potentially vulnerable to SQL injection
-def is_sql_injection_vulnerable(response):
-    error_messages = [
-        "you have an error in your sql syntax",
-        "warning: mysql",
-        "unclosed quotation mark",
-        "quoted string not properly terminated",
-        "error in your SQL syntax",
-        "SQLSTATE",
-    ]
-    return any(error.lower() in response.lower() for error in error_messages)
+# Pretty print for vulnerable URL
+def print_vulnerable_url(url):
+    print(colored(f'[★] Vulnerable URL found: {url}', 'white', attrs=['bold']))
 
-# Inject payloads and check for dynamic or vulnerable parameters
-def test_injection(domain):
-    urls = load_urls(domain)
-    if not urls:
-        return
+# Pretty print for non-vulnerable URL
+def print_non_vulnerable_url(url):
+    print(colored(f'[-] No vulnerability found in: {url}', 'white'))
 
-    # Load payloads and user-agents
-    sql_payloads = load_payloads('sqlipayload.txt')
-    cmd_payloads = load_payloads('cmdipayload.txt')
-    user_agents = load_user_agents('ua.txt')
+# Main injection logic
+def inject_payloads(urls, sql_payloads, cmdi_payloads, user_agents):
+    headers = {'User-Agent': random.choice(user_agents)}
+    error_dict = load_errors_xml(os.path.join(data_dir, 'errors.xml'))  # Load error patterns once
 
     for url in urls:
-        print(f"Testing URL: {url}")
-        
-        # Test SQLi payloads
-        for payload in sql_payloads:
-            injected_urls = inject_payload(url, payload)
+        if "?" in url and "=" in url:
+            print(colored(f'[•] Testing URL: {url}', 'white'))
 
-            for injected_url in injected_urls:
-                print(f"Injecting SQLi payload: {payload} into {injected_url}")
-                response_text, status_code = send_request(injected_url, user_agents)
+            if test_injection(url, headers, sql_payloads, error_dict):
+                print(colored(f'[★] SQL Injection vulnerability detected!', 'red'))
+            elif test_injection(url, headers, cmdi_payloads, error_dict):
+                print(colored(f'[×] Command Injection vulnerability detected!', 'red'))
+            else:
+                print_non_vulnerable_url(url)
 
-                if response_text and status_code == 200:
-                    # Check if the parameter is dynamic
-                    if is_parameter_dynamic(response_text, payload):
-                        print(f"[DYNAMIC] Parameter reflected in response: {injected_url}")
+# Example usage:
+if __name__ == "__main__":
+    urls = [...]  # Load crawled URLs from the crawler
+    sql_payloads = load_payloads(os.path.join(data_dir, 'sqlipayload.txt'))
+    cmdi_payloads = load_payloads(os.path.join(data_dir, 'cmdipayload.txt'))
+    user_agents = load_user_agents()
 
-                    # Check if the URL is vulnerable to SQL injection
-                    if is_sql_injection_vulnerable(response_text):
-                        print(f"[VULNERABLE] SQL Injection detected: {injected_url}")
-                        save_vulnerable_url(domain, injected_url)
-
-        # Test command injection payloads
-        for payload in cmd_payloads:
-            injected_urls = inject_payload(url, payload)
-
-            for injected_url in injected_urls:
-                print(f"Injecting CMD payload: {payload} into {injected_url}")
-                response_text, status_code = send_request(injected_url, user_agents)
-
-                if response_text and status_code == 200:
-                    # Check if the parameter is dynamic
-                    if is_parameter_dynamic(response_text, payload):
-                        print(f"[DYNAMIC] Parameter reflected in response: {injected_url}")
-                    
-                    # Command injection detection can be added here
-                    # Example: You might look for typical command execution results or errors
-
-# Save vulnerable URLs to vulnurls.txt
-def save_vulnerable_url(domain, vulnerable_url):
-    file_path = f'/waymap/session/{domain}/vulnurls.txt'
-    os.makedirs(os.path.dirname(file_path), exist_ok=True)
-    with open(file_path, 'a') as f:
-        f.write(vulnerable_url + '\n')
+    inject_payloads(urls, sql_payloads, cmdi_payloads, user_agents)
