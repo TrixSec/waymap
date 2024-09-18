@@ -1,6 +1,6 @@
 import argparse
 import os
-from lib.crawler import start_crawling
+from lib.crawler import run_crawler
 from lib.injector import inject_payloads
 from termcolor import colored
 import random
@@ -45,7 +45,7 @@ def main():
 
     # Start the crawling process
     print(colored(f"[•] Starting crawling on: {args.target} with depth {crawl_depth}", 'green'))
-    crawled_urls = start_crawling(args.target, crawl_depth)  # Calls the crawler
+    crawled_urls = run_crawler(args.target, crawl_depth)  # Calls the crawler
 
     # Load necessary data (payloads, user-agents, errors)
     sql_payloads = load_payloads(os.path.join(data_dir, 'sqlipayload.txt'))
