@@ -117,10 +117,15 @@ def print_non_vulnerable_url(url):
         print(colored(f'[-] No vulnerability found in: {url}', 'white'))
 
 # Main injection logic
+# Main injection logic
 def inject_payloads(urls, sql_payloads, cmdi_payloads, user_agents):
     global continue_scanning_flag
     headers = {'User-Agent': random.choice(user_agents)}
-    error_dict = load_errors_xml(os.path.join(data_dir, 'errors.xml'))
+
+    # Load error dictionaries
+    sql_error_dict = load_errors_xml(os.path.join(data_dir, 'errors.xml'))
+    cmd_error_dict = load_errors_xml(os.path.join(data_dir, 'cmdi.xml'))
+
     printed_servers = set()  # Track printed server info
 
     for count, url in enumerate(urls, start=1):
@@ -130,15 +135,14 @@ def inject_payloads(urls, sql_payloads, cmdi_payloads, user_agents):
         if "?" in url and "=" in url:
             print(colored(f'[•] Testing URL: {url}', 'light_yellow'))
 
-            # Test for SQL Injection vulnerabilities using all errors
-            if test_injection(url, headers, sql_payloads, error_dict, printed_servers):
+            # Test for SQL Injection vulnerabilities
+            if test_injection(url, headers, sql_payloads, sql_error_dict, printed_servers):
                 print(colored(f'[★] SQL Injection vulnerability detected!', 'red'))
                 continue_scanning_flag = continue_scanning()
                 if not continue_scanning_flag or interrupted:
                     break
 
-            # Test for Command Injection vulnerabilities using only command injection errors
-            cmd_error_dict = {'Command Injection': error_dict['Command Injection']}
+            # Test for Command Injection vulnerabilities
             if test_injection(url, headers, cmdi_payloads, cmd_error_dict, printed_servers):
                 print(colored(f'[×] Command Injection vulnerability detected!', 'red'))
                 continue_scanning_flag = continue_scanning()

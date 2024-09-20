@@ -91,7 +91,7 @@ def main():
         handle_error("No internet connection. Please check your network and try again.")
 
     # Required files for scanning
-    required_files = ['sqlipayload.txt', 'cmdipayload.txt', 'ua.txt', 'errors.xml']
+    required_files = ['sqlipayload.txt', 'cmdipayload.txt', 'ua.txt', 'errors.xml', 'cmdi.xml']
 
     # Error handling: Check for missing files in the data directory
     missing_files = check_required_files(data_dir, session_dir, required_files)
@@ -133,6 +133,9 @@ def main():
     dbms_errors = load_errors_xml(os.path.join(data_dir, 'errors.xml'))
     user_agents = load_user_agents(os.path.join(data_dir, 'ua.txt'))
 
+    # Load command injection error messages
+    cmdi_errors = load_errors_xml(os.path.join(data_dir, 'cmdi.xml'))
+
     # Perform scanning based on the type
     try:
         if scan_type == 'sql':
@@ -141,7 +144,7 @@ def main():
 
         elif scan_type == 'cmdi':
             for url in crawled_urls:
-                inject_payloads([url], cmdi_payloads, {'Command Injection': dbms_errors['Command Injection']}, user_agents)
+                inject_payloads([url], cmdi_payloads, cmdi_errors, user_agents)
 
     except KeyboardInterrupt:
         print(colored("\n[×] Scan interrupted by the user. Exiting...", 'red'))
@@ -152,4 +155,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
