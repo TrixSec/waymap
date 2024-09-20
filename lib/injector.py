@@ -57,7 +57,7 @@ def detect_web_technology(response):
     return server_header, powered_by
 
 # Function to inject payload into a URL's parameters
-def test_injection(url, headers, payloads, error_dict, printed_servers):
+def test_injection(url, headers, payloads, error_dict, printed_servers, scan_type):
     global continue_scanning_flag
     if not continue_scanning_flag:
         return False
@@ -90,11 +90,10 @@ def test_injection(url, headers, payloads, error_dict, printed_servers):
                     print(colored(f'[•] Powered By: {powered_by}', 'cyan'))
                     printed_servers.add(url)
 
-                # Check for DBMS error patterns specific for command injection
-                cmd_error_dict = {'Command Injection': error_dict['Command Injection']}
-                dbms_name = match_dbms(response.text, cmd_error_dict)
+                # Check for DBMS error patterns
+                dbms_name = match_dbms(response.text, error_dict)
                 if dbms_name and not interrupted:
-                    print_vulnerable_url(test_url, param, payload, dbms_name)
+                    print_vulnerable_url(test_url, param, payload, dbms_name, scan_type)
                     return True
 
             except requests.RequestException as e:
@@ -104,19 +103,19 @@ def test_injection(url, headers, payloads, error_dict, printed_servers):
     return False
 
 # Pretty print for vulnerable URL
-def print_vulnerable_url(url, param, payload, dbms_name):
+def print_vulnerable_url(url, param, payload, dbms_name, scan_type):
     if not interrupted:
         print(colored(f'[★] Vulnerable URL found: {url}', 'white', attrs=['bold']))
         print(f"[•] Parameter: {param}")
         print(f"[•] Payload: {payload}")
         print(colored(f"[•] Backend DBMS: {dbms_name}", 'cyan'))
+        print(colored(f"[•] Vulnerability Type: {scan_type}", 'magenta'))
 
 # Pretty print for non-vulnerable URL
 def print_non_vulnerable_url(url):
     if not interrupted:
         print(colored(f'[-] No vulnerability found in: {url}', 'white'))
 
-# Main injection logic
 # Main injection logic
 def inject_payloads(urls, sql_payloads, cmdi_payloads, user_agents):
     global continue_scanning_flag
@@ -136,14 +135,14 @@ def inject_payloads(urls, sql_payloads, cmdi_payloads, user_agents):
             print(colored(f'[•] Testing URL: {url}', 'light_yellow'))
 
             # Test for SQL Injection vulnerabilities
-            if test_injection(url, headers, sql_payloads, sql_error_dict, printed_servers):
+            if test_injection(url, headers, sql_payloads, sql_error_dict, printed_servers, 'SQL Injection'):
                 print(colored(f'[★] SQL Injection vulnerability detected!', 'red'))
                 continue_scanning_flag = continue_scanning()
                 if not continue_scanning_flag or interrupted:
                     break
 
             # Test for Command Injection vulnerabilities
-            if test_injection(url, headers, cmdi_payloads, cmd_error_dict, printed_servers):
+            if test_injection(url, headers, cmdi_payloads, cmd_error_dict, printed_servers, 'Command Injection'):
                 print(colored(f'[×] Command Injection vulnerability detected!', 'red'))
                 continue_scanning_flag = continue_scanning()
                 if not continue_scanning_flag or interrupted:
