@@ -21,7 +21,7 @@ def check_for_updates():
         current_version = version_file.read().strip()
 
     # URL for the latest version in the repository
-    latest_version_url = 'https://raw.githubusercontent.com/TrixSec/waymap/main/VERSION'
+    latest_version_url = 'https://raw.githubusercontent.com/TrixSec/waymap/refs/heads/main/VERSION'
 
     try:
         response = requests.get(latest_version_url)
@@ -127,45 +127,21 @@ def main():
         crawled_urls = run_crawler(target, crawl_depth)
         save_to_file(domain, crawled_urls)
 
-    print(colored(f"[•] Total valid URLs found: {len(crawled_urls)}", 'green'))
-
     # Load payloads and DBMS error messages
     sql_payloads = load_payloads(os.path.join(data_dir, 'sqlipayload.txt'))
     cmdi_payloads = load_payloads(os.path.join(data_dir, 'cmdipayload.txt'))
     dbms_errors = load_errors_xml(os.path.join(data_dir, 'errors.xml'))
     user_agents = load_user_agents(os.path.join(data_dir, 'ua.txt'))
 
-    # Initialize counters
-    total_requests = 0
-    vulnerabilities_found = 0
-    urls_scanned = 0
-    total_urls = len(crawled_urls)
-
     # Perform scanning based on the type
     try:
         if scan_type == 'sql':
-            print(colored(f"[•] Starting SQL Injection scan on {total_urls} URLs", 'yellow'))
             for url in crawled_urls:
-                urls_scanned += 1
-                is_vulnerable = inject_payloads([url], sql_payloads, dbms_errors, user_agents)
-                total_requests += 10  # Assuming 10 payloads per URL
-                if is_vulnerable:
-                    vulnerabilities_found += 1
-
-                if urls_scanned % 10 == 0:
-                    print(colored(f"[•] {urls_scanned}/{total_urls} URLs scanned so far.", 'green'))
+                inject_payloads([url], sql_payloads, dbms_errors, user_agents)
 
         elif scan_type == 'cmdi':
-            print(colored(f"[•] Starting Command Injection scan on {total_urls} URLs", 'yellow'))
             for url in crawled_urls:
-                urls_scanned += 1
-                is_vulnerable = inject_payloads([url], cmdi_payloads, dbms_errors, user_agents)
-                total_requests += 10  # Assuming 10 payloads per URL
-                if is_vulnerable:
-                    vulnerabilities_found += 1
-
-                if urls_scanned % 10 == 0:
-                    print(colored(f"[•] {urls_scanned}/{total_urls} URLs scanned so far.", 'green'))
+                inject_payloads([url], cmdi_payloads, {'Command Injection': dbms_errors['Command Injection']}, user_agents)
 
     except KeyboardInterrupt:
         print(colored("\n[×] Scan interrupted by the user. Exiting...", 'red'))
@@ -176,3 +152,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

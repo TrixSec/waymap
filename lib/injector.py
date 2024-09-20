@@ -130,15 +130,16 @@ def inject_payloads(urls, sql_payloads, cmdi_payloads, user_agents):
         if "?" in url and "=" in url:
             print(colored(f'[•] Testing URL: {url}', 'light_yellow'))
 
-            # Test for SQL Injection vulnerabilities
+            # Test for SQL Injection vulnerabilities using all errors
             if test_injection(url, headers, sql_payloads, error_dict, printed_servers):
                 print(colored(f'[★] SQL Injection vulnerability detected!', 'red'))
                 continue_scanning_flag = continue_scanning()
                 if not continue_scanning_flag or interrupted:
                     break
 
-            # Test for Command Injection vulnerabilities
-            if test_injection(url, headers, cmdi_payloads, error_dict, printed_servers):
+            # Test for Command Injection vulnerabilities using only command injection errors
+            cmd_error_dict = {'Command Injection': error_dict['Command Injection']}
+            if test_injection(url, headers, cmdi_payloads, cmd_error_dict, printed_servers):
                 print(colored(f'[×] Command Injection vulnerability detected!', 'red'))
                 continue_scanning_flag = continue_scanning()
                 if not continue_scanning_flag or interrupted:
