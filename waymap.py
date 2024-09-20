@@ -133,25 +133,27 @@ def main():
     dbms_errors = load_errors_xml(os.path.join(data_dir, 'errors.xml'))
     user_agents = load_user_agents(os.path.join(data_dir, 'ua.txt'))
 
-    # Load command injection error messages
-    cmdi_errors = load_errors_xml(os.path.join(data_dir, 'cmdi.xml'))
-
     # Perform scanning based on the type
     try:
         if scan_type == 'sql':
+            # Only pass SQL error patterns for SQLi
             for url in crawled_urls:
                 inject_payloads([url], sql_payloads, dbms_errors, user_agents)
 
         elif scan_type == 'cmdi':
+            # Load Command Injection error patterns from cmdi.xml
+            cmdi_errors = load_errors_xml(os.path.join(data_dir, 'cmdi.xml'))
+            
+            # Perform Command Injection scan
             for url in crawled_urls:
                 inject_payloads([url], cmdi_payloads, cmdi_errors, user_agents)
 
     except KeyboardInterrupt:
         print(colored("\n[×] Scan interrupted by the user. Exiting...", 'red'))
 
-    # Exit the script
-    print(colored("[•] Exiting Waymap.", 'yellow'))
-    exit()
+        # Exit the script
+        print(colored("[•] Exiting Waymap.", 'yellow'))
+        exit()
 
 if __name__ == "__main__":
     main()
