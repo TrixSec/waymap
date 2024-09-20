@@ -1,83 +1,178 @@
-import argparse
 import os
-from lib.crawler import run_crawler
-from lib.injector import inject_payloads
+import argparse
+import requests
 from termcolor import colored
-import random
-# Directory paths for session and data
-session_dir = '/waymap/session/'
-data_dir = '/waymap/data/'
+from lib.crawler import run_crawler
+from lib.injector import inject_payloads, load_payloads, load_errors_xml
+from extras.error_handler import check_internet_connection, check_required_files, check_required_directories, handle_error
 
+# Directories for data and session
+data_dir = os.path.join(os.getcwd(), 'data')
+session_dir = os.path.join(os.getcwd(), 'session')
+
+# Version and banner details
+WAYMAP_VERSION = "1.0.3"  # Update version to 1.0.3
+AUTHOR = "Trix Cyrus"
+COPYRIGHT = "Copyright © 2024 Trixsec Org"
+
+def check_for_updates():
+    # Load current version from VERSION file
+    with open('VERSION', 'r') as version_file:
+        current_version = version_file.read().strip()
+
+    # URL for the latest version in the repository
+    latest_version_url = 'https://raw.githubusercontent.com/TrixSec/waymap/main/VERSION'
+
+    try:
+        response = requests.get(latest_version_url)
+        response.raise_for_status()
+        latest_version = response.text.strip()
+
+        if current_version != latest_version:
+            print(colored(f"[•] New version available: {latest_version}. Updating...", 'yellow'))
+            # Logic to update the Waymap tool (e.g., using git)
+            os.system('git pull')  # Ensure you're in the correct directory
+            with open('VERSION', 'w') as version_file:
+                version_file.write(latest_version)  # Update local VERSION file
+        else:
+            print(colored(f"[•] You are using the latest version: {current_version}.", 'green'))
+
+    except requests.RequestException as e:
+        print(colored(f"[×] Error checking for updates: {e}", 'red'))
+
+# Function to print the banner
 def print_banner():
     banner = r"""
-     __    __                                        
-    / / /\ \ \  __ _  _   _  _ __ ___    __ _  _ __  
-    \ \/  \/ / / _` || | | || '_ ` _ \  / _` || '_ \ 
+     __    __
+    / / /\ \ \  __ _  _   _  _ __ ___    __ _  _ __
+    \ \/  \/ / / _ || | | || '_  _ \  / _ || '_ \
      \  /\  / | (_| || |_| || | | | | || (_| || |_) |
-      \/  \/   \__,_| \__, ||_| |_| |_| \__,_|| .__/ 
-                      |___/                   |_|    
+      \/  \/   \__,_| \__, ||_| |_| |_| \__,_|| .__/
+                      |___/                   |_|    Fastest And Optimised Web Vulnerability Scanner  v1.0.3
     """
-    print(banner)
+    print(colored(banner, 'cyan'))
+    print(colored(f"Waymap Version: {WAYMAP_VERSION}", 'yellow'))
+    print(colored(f"Made by {AUTHOR}", 'yellow'))
+    print(colored(COPYRIGHT, 'yellow'))
+    print("")
 
-def main():
-    parser = argparse.ArgumentParser(description="Waymap - Web Vulnerability Scanner")
-    
-    # Argument for crawl depth
-    parser.add_argument('--crawl', type=int, default=2, help="Set crawl depth (max 10)")
-    
-    # Option to choose scanning type
-    parser.add_argument('--scan', choices=['sql', 'cmdi'], required=True, help="Choose the type of injection scan (sql for SQLi, cmdi for Command Injection)")
-    
-    # Option to set a target URL
-    parser.add_argument('--target', type=str, required=True, help="Target URL for scanning")
-    
-    # Optional argument for custom User-Agent
-    parser.add_argument('--user-agent', type=str, help="Custom User-Agent string")
+# Save the crawled URLs to a file
+def save_to_file(domain, urls):
+    domain_path = os.path.join(session_dir, domain)
+    os.makedirs(domain_path, exist_ok=True)
+    crawl_file = os.path.join(domain_path, 'crawl.txt')
 
-    args = parser.parse_args()
+    with open(crawl_file, 'w') as f:
+        for url in urls:
+            f.write(url + '\n')
 
-    # Ensure that crawl depth does not exceed the maximum allowed value
-    if args.crawl > 10:
-        print(colored("[×] Maximum crawl depth is 10. Setting crawl depth to 10.", 'red'))
-        crawl_depth = 10
-    else:
-        crawl_depth = args.crawl
+# Load previously crawled URLs from a file
+def load_crawled_urls(domain):
+    domain_path = os.path.join(session_dir, domain)
+    crawl_file = os.path.join(domain_path, 'crawl.txt')
 
-    # Start the crawling process
-    print(colored(f"[•] Starting crawling on: {args.target} with depth {crawl_depth}", 'green'))
-    crawled_urls = run_crawler(args.target, crawl_depth)  # Calls the crawler
+    if os.path.exists(crawl_file):
+        with open(crawl_file, 'r') as f:
+            return [url.strip() for url in f.readlines()]
+    return None
 
-    # Load necessary data (payloads, user-agents, errors)
-    sql_payloads = load_payloads(os.path.join(data_dir, 'sqlipayload.txt'))
-    cmdi_payloads = load_payloads(os.path.join(data_dir, 'cmdipayload.txt'))
-    user_agents = load_user_agents()
-
-    # Set headers for requests
-    headers = {}
-    if args.user_agent:
-        headers['User-Agent'] = args.user_agent
-    else:
-        headers['User-Agent'] = random.choice(user_agents)
-
-    # Call the appropriate scan type based on user input
-    if args.scan == 'sql':
-        print(colored(f"[•] Starting SQL Injection scan on {len(crawled_urls)} URLs", 'yellow'))
-        inject_payloads(crawled_urls, sql_payloads, [], user_agents)  # SQLi scan
-    elif args.scan == 'cmdi':
-        print(colored(f"[•] Starting Command Injection scan on {len(crawled_urls)} URLs", 'yellow'))
-        inject_payloads(crawled_urls, [], cmdi_payloads, user_agents)  # CMDi scan
-
-    print(colored("[★] Scan complete!", 'green'))
-
-# Utility function to load payloads
-def load_payloads(file_path):
+# Load user-agents
+def load_user_agents(file_path):
     with open(file_path, 'r') as f:
         return [line.strip() for line in f.readlines()]
 
-# Utility function to load user-agents
-def load_user_agents():
-    ua_file = os.path.join(data_dir, 'ua.txt')
-    return load_payloads(ua_file)
+# Main function
+def main():
+    # Print the banner
+    print_banner()
+
+    # Error handling: Check internet connection
+    if not check_internet_connection():
+        handle_error("No internet connection. Please check your network and try again.")
+
+    # Required files for scanning
+    required_files = ['sqlipayload.txt', 'cmdipayload.txt', 'ua.txt', 'errors.xml']
+
+    # Error handling: Check for missing files in the data directory
+    missing_files = check_required_files(data_dir, session_dir, required_files)
+    if missing_files:
+        handle_error(f"Missing required files: {', '.join(missing_files)}")
+
+    # Error handling: Check for required directories
+    required_directories = [data_dir, session_dir]
+    missing_dirs = check_required_directories(required_directories)
+    if missing_dirs:
+        handle_error(f"Missing required directories: {', '.join(missing_dirs)}")
+
+    # Argument parser for crawl depth, scan type, and target
+    parser = argparse.ArgumentParser(description="Waymap - Crawler and Scanner")
+    parser.add_argument('--crawl', type=int, required=True, help="Crawl depth")
+    parser.add_argument('--scan', type=str, required=True, choices=['sql', 'cmdi'], help="Scan type: 'sql' or 'cmdi'")
+    parser.add_argument('--target', type=str, required=True, help="Target URL")
+    args = parser.parse_args()
+
+    target = args.target
+    crawl_depth = args.crawl
+    scan_type = args.scan
+
+    # Extract the domain name
+    domain = target.split("//")[-1].split("/")[0]
+
+    # Load previously crawled URLs if available for the same domain
+    crawled_urls = load_crawled_urls(domain)
+
+    if not crawled_urls:
+        # Crawl if no previous data
+        print(colored(f"[•] Starting crawling on: {target} with depth {crawl_depth}", 'yellow'))
+        crawled_urls = run_crawler(target, crawl_depth)
+        save_to_file(domain, crawled_urls)
+
+    print(colored(f"[•] Total valid URLs found: {len(crawled_urls)}", 'green'))
+
+    # Load payloads and DBMS error messages
+    sql_payloads = load_payloads(os.path.join(data_dir, 'sqlipayload.txt'))
+    cmdi_payloads = load_payloads(os.path.join(data_dir, 'cmdipayload.txt'))
+    dbms_errors = load_errors_xml(os.path.join(data_dir, 'errors.xml'))
+    user_agents = load_user_agents(os.path.join(data_dir, 'ua.txt'))
+
+    # Initialize counters
+    total_requests = 0
+    vulnerabilities_found = 0
+    urls_scanned = 0
+    total_urls = len(crawled_urls)
+
+    # Perform scanning based on the type
+    try:
+        if scan_type == 'sql':
+            print(colored(f"[•] Starting SQL Injection scan on {total_urls} URLs", 'yellow'))
+            for url in crawled_urls:
+                urls_scanned += 1
+                is_vulnerable = inject_payloads([url], sql_payloads, dbms_errors, user_agents)
+                total_requests += 10  # Assuming 10 payloads per URL
+                if is_vulnerable:
+                    vulnerabilities_found += 1
+
+                if urls_scanned % 10 == 0:
+                    print(colored(f"[•] {urls_scanned}/{total_urls} URLs scanned so far.", 'green'))
+
+        elif scan_type == 'cmdi':
+            print(colored(f"[•] Starting Command Injection scan on {total_urls} URLs", 'yellow'))
+            for url in crawled_urls:
+                urls_scanned += 1
+                is_vulnerable = inject_payloads([url], cmdi_payloads, dbms_errors, user_agents)
+                total_requests += 10  # Assuming 10 payloads per URL
+                if is_vulnerable:
+                    vulnerabilities_found += 1
+
+                if urls_scanned % 10 == 0:
+                    print(colored(f"[•] {urls_scanned}/{total_urls} URLs scanned so far.", 'green'))
+
+    except KeyboardInterrupt:
+        print(colored("\n[×] Scan interrupted by the user. Exiting...", 'red'))
+
+    # Exit the script
+    print(colored("[•] Exiting Waymap.", 'yellow'))
+    exit()
 
 if __name__ == "__main__":
     main()

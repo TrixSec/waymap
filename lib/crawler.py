@@ -1,75 +1,72 @@
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
-import os
+import time
+import sys
 
-# Directory to save crawled URLs
-session_dir = '/waymap/session/'
+visited_urls = set()
+valid_urls = []
+total_urls = 0
 
-# Function to extract URLs with ?= and & symbols
-def extract_urls(url, domain, depth, max_depth, crawled=set()):
-    if depth > max_depth or url in crawled:
-        return []
+# Add a timeout for requests
+REQUEST_TIMEOUT = 10  # 10 seconds timeout for each request
+
+# Crawling function
+def crawl(url, depth, max_depth, start_time):
+    global total_urls
+    if depth > max_depth:
+        return
 
     try:
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (compatible; Waymap/1.0; +http://kali.org)'
-        }
-        response = requests.get(url, headers=headers, timeout=10)
-        response.raise_for_status()
-    except (requests.RequestException, requests.Timeout):
-        print(f"Failed to access {url}")
-        return []
+        response = requests.get(url, timeout=REQUEST_TIMEOUT)
+        soup = BeautifulSoup(response.text, 'html.parser')
+        links = soup.find_all('a')
 
-    crawled.add(url)
+        # Process each link
+        for link in links:
+            href = link.get('href')
+            if href:
+                full_url = urljoin(url, href)
+                if is_valid_url(full_url) and full_url not in visited_urls:
+                    if has_query_parameters(full_url):  # Save only URLs with query parameters
+                        visited_urls.add(full_url)
+                        valid_urls.append(full_url)
+                        total_urls += 1
 
-    soup = BeautifulSoup(response.text, 'html.parser')
-    urls = []
-    
-    # Find all anchor tags with href attributes
-    for a_tag in soup.find_all('a', href=True):
-        link = urljoin(url, a_tag['href'])
-        parsed_url = urlparse(link)
+                        # Display live updates and time estimation
+                        elapsed_time = time.time() - start_time
+                        estimated_total_time = (elapsed_time / total_urls) * (total_urls + len(links) - total_urls)
+                        remaining_time = max(estimated_total_time - elapsed_time, 0)
+                        sys.stdout.write(f"\r[•] URLs crawled: {total_urls}, Estimated time remaining: {remaining_time:.2f} seconds")
+                        sys.stdout.flush()
 
-        # Check if URL contains ?, =, or &
-        if '?' in parsed_url.query or '=' in parsed_url.query or '&' in parsed_url.query:
-            if parsed_url.netloc == domain:  # Ensure URL is within the same domain
-                urls.append(link)
+                        # Recursively crawl new link
+                        crawl(full_url, depth + 1, max_depth, start_time)
 
-    return urls
+    except requests.RequestException as e:
+        print(f"\n[×] Error crawling {url}: {e}")
 
-# Function to recursively crawl the domain
-def crawl_domain(url, domain, crawl_depth, max_depth, crawled=set()):
-    urls = extract_urls(url, domain, crawl_depth, max_depth, crawled)
+# Helper function to check if a URL is valid
+def is_valid_url(url):
+    parsed = urlparse(url)
+    return bool(parsed.netloc) and bool(parsed.scheme)
 
-    if crawl_depth < max_depth:
-        for link in urls:
-            if link not in crawled:
-                new_urls = crawl_domain(link, domain, crawl_depth + 1, max_depth, crawled)
-                urls.extend(new_urls)
+# Helper function to check if a URL contains query parameters
+def has_query_parameters(url):
+    return '?' in url or '&' in url or '=' in url
 
-    return urls
+# Main function to start crawling
+def run_crawler(start_url, max_depth):
+    global total_urls
+    total_urls = 0
+    visited_urls.clear()
+    valid_urls.clear()
 
-# Function to save URLs to file
-def save_urls(domain, urls):
-    domain_dir = os.path.join(session_dir, domain)
-    os.makedirs(domain_dir, exist_ok=True)
-    crawl_file = os.path.join(domain_dir, 'crawl.txt')
+    start_time = time.time()
 
-    with open(crawl_file, 'w') as f:
-        for url in urls:
-            f.write(f"{url}\n")
+    # Start crawling from the start_url
+    crawl(start_url, 0, max_depth, start_time)
 
-# Main crawler function called from waymap.py
-def run_crawler(starting_url, max_depth):
-    parsed_url = urlparse(starting_url)
-    domain = parsed_url.netloc
-
-    print(f"Starting crawl on {starting_url} with max depth {max_depth}...")
-
-    crawled_urls = crawl_domain(starting_url, domain, 0, max_depth)
-    
-    print(f"Crawled {len(crawled_urls)} URLs.")
-    save_urls(domain, crawled_urls)
-    print(f"Saved crawled URLs to /waymap/session/{domain}/crawl.txt")
+    # Return the list of valid URLs found
+    return valid_urls
 
