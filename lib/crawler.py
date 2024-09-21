@@ -8,7 +8,7 @@ visited_urls = set()
 valid_urls = []
 total_urls = 0
 
-REQUEST_TIMEOUT = 10  
+REQUEST_TIMEOUT = 10
 
 def crawl(url, depth, max_depth, start_time, base_domain):
     global total_urls
@@ -17,12 +17,11 @@ def crawl(url, depth, max_depth, start_time, base_domain):
 
     try:
         response = requests.get(url, timeout=REQUEST_TIMEOUT, allow_redirects=True)
-        final_url = response.url  
+        final_url = response.url
 
-        
         parsed_final_url = urlparse(final_url)
         if parsed_final_url.netloc != base_domain:
-            return  
+            return
 
         soup = BeautifulSoup(response.text, 'html.parser')
         links = soup.find_all('a')
@@ -30,8 +29,8 @@ def crawl(url, depth, max_depth, start_time, base_domain):
         for link in links:
             href = link.get('href')
             if href:
-                full_url = urljoin(final_url, href)  
-                if is_valid_url(full_url) and full_url not in visited_urls:
+                full_url = urljoin(final_url, href)
+                if is_valid_url(full_url) and full_url not in visited_urls and is_within_domain(full_url, base_domain) and has_query_parameters(full_url):
                     visited_urls.add(full_url)
                     valid_urls.append(full_url)
                     total_urls += 1
@@ -52,7 +51,10 @@ def is_valid_url(url):
     return bool(parsed.netloc) and bool(parsed.scheme)
 
 def has_query_parameters(url):
-    return '?' in url or '&' in url or '=' in url
+    return any(symbol in url for symbol in ['?', '&', '='])
+
+def is_within_domain(url, base_domain):
+    return urlparse(url).netloc == base_domain
 
 def run_crawler(start_url, max_depth):
     global total_urls
@@ -61,10 +63,11 @@ def run_crawler(start_url, max_depth):
     valid_urls.clear()
 
     parsed_start_url = urlparse(start_url)
-    base_domain = parsed_start_url.netloc 
+    base_domain = parsed_start_url.netloc
 
     start_time = time.time()
 
     crawl(start_url, 0, max_depth, start_time, base_domain)
 
     return valid_urls
+
