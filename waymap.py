@@ -57,6 +57,11 @@ def print_banner():
     print(colored(COPYRIGHT, 'yellow'))
     print("")
 
+# Load payloads from a file
+def load_payloads(file_path):
+    with open(file_path, 'r') as f:
+        return [line.strip() for line in f.readlines()]
+
 # Save the crawled URLs to a file
 def save_to_file(domain, urls):
     domain_path = os.path.join(session_dir, domain)
@@ -152,4 +157,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
