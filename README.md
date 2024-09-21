@@ -28,6 +28,9 @@ Check out this video to see Waymap in action:
 
 #### added auto update for scanner (for that reclone the repo if you are using v1.0.4)
 
+### v1.0.5 
+#### Fixed minor bugs(reclone the repo if you're using v1.0.4)
+
 ## Next Update Very Soon: 1.1.3
 
 #### LFI Module 
