@@ -9,10 +9,10 @@ Waymap is a fast and optimized web vulnerability scanner built for penetration t
 Demo Video
 Check out this video to see Waymap in action:
 
-[![SQL Injection ](https://github.com/TrixSec/waymap/blob/main/demo/sqli-demo.png?raw=true)]
+![SQL Injection ](https://github.com/TrixSec/waymap/blob/main/demo/sqli-demo.png?raw=true)
 
 
-[![Command Injection](https://github.com/TrixSec/waymap/blob/main/demo/cmdi-demo.png?raw=true)]
+![Command Injection](https://github.com/TrixSec/waymap/blob/main/demo/cmdi-demo.png?raw=true)
 
 
 
