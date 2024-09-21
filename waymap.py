@@ -3,7 +3,8 @@ import argparse
 import requests
 from termcolor import colored
 from lib.crawler import run_crawler
-from lib.injector import inject_payloads, load_payloads, load_errors_xml
+from lib.sqli import perform_sqli_scan  # New SQLi scanning module
+from lib.cmdi import perform_cmdi_scan  # New CMDi scanning module
 from extras.error_handler import check_internet_connection, check_required_files, check_required_directories, handle_error
 
 # Directories for data and session
@@ -127,33 +128,28 @@ def main():
         crawled_urls = run_crawler(target, crawl_depth)
         save_to_file(domain, crawled_urls)
 
-    # Load payloads and DBMS error messages
+    # Load payloads and user-agents
     sql_payloads = load_payloads(os.path.join(data_dir, 'sqlipayload.txt'))
     cmdi_payloads = load_payloads(os.path.join(data_dir, 'cmdipayload.txt'))
-    dbms_errors = load_errors_xml(os.path.join(data_dir, 'errors.xml'))
     user_agents = load_user_agents(os.path.join(data_dir, 'ua.txt'))
 
     # Perform scanning based on the type
     try:
         if scan_type == 'sql':
-            # Only pass SQL error patterns for SQLi
-            for url in crawled_urls:
-                inject_payloads([url], sql_payloads, dbms_errors, user_agents)
+            print(colored(f"[•] Performing SQL Injection scan on {target}", 'yellow'))
+            # Call the function from sqli.py
+            perform_sqli_scan(crawled_urls, sql_payloads, user_agents)
 
         elif scan_type == 'cmdi':
-            # Load Command Injection error patterns from cmdi.xml
-            cmdi_errors = load_errors_xml(os.path.join(data_dir, 'cmdi.xml'))
-            
-            # Perform Command Injection scan
-            for url in crawled_urls:
-                inject_payloads([url], cmdi_payloads, cmdi_errors, user_agents)
+            print(colored(f"[•] Performing Command Injection scan on {target}", 'yellow'))
+            # Call the function from cmdi.py
+            perform_cmdi_scan(crawled_urls, cmdi_payloads, user_agents)
 
     except KeyboardInterrupt:
         print(colored("\n[×] Scan interrupted by the user. Exiting...", 'red'))
-
-        # Exit the script
         print(colored("[•] Exiting Waymap.", 'yellow'))
         exit()
 
 if __name__ == "__main__":
     main()
+
