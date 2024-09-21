@@ -31,7 +31,7 @@ def check_for_updates():
             print(colored("[•] Update completed. Please rerun Waymap.", 'green'))
             exit()
         
-        print(colored(f"[•] You are using the latest version: {latest_version}.", 'green'))
+        print(colored(f"[•] You are using the latest version.: {latest_version}.", 'green'))
     else:
         print(colored("[×] Error fetching the latest version. Please check your internet connection.", 'red'))
 
