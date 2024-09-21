@@ -17,6 +17,12 @@ Check out this video to see Waymap in action:
 ![Command Injection](https://github.com/TrixSec/waymap/blob/main/demo/cmdi-demo.png?raw=true)
 
 
+## Next Update Very Soon: 1.1.3
+
+#### LFI Module 
+#### RCE Module 
+#### Maybe Dork Scraper
+
 
 ## Installation and Usage
 
