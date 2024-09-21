@@ -38,7 +38,6 @@ def check_for_updates():
     except requests.RequestException as e:
         print(colored(f"[×] Error checking for updates: {e}", 'red'))
 
-
 def print_banner():
     banner = r"""
      __    __
@@ -74,7 +73,7 @@ def load_crawled_urls(domain):
     if os.path.exists(crawl_file):
         with open(crawl_file, 'r') as f:
             return [url.strip() for url in f.readlines()]
-    return None
+    return []
 
 def load_user_agents(file_path):
     with open(file_path, 'r') as f:
@@ -97,6 +96,7 @@ def handle_redirection(target_url):
 
 def main():
     print_banner()
+    check_for_updates()  
 
     if not check_internet_connection():
         handle_error("No internet connection. Please check your network and try again.")
@@ -123,10 +123,12 @@ def main():
     scan_type = args.scan
 
     target = handle_redirection(target)
-
     domain = target.split("//")[-1].split("/")[0]
 
     crawled_urls = load_crawled_urls(domain)
+
+    if crawled_urls and len(crawled_urls) > 0 and args.crawl != len(crawled_urls):
+        crawled_urls = []
 
     if not crawled_urls:
         print(colored(f"[•] Starting crawling on: {target} with depth {crawl_depth}", 'yellow'))
@@ -153,3 +155,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

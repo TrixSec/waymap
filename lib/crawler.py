@@ -19,6 +19,7 @@ def crawl(url, depth, max_depth, start_time, base_domain):
         response = requests.get(url, timeout=REQUEST_TIMEOUT, allow_redirects=True)
         final_url = response.url  
 
+        
         parsed_final_url = urlparse(final_url)
         if parsed_final_url.netloc != base_domain:
             return  
@@ -31,18 +32,17 @@ def crawl(url, depth, max_depth, start_time, base_domain):
             if href:
                 full_url = urljoin(final_url, href)  
                 if is_valid_url(full_url) and full_url not in visited_urls:
-                    if has_query_parameters(full_url):
-                        visited_urls.add(full_url)
-                        valid_urls.append(full_url)
-                        total_urls += 1
+                    visited_urls.add(full_url)
+                    valid_urls.append(full_url)
+                    total_urls += 1
 
-                        elapsed_time = time.time() - start_time
-                        estimated_total_time = (elapsed_time / total_urls) * (total_urls + len(links) - total_urls)
-                        remaining_time = max(estimated_total_time - elapsed_time, 0)
-                        sys.stdout.write(f"\r[•] URLs crawled: {total_urls}, Estimated time remaining: {remaining_time:.2f} seconds")
-                        sys.stdout.flush()
+                    elapsed_time = time.time() - start_time
+                    estimated_total_time = (elapsed_time / total_urls) * (total_urls + len(links) - total_urls)
+                    remaining_time = max(estimated_total_time - elapsed_time, 0)
+                    sys.stdout.write(f"\r[•] URLs crawled: {total_urls}, Estimated time remaining: {remaining_time:.2f} seconds")
+                    sys.stdout.flush()
 
-                        crawl(full_url, depth + 1, max_depth, start_time, base_domain)
+                    crawl(full_url, depth + 1, max_depth, start_time, base_domain)
 
     except requests.RequestException as e:
         print(f"\n[×] Error crawling {url}: {e}")
@@ -61,12 +61,10 @@ def run_crawler(start_url, max_depth):
     valid_urls.clear()
 
     parsed_start_url = urlparse(start_url)
-    base_domain = parsed_start_url.netloc  
+    base_domain = parsed_start_url.netloc 
 
     start_time = time.time()
 
     crawl(start_url, 0, max_depth, start_time, base_domain)
 
     return valid_urls
-
-
