@@ -26,6 +26,7 @@ Check out this video to see Waymap in action:
 
 #### updated crawler to crawl url in target domain boundary and handle target url redirection 
 
+#### added auto update for scanner (for that reclone the repo if you are using v1.0.4)
 
 ## Next Update Very Soon: 1.1.3
 
