@@ -6,11 +6,12 @@ from lib.crawler import run_crawler
 from lib.sqli import perform_sqli_scan  
 from lib.cmdi import perform_cmdi_scan  
 from extras.error_handler import check_internet_connection, check_required_files, check_required_directories, handle_error
+from urllib.parse import urlparse
 
 data_dir = os.path.join(os.getcwd(), 'data')
 session_dir = os.path.join(os.getcwd(), 'session')
 
-WAYMAP_VERSION = "1.0.3"  
+WAYMAP_VERSION = "1.0.4"  # Updated version
 AUTHOR = "Trix Cyrus"
 COPYRIGHT = "Copyright © 2024 Trixsec Org"
 
@@ -43,7 +44,7 @@ def print_banner():
     \ \/  \/ / / _ || | | || '_  _ \  / _ || '_ \
      \  /\  / | (_| || |_| || | | | | || (_| || |_) |
       \/  \/   \__,_| \__, ||_| |_| |_| \__,_|| .__/
-                      |___/                   |_|    Fastest And Optimised Web Vulnerability Scanner  v1.0.3
+                      |___/                   |_|    Fastest And Optimised Web Vulnerability Scanner  v1.0.4
     """
     print(colored(banner, 'cyan'))
     print(colored(f"Waymap Version: {WAYMAP_VERSION}", 'yellow'))
@@ -77,6 +78,21 @@ def load_user_agents(file_path):
     with open(file_path, 'r') as f:
         return [line.strip() for line in f.readlines()]
 
+def handle_redirection(target_url):
+    try:
+        response = requests.get(target_url, allow_redirects=True, timeout=10)
+        final_url = response.url
+        parsed_final_url = urlparse(final_url)
+        parsed_target_url = urlparse(target_url)
+
+        if parsed_final_url.netloc != parsed_target_url.netloc:
+            print(colored(f"[•] Target URL redirected to a different domain: {final_url}", 'yellow'))
+            return final_url
+        return target_url
+    except requests.RequestException as e:
+        print(colored(f"[×] Error handling redirection for {target_url}: {e}", 'red'))
+        return target_url
+
 def main():
     print_banner()
 
@@ -103,6 +119,8 @@ def main():
     target = args.target
     crawl_depth = args.crawl
     scan_type = args.scan
+
+    target = handle_redirection(target)
 
     domain = target.split("//")[-1].split("/")[0]
 

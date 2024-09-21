@@ -10,22 +10,28 @@ total_urls = 0
 
 REQUEST_TIMEOUT = 10  
 
-def crawl(url, depth, max_depth, start_time):
+def crawl(url, depth, max_depth, start_time, base_domain):
     global total_urls
     if depth > max_depth:
         return
 
     try:
-        response = requests.get(url, timeout=REQUEST_TIMEOUT)
+        response = requests.get(url, timeout=REQUEST_TIMEOUT, allow_redirects=True)
+        final_url = response.url  
+
+        parsed_final_url = urlparse(final_url)
+        if parsed_final_url.netloc != base_domain:
+            return  
+
         soup = BeautifulSoup(response.text, 'html.parser')
         links = soup.find_all('a')
 
         for link in links:
             href = link.get('href')
             if href:
-                full_url = urljoin(url, href)
+                full_url = urljoin(final_url, href)  
                 if is_valid_url(full_url) and full_url not in visited_urls:
-                    if has_query_parameters(full_url): 
+                    if has_query_parameters(full_url):
                         visited_urls.add(full_url)
                         valid_urls.append(full_url)
                         total_urls += 1
@@ -36,7 +42,7 @@ def crawl(url, depth, max_depth, start_time):
                         sys.stdout.write(f"\r[•] URLs crawled: {total_urls}, Estimated time remaining: {remaining_time:.2f} seconds")
                         sys.stdout.flush()
 
-                        crawl(full_url, depth + 1, max_depth, start_time)
+                        crawl(full_url, depth + 1, max_depth, start_time, base_domain)
 
     except requests.RequestException as e:
         print(f"\n[×] Error crawling {url}: {e}")
@@ -54,9 +60,13 @@ def run_crawler(start_url, max_depth):
     visited_urls.clear()
     valid_urls.clear()
 
+    parsed_start_url = urlparse(start_url)
+    base_domain = parsed_start_url.netloc  
+
     start_time = time.time()
 
-    crawl(start_url, 0, max_depth, start_time)
+    crawl(start_url, 0, max_depth, start_time, base_domain)
 
     return valid_urls
+
 
