@@ -56,7 +56,8 @@ def perform_cmdi_scan(crawled_urls, cmdi_payloads, user_agents):
             print(colored(f"\n[•] Testing URL: {url}", 'yellow'))
 
             payloads_to_test = random.sample(cmdi_payloads, 10)
-            
+            found_vulnerability = False  
+
             for payload in payloads_to_test:
                 user_agent = random.choice(user_agents)  
                 full_url = f"{url}{payload}"  
@@ -64,6 +65,7 @@ def perform_cmdi_scan(crawled_urls, cmdi_payloads, user_agents):
                 result = test_cmdi_payload(full_url, payload, user_agent, cmdi_errors)
 
                 if result['vulnerable']:
+                    found_vulnerability = True
                     if not detected_tech:
                         detected_tech = detect_web_tech(result['headers'])
                         print(colored(f"[•] Web Technology: {detected_tech or 'Unknown'}", 'magenta'))
@@ -80,10 +82,10 @@ def perform_cmdi_scan(crawled_urls, cmdi_payloads, user_agents):
                             return 
                         user_decision = (user_input == 'y')
                     
-                    break
+                    break  
 
-            print(colored(f"[×] No vulnerabilities found on: {url}", 'red'))
+            if not found_vulnerability:
+                print(colored(f"[×] No vulnerabilities found on: {url}", 'red'))
 
     except KeyboardInterrupt:
         print(colored("\n[!] Scan interrupted by user. Exiting cleanly...", 'red'))
-
