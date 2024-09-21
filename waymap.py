@@ -42,7 +42,7 @@ def print_banner():
     \ \/  \/ / / _ || | | || '_  _ \  / _ || '_ \
      \  /\  / | (_| || |_| || | | | | || (_| || |_) |
       \/  \/   \__,_| \__, ||_| |_| |_| \__,_|| .__/
-                      |___/                   |_|    Fastest And Optimised Web Vulnerability Scanner  v1.0.4
+                      |___/                   |_|    Fastest And Optimised Web Vulnerability Scanner  v1.0.5
     """
     print(colored(banner, 'cyan'))
     print(colored(f"Waymap Version: {WAYMAP_VERSION}", 'yellow'))
