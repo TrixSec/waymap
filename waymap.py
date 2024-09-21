@@ -16,27 +16,21 @@ AUTHOR = "Trix Cyrus"
 COPYRIGHT = "Copyright © 2024 Trixsec Org"
 
 def check_for_updates():
-    current_version = WAYMAP_VERSION  
-    print(colored(f"[•] Current version: {current_version}", 'yellow'))
-
-    latest_version_url = 'https://raw.githubusercontent.com/TrixSec/waymap/refs/heads/main/VERSION'
-
-    try:
-        response = requests.get(latest_version_url)
-        response.raise_for_status()
+    response = requests.get("https://raw.githubusercontent.com/TrixSec/waymap/main/VERSION")
+    if response.status_code == 200:
         latest_version = response.text.strip()
-        print(colored(f"[•] Latest version fetched from repository: {latest_version}", 'yellow'))
-
-        if current_version != latest_version:
+        
+        if WAYMAP_VERSION != latest_version:
             print(colored(f"[•] New version available: {latest_version}. Updating...", 'yellow'))
             os.system('git pull')  
             with open('VERSION', 'w') as version_file:
-                version_file.write(latest_version)  
-        else:
-            print(colored(f"[•] You are using the latest version: {current_version}.", 'green'))
-
-    except requests.RequestException as e:
-        print(colored(f"[×] Error checking for updates: {e}", 'red'))
+                version_file.write(latest_version)
+            print(colored("[•] Update completed. Please rerun Waymap.", 'green'))
+            exit()
+        
+        print(colored(f"[•] You are using the latest version: {latest_version}.", 'green'))
+    else:
+        print(colored("[×] Error fetching the latest version. Please check your internet connection.", 'red'))
 
 def print_banner():
     banner = r"""
