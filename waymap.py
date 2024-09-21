@@ -22,6 +22,9 @@ def check_for_updates():
         
         if WAYMAP_VERSION != latest_version:
             print(colored(f"[•] New version available: {latest_version}. Updating...", 'yellow'))
+            
+            # Discard local changes and reset to the latest commit
+            os.system('git reset --hard HEAD')
             os.system('git pull')  
             with open('VERSION', 'w') as version_file:
                 version_file.write(latest_version)
