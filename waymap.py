@@ -11,13 +11,13 @@ from urllib.parse import urlparse
 data_dir = os.path.join(os.getcwd(), 'data')
 session_dir = os.path.join(os.getcwd(), 'session')
 
-WAYMAP_VERSION = "1.0.4"  # Updated version
+WAYMAP_VERSION = "1.0.4"  
 AUTHOR = "Trix Cyrus"
 COPYRIGHT = "Copyright © 2024 Trixsec Org"
 
 def check_for_updates():
-    with open('VERSION', 'r') as version_file:
-        current_version = version_file.read().strip()
+    current_version = WAYMAP_VERSION  
+    print(colored(f"[•] Current version: {current_version}", 'yellow'))
 
     latest_version_url = 'https://raw.githubusercontent.com/TrixSec/waymap/refs/heads/main/VERSION'
 
@@ -25,6 +25,7 @@ def check_for_updates():
         response = requests.get(latest_version_url)
         response.raise_for_status()
         latest_version = response.text.strip()
+        print(colored(f"[•] Latest version fetched from repository: {latest_version}", 'yellow'))
 
         if current_version != latest_version:
             print(colored(f"[•] New version available: {latest_version}. Updating...", 'yellow'))
@@ -36,6 +37,7 @@ def check_for_updates():
 
     except requests.RequestException as e:
         print(colored(f"[×] Error checking for updates: {e}", 'red'))
+
 
 def print_banner():
     banner = r"""
