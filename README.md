@@ -1,5 +1,5 @@
 # Waymap - Web Vulnerability Scanner
-Version: 1.0.3
+Version: 1.0.4
 Author: Trix Cyrus
 Copyright: © 2024 Trixsec Org
 
@@ -15,6 +15,16 @@ Check out this video to see Waymap in action:
 
 
 ![Command Injection](https://github.com/TrixSec/waymap/blob/main/demo/cmdi-demo.png?raw=true)
+
+
+### v1.0.3 features
+#### sql injection
+#### command injection
+#### web crawling
+
+### v1.0.4 update
+
+#### updated crawler to crawl url in target domain boundary and handle target url redirection 
 
 
 ## Next Update Very Soon: 1.1.3
