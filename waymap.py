@@ -11,7 +11,7 @@ from urllib.parse import urlparse
 data_dir = os.path.join(os.getcwd(), 'data')
 session_dir = os.path.join(os.getcwd(), 'session')
 
-WAYMAP_VERSION = "1.0.4"  
+WAYMAP_VERSION = "1.0.5"  
 AUTHOR = "Trix Cyrus"
 COPYRIGHT = "Copyright © 2024 Trixsec Org"
 
