@@ -1,5 +1,5 @@
 # Waymap - Web Vulnerability Scanner
-Version: 1.0.6
+Current Version: 1.0.7 
 Author: Trix Cyrus
 Copyright: © 2024 Trixsec Org
 
@@ -34,6 +34,11 @@ Check out this video to see Waymap in action:
 ### Version: 1.0.6
 #### (Updated the autoupdate feature after this update no need to reclone repo)
 #### but reclone now if you are using v1.0.5
+
+### v1.0.6
+#### Fixed minor bugs and add support for scanning multiple url using --multi-target {targetfilename}.txt make sure file have one url per line
+#### no need to reclone it i'll autoupdate whenever you waymap
+#### reclone if you are using version v1.0.5 or older
 
 ## Next Update Very Soon: 1.1.3
 

@@ -11,13 +11,14 @@ from urllib.parse import urlparse
 data_dir = os.path.join(os.getcwd(), 'data')
 session_dir = os.path.join(os.getcwd(), 'session')
 
-WAYMAP_VERSION = "1.0.6"
+WAYMAP_VERSION = "1.0.7"
 AUTHOR = "Trix Cyrus"
 COPYRIGHT = "Copyright © 2024 Trixsec Org"
 
 def check_for_updates():
-    response = requests.get("https://raw.githubusercontent.com/TrixSec/waymap/main/VERSION")
-    if response.status_code == 200:
+    try:
+        response = requests.get("https://raw.githubusercontent.com/TrixSec/waymap/main/VERSION")
+        response.raise_for_status()
         latest_version = response.text.strip()
 
         if WAYMAP_VERSION != latest_version:
@@ -30,18 +31,17 @@ def check_for_updates():
             exit()
 
         print(colored(f"[•] You are using the latest version: {latest_version}.", 'green'))
-    else:
-        print(colored("[×] Error fetching the latest version. Please check your internet connection.", 'red'))
+    except requests.RequestException as e:
+        print(colored(f"[×] Error fetching the latest version: {e}. Please check your internet connection.", 'red'))
 
 def print_banner():
     banner = r"""
-
 ░██╗░░░░░░░██╗░█████╗░██╗░░░██╗███╗░░░███╗░█████╗░██████╗░
 ░██║░░██╗░░██║██╔══██╗╚██╗░██╔╝████╗░████║██╔══██╗██╔══██╗
 ░╚██╗████╗██╔╝███████║░╚████╔╝░██╔████╔██║███████║██████╔╝
 ░░████╔═████║░██╔══██║░░╚██╔╝░░██║╚██╔╝██║██╔══██║██╔═══╝░
 ░░╚██╔╝░╚██╔╝░██║░░██║░░░██║░░░██║░╚═╝░██║██║░░██║██║░░░░░
-░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v1.0.6
+░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v1.0.7
     """
     print(colored(banner, 'cyan'))
     print(colored(f"Waymap Version: {WAYMAP_VERSION}", 'yellow'))
@@ -50,8 +50,12 @@ def print_banner():
     print("")
 
 def load_payloads(file_path):
-    with open(file_path, 'r') as f:
-        return [line.strip() for line in f.readlines()]
+    try:
+        with open(file_path, 'r') as f:
+            return [line.strip() for line in f.readlines()]
+    except FileNotFoundError:
+        handle_error(f"Payload file {file_path} not found.")
+        return []
 
 def save_to_file(domain, urls):
     domain_path = os.path.join(session_dir, domain)
@@ -72,8 +76,12 @@ def load_crawled_urls(domain):
     return []
 
 def load_user_agents(file_path):
-    with open(file_path, 'r') as f:
-        return [line.strip() for line in f.readlines()]
+    try:
+        with open(file_path, 'r') as f:
+            return [line.strip() for line in f.readlines()]
+    except FileNotFoundError:
+        handle_error(f"User-agent file {file_path} not found.")
+        return []
 
 def handle_redirection(target_url):
     try:
@@ -86,8 +94,8 @@ def handle_redirection(target_url):
             print(colored(f"[•] Target URL redirected to a different domain: {final_url}", 'yellow'))
             return final_url
         return target_url
-    except requests.RequestException as e:
-        print(colored(f"[×] Error handling redirection for {target_url}: {e}", 'red'))
+    except requests.RequestException:
+        print(colored(f"[×] Cannot connect to the URL: {target_url}", 'red'))
         return target_url
 
 def is_valid_url(url):
@@ -100,44 +108,28 @@ def has_query_parameters(url):
 def is_within_domain(url, base_domain):
     return urlparse(url).netloc == base_domain
 
-def main():
-    print_banner()
-    check_for_updates()
-
-    if not check_internet_connection():
-        handle_error("No internet connection. Please check your network and try again.")
-
-    required_files = ['sqlipayload.txt', 'cmdipayload.txt', 'ua.txt', 'errors.xml', 'cmdi.xml']
-    missing_files = check_required_files(data_dir, session_dir, required_files)
-    if missing_files:
-        handle_error(f"Missing required files: {', '.join(missing_files)}")
-
-    required_directories = [data_dir, session_dir]
-    missing_dirs = check_required_directories(required_directories)
-    if missing_dirs:
-        handle_error(f"Missing required directories: {', '.join(missing_dirs)}")
-
-    parser = argparse.ArgumentParser(description="Waymap - Crawler and Scanner")
-    parser.add_argument('--crawl', type=int, required=True, help="Crawl depth")
-    parser.add_argument('--scan', type=str, required=True, choices=['sql', 'cmdi'], help="Scan type: 'sql' or 'cmdi'")
-    parser.add_argument('--target', type=str, required=True, help="Target URL")
-    args = parser.parse_args()
-
-    target = args.target
-    crawl_depth = args.crawl
-    scan_type = args.scan
+def crawl_and_scan(target, crawl_depth, scan_type):
+    try:
+        response = requests.head(target, timeout=10)
+        response.raise_for_status()
+    except requests.RequestException:
+        print(colored(f"[×] Cannot connect to the URL: {target}", 'red'))
+        return
 
     target = handle_redirection(target)
+
+    if not target or not is_valid_url(target):
+        print(colored(f"[×] Skipping {target} due to connection issues.", 'yellow'))
+        return
+
     domain = target.split("//")[-1].split("/")[0]
 
     crawled_urls = load_crawled_urls(domain)
 
-    if crawled_urls and len(crawled_urls) > 0 and args.crawl != len(crawled_urls):
-        crawled_urls = []  # Reset if crawl depth does not match
-
     if not crawled_urls:
         print(colored(f"[•] Starting crawling on: {target} with depth {crawl_depth}", 'yellow'))
         crawled_urls = run_crawler(target, crawl_depth)
+
         crawled_urls = [url for url in crawled_urls if is_valid_url(url) and has_query_parameters(url) and is_within_domain(url, domain)]
         save_to_file(domain, crawled_urls)
 
@@ -159,7 +151,63 @@ def main():
         print(colored("[•] Exiting Waymap.", 'yellow'))
         exit()
 
+def load_targets_from_file(file_path):
+    if os.path.exists(file_path):
+        with open(file_path, 'r') as f:
+            return [line.strip() for line in f.readlines() if line.strip()]
+    else:
+        print(colored(f"[×] Target file {file_path} does not exist.", 'red'))
+        return []
+
+def main():
+    print_banner()
+    check_for_updates()
+
+    if not check_internet_connection():
+        handle_error("No internet connection. Please check your network and try again.")
+
+    required_files = ['sqlipayload.txt', 'cmdipayload.txt', 'ua.txt', 'errors.xml', 'cmdi.xml']
+    missing_files = check_required_files(data_dir, session_dir, required_files)
+    if missing_files:
+        handle_error(f"Missing required files: {', '.join(missing_files)}")
+
+    required_directories = [data_dir, session_dir]
+    missing_dirs = check_required_directories(required_directories)
+    if missing_dirs:
+        handle_error(f"Missing required directories: {', '.join(missing_dirs)}")
+
+    parser = argparse.ArgumentParser(description="Waymap - Crawler and Scanner")
+    parser.add_argument('--crawl', type=int, required=True, help="Crawl depth")
+    parser.add_argument('--scan', type=str, required=True, choices=['sql', 'cmdi'], help="Scan type: 'sql' or 'cmdi'")
+    parser.add_argument('--target', type=str, help="Target URL (for single target)")
+    parser.add_argument('--multi-target', type=str, help="File containing multiple target URLs (one per line)")
+    args = parser.parse_args()
+
+    target = args.target
+    multi_target_file = args.multi_target
+
+    if multi_target_file:
+        targets = load_targets_from_file(multi_target_file)
+        if not targets:
+            return
+    else:
+        if target is None:
+            print(colored("[×] Error: Please specify a target URL or provide a file with URLs.", 'red'))
+            return
+        targets = [target]
+
+    for target in targets:
+        if not target:
+            continue
+
+        crawl_and_scan(target, args.crawl, args.scan)
+
+    for target in targets:
+        domain = target.split("//")[-1].split("/")[0]
+        crawl_file = os.path.join(session_dir, domain, 'crawl.txt')
+        if os.path.exists(crawl_file):
+            os.remove(crawl_file)
+            print(colored(f"[•] Removed crawl file for {domain}.", 'green'))
+
 if __name__ == "__main__":
     main()
-
-

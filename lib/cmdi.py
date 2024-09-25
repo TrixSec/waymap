@@ -47,7 +47,7 @@ def test_cmdi_payload(url, payload, user_agent, cmdi_errors):
     return {'vulnerable': False}
 
 def perform_cmdi_scan(crawled_urls, cmdi_payloads, user_agents):
-    cmdi_errors = load_cmdi_errors(os.path.join(data_dir, 'cmdi.xml'))
+    cmdi_errors = load_cmdi_errors(os.path.join(data_dir, 'cmdi.xml'))  
     detected_tech = None  
     user_decision = None  
 
@@ -61,27 +61,27 @@ def perform_cmdi_scan(crawled_urls, cmdi_payloads, user_agents):
             for payload in payloads_to_test:
                 user_agent = random.choice(user_agents)  
                 full_url = f"{url}{payload}"  
-                
                 result = test_cmdi_payload(full_url, payload, user_agent, cmdi_errors)
 
                 if result['vulnerable']:
                     found_vulnerability = True
+
                     if not detected_tech:
                         detected_tech = detect_web_tech(result['headers'])
                         print(colored(f"[•] Web Technology: {detected_tech or 'Unknown'}", 'magenta'))
-                    
+
                     print(colored(f"[★] Vulnerable URL found: {full_url}", 'white', attrs=['bold']))
                     print(colored(f"[•] Vulnerable Parameter: {url.split('?')[1] if '?' in url else 'N/A'}", 'green'))
                     print(colored(f"[•] Payload: {payload}", 'green'))
                     print(colored(f"[•] Command Injection Error Pattern: {result['cmdi_error']}", 'blue'))
-                    
+
                     if user_decision is None:
                         user_input = input(colored("\n[?] Vulnerable URL found. Do you want to continue testing other URLs? (y/n): ", 'yellow')).strip().lower()
                         if user_input == 'n':
                             print(colored("[•] Stopping further scans as per user's decision.", 'red'))
-                            return 
-                        user_decision = (user_input == 'y')
-                    
+                            return  
+                        user_decision = (user_input == 'y') 
+
                     break  
 
             if not found_vulnerability:
