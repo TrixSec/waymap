@@ -35,7 +35,7 @@ Check out this video to see Waymap in action:
 #### (Updated the autoupdate feature after this update no need to reclone repo)
 #### but reclone now if you are using v1.0.5
 
-### v1.0.6
+### v1.0.7
 #### Fixed minor bugs and add support for scanning multiple url using --multi-target {targetfilename}.txt make sure file have one url per line
 #### no need to reclone it i'll autoupdate whenever you waymap
 #### reclone if you are using version v1.0.5 or older
