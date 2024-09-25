@@ -37,7 +37,7 @@ Check out this video to see Waymap in action:
 
 ### v1.0.7
 #### Fixed minor bugs and add support for scanning multiple url using --multi-target {targetfilename}.txt make sure file have one url per line
-#### no need to reclone it i'll autoupdate whenever you waymap
+#### no need to reclone it i'll autoupdate whenever you use waymap
 #### reclone if you are using version v1.0.5 or older
 
 ## Next Update Very Soon: 1.1.3
