@@ -31,6 +31,10 @@ Check out this video to see Waymap in action:
 ### v1.0.5 
 #### Fixed minor bugs(reclone the repo if you're using v1.0.4).
 
+### Version: 1.0.6
+#### (Updated the autoupdate feature after this update no need to reclone repo)
+#### but reclone now if you are using v1.0.5
+
 ## Next Update Very Soon: 1.1.3
 
 #### LFI Module 
