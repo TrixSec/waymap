@@ -4,6 +4,7 @@ import re
 import os
 from termcolor import colored
 from xml.etree import ElementTree as ET
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 data_dir = os.path.join(os.getcwd(), 'data')
 
@@ -47,7 +48,7 @@ def test_payload(url, payload, user_agent, dbms_errors):
     return {'vulnerable': False}
 
 def perform_sqli_scan(crawled_urls, sql_payloads, user_agents):
-    dbms_errors = load_dbms_errors(os.path.join(data_dir, 'errors.xml'))  
+    dbms_errors = load_dbms_errors(os.path.join(data_dir, 'errors.xml'))
     detected_tech = None  
     user_decision = None  
 
@@ -58,34 +59,37 @@ def perform_sqli_scan(crawled_urls, sql_payloads, user_agents):
             payloads_to_test = random.sample(sql_payloads, 10)
             found_vulnerability = False 
 
-            for payload in payloads_to_test:
-                user_agent = random.choice(user_agents)  
-                full_url = f"{url}{payload}" 
-                result = test_payload(full_url, payload, user_agent, dbms_errors)
+            with ThreadPoolExecutor(max_workers=5) as executor:
+                futures = {
+                    executor.submit(test_payload, f"{url}{payload}", payload, random.choice(user_agents), dbms_errors): payload 
+                    for payload in payloads_to_test
+                }
 
-                if result['vulnerable']:
-                    found_vulnerability = True
+                for future in as_completed(futures):
+                    result = future.result()
+                    if result['vulnerable']:
+                        found_vulnerability = True
+                        if not detected_tech:
+                            detected_tech = detect_web_tech(result['headers'])
+                            print(colored(f"[•] Web Technology: {detected_tech or 'Unknown'}", 'magenta'))
 
-                    if not detected_tech:
-                        detected_tech = detect_web_tech(result['headers'])
-                        print(colored(f"[•] Web Technology: {detected_tech or 'Unknown'}", 'magenta'))
+                        print(colored(f"[★] Vulnerable URL found: {url}{futures[future]}", 'white', attrs=['bold']))
+                        print(colored(f"[•] Vulnerable Parameter: {url.split('?')[1] if '?' in url else 'N/A'}", 'green'))
+                        print(colored(f"[•] Payload: {futures[future]}", 'green'))
+                        print(colored(f"[•] Backend DBMS: {result['dbms']}", 'blue'))
 
-                    print(colored(f"[★] Vulnerable URL found: {full_url}", 'white', attrs=['bold']))
-                    print(colored(f"[•] Vulnerable Parameter: {url.split('?')[1] if '?' in url else 'N/A'}", 'green'))
-                    print(colored(f"[•] Payload: {payload}", 'green'))
-                    print(colored(f"[•] Backend DBMS: {result['dbms']}", 'blue'))
+                        if user_decision is None:
+                            user_input = input(colored("\n[?] Vulnerable URL found. Do you want to continue testing other URLs? (y/n): ", 'yellow')).strip().lower()
+                            if user_input == 'n':
+                                print(colored("[•] Stopping further scans as per user's decision.", 'red'))
+                                return  
+                            user_decision = (user_input == 'y')  
 
-                    if user_decision is None:
-                        user_input = input(colored("\n[?] Vulnerable URL found. Do you want to continue testing other URLs? (y/n): ", 'yellow')).strip().lower()
-                        if user_input == 'n':
-                            print(colored("[•] Stopping further scans as per user's decision.", 'red'))
-                            return  
-                        user_decision = (user_input == 'y')  
+                        break  
 
-                    break  
-
-            if not found_vulnerability:
-                print(colored(f"[×] No vulnerabilities found on: {url}", 'red'))
+                if not found_vulnerability:
+                    print(colored(f"[×] No vulnerabilities found on: {url}", 'red'))
 
     except KeyboardInterrupt:
         print(colored("\n[!] Scan interrupted by user. Exiting cleanly...", 'red'))
+
