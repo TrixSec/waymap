@@ -8,9 +8,10 @@ from lib.sqli import perform_sqli_scan
 from lib.cmdi import perform_cmdi_scan
 from extras.error_handler import check_internet_connection, check_required_files, check_required_directories, handle_error
 from urllib.parse import urlparse
+session_dir = 'session'
 
 # Configure the logger
-log_file_path = os.path.join(os.getcwd(), 'scan_log.txt')
+log_file_path = os.path.join(session_dir, 'logs.txt') 
 logging.basicConfig(
     filename=log_file_path,
     level=logging.INFO,
