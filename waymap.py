@@ -79,7 +79,7 @@ data_dir = os.path.join(os.getcwd(), 'data')
 session_dir = os.path.join(os.getcwd(), 'session')
 
 WAYMAP_VERSION = "1.0.7"
-AUTHOR = "Trix Cyrus"
+AUTHOR = "Trix Cyrus & Yash"
 COPYRIGHT = "Copyright © 2024 Trixsec Org"
 
 def check_for_updates():
