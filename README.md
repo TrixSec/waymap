@@ -1,5 +1,5 @@
 # Waymap - Web Vulnerability Scanner
-Current Version: 1.0.7 
+Current Version: 1.0.8 
 
 Author: Trix Cyrus
 
