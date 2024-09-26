@@ -1,6 +1,7 @@
 # Waymap - Web Vulnerability Scanner
 Current Version: 1.0.7 
 Author: Trix Cyrus
+Contributions: Yash (0day-Yash)
 Copyright: © 2024 Trixsec Org
 
 ## What is Waymap?
@@ -40,7 +41,7 @@ Check out this video to see Waymap in action:
 #### no need to reclone it i'll autoupdate whenever you use waymap
 #### reclone if you are using version v1.0.5 or older
 
-## Next Update Very Soon: 1.1.3
+## Next Update Out Very Soon: 1.1.3
 
 #### LFI Module 
 #### RCE Module 
@@ -71,4 +72,3 @@ Stay updated with the latest tools and hacking resources. Join our Telegram Chan
 
 
 ### Happy Hacking
-~ TrixSec
