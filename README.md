@@ -1,74 +1,80 @@
 # Waymap - Web Vulnerability Scanner
-Current Version: 1.0.7 
-Author: Trix Cyrus
-Copyright: © 2024 Trixsec Org
+
+**Current Version**: 1.0.8  
+**Author**: Trix Cyrus  
+**Contributions**: Yash (0day-Yash)  
+**Copyright**: © 2024 Trixsec Org  
 
 ## What is Waymap?
-Waymap is a fast and optimized web vulnerability scanner built for penetration testers. It helps in identifying vulnerabilities such as SQL Injection and Command Injection by testing against various payloads.
+Waymap is a fast and optimized web vulnerability scanner designed for penetration testers. It effectively identifies vulnerabilities, such as SQL Injection and Command Injection, by testing against a variety of payloads.
 
-Demo Video
+### Demo Video
 Check out this video to see Waymap in action:
 
 ![Waymap Demo](https://github.com/TrixSec/waymap/blob/main/demo/lv_0_20240921113323.mp4?raw=true)
 
-![SQL Injection ](https://github.com/TrixSec/waymap/blob/main/demo/sqli-demo.png?raw=true)
+### Vulnerability Examples
+- **SQL Injection**  
+  ![SQL Injection](https://github.com/TrixSec/waymap/blob/main/demo/sqli-demo.png?raw=true)
 
+- **Command Injection**  
+  ![Command Injection](https://github.com/TrixSec/waymap/blob/main/demo/cmdi-demo.png?raw=true)
 
-![Command Injection](https://github.com/TrixSec/waymap/blob/main/demo/cmdi-demo.png?raw=true)
+## Features Overview
+### v1.0.3
+- SQL Injection
+- Command Injection
+- Web Crawling
 
+### v1.0.4 Update
+- Updated crawler to operate within target domain boundaries and handle URL redirection.
+- Added auto-update functionality for the scanner (please reclone the repo if using v1.0.4).
 
-### v1.0.3 features
-#### sql injection
-#### command injection
-#### web crawling
+### v1.0.5
+- Fixed minor bugs (please reclone the repo if using v1.0.4).
 
-### v1.0.4 update
-
-#### updated crawler to crawl url in target domain boundary and handle target url redirection 
-
-#### added auto update for scanner (for that reclone the repo if you are using v1.0.4)
-
-### v1.0.5 
-#### Fixed minor bugs(reclone the repo if you're using v1.0.4).
-
-### Version: 1.0.6
-#### (Updated the autoupdate feature after this update no need to reclone repo)
-#### but reclone now if you are using v1.0.5
+### v1.0.6
+- Enhanced the auto-update feature; no need to reclone the repo after this update. Please reclone if using v1.0.5.
 
 ### v1.0.7
-#### Fixed minor bugs and add support for scanning multiple url using --multi-target {targetfilename}.txt make sure file have one url per line
-#### no need to reclone it i'll autoupdate whenever you use waymap
-#### reclone if you are using version v1.0.5 or older
+- Fixed minor bugs and added support for scanning multiple URLs using `--multi-target {targetfilename}.txt` (ensure the file has one URL per line).
+- Auto-update enabled; no need to reclone unless on version v1.0.5 or older.
 
-## Next Update Very Soon: 1.1.3
+### v1.0.8
+- Added concurrency to utilize more CPU threads, speeding up SQL injection scans.
+- Improved stability.
+- Added logging functionality.
 
-#### LFI Module 
-#### RCE Module 
-#### Maybe Dork Scraper
-
+## Upcoming Updates (Version 1.1.3)
+- LFI Module
+- RCE Module
+- Potential Dork Scraper
 
 ## Installation and Usage
 
 ### Clone the repository:
-
-``` git clone https://github.com/TrixSec/waymap.git ```
+```bash
+git clone https://github.com/TrixSec/waymap.git
+```
 
 ### Install the required dependencies:
+```bash
+pip install .
+```
 
-```pip install .  ```
 ### Run Waymap:
+```bash
+python waymap.py --crawl 1 --scan sql/cmdi --target https://example.com
+```
 
- ``` python waymap.py --crawl 1 --scan sql/cmdi --target https://example.com ```
-
- #### CHECK HELP
-``` python waymap.py -h ```
+### Check Help
+```bash
+python waymap.py -h
+```
 
 ### Follow Us on Telegram
-
-Stay updated with the latest tools and hacking resources. Join our Telegram Channel by clicking the Telegram logo below:
+Stay updated with the latest tools and hacking resources. Join our Telegram Channel by clicking the logo below:
 
 [![Telegram](https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Telegram_logo.svg/240px-Telegram_logo.svg.png)](https://t.me/Trixsec)
 
-
-### Happy Hacking
-~ TrixSec
+### Happy Hacking!

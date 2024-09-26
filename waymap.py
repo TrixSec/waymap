@@ -1,18 +1,86 @@
 import os
 import argparse
 import requests
+import logging
 from termcolor import colored
 from lib.crawler import run_crawler
 from lib.sqli import perform_sqli_scan
 from lib.cmdi import perform_cmdi_scan
 from extras.error_handler import check_internet_connection, check_required_files, check_required_directories, handle_error
 from urllib.parse import urlparse
+session_dir = 'session'
+
+# Configure the logger
+log_file_path = os.path.join(session_dir, 'logs.txt') 
+logging.basicConfig(
+    filename=log_file_path,
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+
+def log_scan_start(target, scan_type):
+    logging.info(f'Starting {scan_type} scan on {target}')
+
+def log_scan_end(target, scan_type):
+    logging.info(f'Finished {scan_type} scan on {target}')
+
+def log_error(message):
+    logging.error(message)
+
+# Update your crawl_and_scan function
+def crawl_and_scan(target, crawl_depth, scan_type):
+    log_scan_start(target, scan_type)  # Log the start of the scan
+    try:
+        response = requests.head(target, timeout=10)
+        response.raise_for_status()
+    except requests.RequestException as e:
+        log_error(f"Cannot connect to the URL: {target} - {e}")
+        print(colored(f"[×] Cannot connect to the URL: {target}", 'red'))
+        return
+
+    target = handle_redirection(target)
+
+    if not target or not is_valid_url(target):
+        print(colored(f"[×] Skipping {target} due to connection issues.", 'yellow'))
+        return
+
+    domain = target.split("//")[-1].split("/")[0]
+
+    crawled_urls = load_crawled_urls(domain)
+
+    if not crawled_urls:
+        print(colored(f"[•] Starting crawling on: {target} with depth {crawl_depth}", 'yellow'))
+        crawled_urls = run_crawler(target, crawl_depth)
+
+        crawled_urls = [url for url in crawled_urls if is_valid_url(url) and has_query_parameters(url) and is_within_domain(url, domain)]
+        save_to_file(domain, crawled_urls)
+
+    sql_payloads = load_payloads(os.path.join(data_dir, 'sqlipayload.txt'))
+    cmdi_payloads = load_payloads(os.path.join(data_dir, 'cmdipayload.txt'))
+    user_agents = load_user_agents(os.path.join(data_dir, 'ua.txt'))
+
+    try:
+        if scan_type == 'sql':
+            print(colored(f"[•] Performing SQL Injection scan on {target}", 'yellow'))
+            perform_sqli_scan(crawled_urls, sql_payloads, user_agents)
+            log_scan_end(target, 'SQL Injection')  # Log the end of the scan
+
+        elif scan_type == 'cmdi':
+            print(colored(f"[•] Performing Command Injection scan on {target}", 'yellow'))
+            perform_cmdi_scan(crawled_urls, cmdi_payloads, user_agents)
+            log_scan_end(target, 'Command Injection')  # Log the end of the scan
+
+    except KeyboardInterrupt:
+        print(colored("\n[×] Scan interrupted by the user. Exiting...", 'red'))
+        log_error("Scan interrupted by the user.")
+        exit()
+
 
 data_dir = os.path.join(os.getcwd(), 'data')
 session_dir = os.path.join(os.getcwd(), 'session')
 
 WAYMAP_VERSION = "1.0.7"
-AUTHOR = "Trix Cyrus"
+AUTHOR = "Trix Cyrus & Yash"
 COPYRIGHT = "Copyright © 2024 Trixsec Org"
 
 def check_for_updates():
