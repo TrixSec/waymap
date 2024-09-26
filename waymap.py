@@ -10,13 +10,17 @@ from extras.error_handler import check_internet_connection, check_required_files
 from urllib.parse import urlparse
 session_dir = 'session'
 
-# Configure the logger
-log_file_path = os.path.join(session_dir, 'logs.txt') 
-logging.basicConfig(
-    filename=log_file_path,
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
+def setup_logger(domain):
+    
+    domain_dir = os.path.join(session_dir, domain)
+    os.makedirs(domain_dir, exist_ok=True)  
+    log_file_path = os.path.join(domain_dir, 'logs.txt')
+    
+    logging.basicConfig(
+        filename=log_file_path,
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s'
+    )
 
 def log_scan_start(target, scan_type):
     logging.info(f'Starting {scan_type} scan on {target}')
@@ -27,60 +31,12 @@ def log_scan_end(target, scan_type):
 def log_error(message):
     logging.error(message)
 
-# Update your crawl_and_scan function
-def crawl_and_scan(target, crawl_depth, scan_type):
-    log_scan_start(target, scan_type)  # Log the start of the scan
-    try:
-        response = requests.head(target, timeout=10)
-        response.raise_for_status()
-    except requests.RequestException as e:
-        log_error(f"Cannot connect to the URL: {target} - {e}")
-        print(colored(f"[×] Cannot connect to the URL: {target}", 'red'))
-        return
-
-    target = handle_redirection(target)
-
-    if not target or not is_valid_url(target):
-        print(colored(f"[×] Skipping {target} due to connection issues.", 'yellow'))
-        return
-
-    domain = target.split("//")[-1].split("/")[0]
-
-    crawled_urls = load_crawled_urls(domain)
-
-    if not crawled_urls:
-        print(colored(f"[•] Starting crawling on: {target} with depth {crawl_depth}", 'yellow'))
-        crawled_urls = run_crawler(target, crawl_depth)
-
-        crawled_urls = [url for url in crawled_urls if is_valid_url(url) and has_query_parameters(url) and is_within_domain(url, domain)]
-        save_to_file(domain, crawled_urls)
-
-    sql_payloads = load_payloads(os.path.join(data_dir, 'sqlipayload.txt'))
-    cmdi_payloads = load_payloads(os.path.join(data_dir, 'cmdipayload.txt'))
-    user_agents = load_user_agents(os.path.join(data_dir, 'ua.txt'))
-
-    try:
-        if scan_type == 'sql':
-            print(colored(f"[•] Performing SQL Injection scan on {target}", 'yellow'))
-            perform_sqli_scan(crawled_urls, sql_payloads, user_agents)
-            log_scan_end(target, 'SQL Injection')  # Log the end of the scan
-
-        elif scan_type == 'cmdi':
-            print(colored(f"[•] Performing Command Injection scan on {target}", 'yellow'))
-            perform_cmdi_scan(crawled_urls, cmdi_payloads, user_agents)
-            log_scan_end(target, 'Command Injection')  # Log the end of the scan
-
-    except KeyboardInterrupt:
-        print(colored("\n[×] Scan interrupted by the user. Exiting...", 'red'))
-        log_error("Scan interrupted by the user.")
-        exit()
-
-
 data_dir = os.path.join(os.getcwd(), 'data')
 session_dir = os.path.join(os.getcwd(), 'session')
 
-WAYMAP_VERSION = "1.0.8"
-AUTHOR = "Trix Cyrus & Yash"
+WAYMAP_VERSION = "1.0.9"
+AUTHOR = "Trix Cyrus"
+Devs = "@TrixSec & @0day-Yash & @JeninSutradhar"
 COPYRIGHT = "Copyright © 2024 Trixsec Org"
 
 def check_for_updates():
@@ -109,11 +65,12 @@ def print_banner():
 ░╚██╗████╗██╔╝███████║░╚████╔╝░██╔████╔██║███████║██████╔╝
 ░░████╔═████║░██╔══██║░░╚██╔╝░░██║╚██╔╝██║██╔══██║██╔═══╝░
 ░░╚██╔╝░╚██╔╝░██║░░██║░░░██║░░░██║░╚═╝░██║██║░░██║██║░░░░░
-░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v1.0.8
+░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v1.0.9
     """
     print(colored(banner, 'cyan'))
     print(colored(f"Waymap Version: {WAYMAP_VERSION}", 'yellow'))
     print(colored(f"Made by {AUTHOR}", 'yellow'))
+    print(colored(f"#Devs {Devs}", 'yellow'))
     print(colored(COPYRIGHT, 'yellow'))
     print("")
 
@@ -122,6 +79,7 @@ def load_payloads(file_path):
         with open(file_path, 'r') as f:
             return [line.strip() for line in f.readlines()]
     except FileNotFoundError:
+        log_error(f"Payload file {file_path} not found.")  
         handle_error(f"Payload file {file_path} not found.")
         return []
 
@@ -148,6 +106,7 @@ def load_user_agents(file_path):
         with open(file_path, 'r') as f:
             return [line.strip() for line in f.readlines()]
     except FileNotFoundError:
+        log_error(f"User-agent file {file_path} not found.")  
         handle_error(f"User-agent file {file_path} not found.")
         return []
 
@@ -162,7 +121,8 @@ def handle_redirection(target_url):
             print(colored(f"[•] Target URL redirected to a different domain: {final_url}", 'yellow'))
             return final_url
         return target_url
-    except requests.RequestException:
+    except requests.RequestException as e:
+        log_error(f"Error connecting to {target_url}: {e}") 
         print(colored(f"[×] Cannot connect to the URL: {target_url}", 'red'))
         return target_url
 
@@ -180,17 +140,22 @@ def crawl_and_scan(target, crawl_depth, scan_type):
     try:
         response = requests.head(target, timeout=10)
         response.raise_for_status()
-    except requests.RequestException:
+    except requests.RequestException as e:
+        log_error(f"Cannot connect to {target}: {e}")  
         print(colored(f"[×] Cannot connect to the URL: {target}", 'red'))
         return
 
     target = handle_redirection(target)
 
     if not target or not is_valid_url(target):
+        log_error(f"Skipping {target} due to connection issues.")  
         print(colored(f"[×] Skipping {target} due to connection issues.", 'yellow'))
         return
 
     domain = target.split("//")[-1].split("/")[0]
+    setup_logger(domain)  
+
+    log_scan_start(target, scan_type)  
 
     crawled_urls = load_crawled_urls(domain)
 
@@ -206,6 +171,7 @@ def crawl_and_scan(target, crawl_depth, scan_type):
     user_agents = load_user_agents(os.path.join(data_dir, 'ua.txt'))
 
     try:
+        log_scan_start(target, scan_type)  
         if scan_type == 'sql':
             print(colored(f"[•] Performing SQL Injection scan on {target}", 'yellow'))
             perform_sqli_scan(crawled_urls, sql_payloads, user_agents)
@@ -213,11 +179,13 @@ def crawl_and_scan(target, crawl_depth, scan_type):
         elif scan_type == 'cmdi':
             print(colored(f"[•] Performing Command Injection scan on {target}", 'yellow'))
             perform_cmdi_scan(crawled_urls, cmdi_payloads, user_agents)
+        log_scan_end(target, scan_type)  
 
     except KeyboardInterrupt:
         print(colored("\n[×] Scan interrupted by the user. Exiting...", 'red'))
-        print(colored("[•] Exiting Waymap.", 'yellow'))
+        log_error("Scan interrupted by the user.")
         exit()
+
 
 def load_targets_from_file(file_path):
     if os.path.exists(file_path):

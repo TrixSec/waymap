@@ -4,6 +4,7 @@ import re
 import os
 from termcolor import colored
 from xml.etree import ElementTree as ET
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 data_dir = os.path.join(os.getcwd(), 'data')
 
@@ -56,23 +57,26 @@ def perform_cmdi_scan(crawled_urls, cmdi_payloads, user_agents):
             print(colored(f"\n[•] Testing URL: {url}", 'yellow'))
 
             payloads_to_test = random.sample(cmdi_payloads, 10)
-            found_vulnerability = False  
+            found_vulnerability = False 
 
-            for payload in payloads_to_test:
-                user_agent = random.choice(user_agents)  
-                full_url = f"{url}{payload}"  
-                result = test_cmdi_payload(full_url, payload, user_agent, cmdi_errors)
+            with ThreadPoolExecutor(max_workers=5) as executor:
+                futures = {
+                    executor.submit(test_cmdi_payload, f"{url}{payload}", payload, random.choice(user_agents), cmdi_errors): payload 
+                    for payload in payloads_to_test
+                }
 
-                if result['vulnerable']:
-                    found_vulnerability = True
+                for future in as_completed(futures):
+                    result = future.result()
+                    if result['vulnerable']:
+                        found_vulnerability = True
+                        if not detected_tech:
+                            detected_tech = detect_web_tech(result['headers'])
+                            print(colored(f"[•] Web Technology: {detected_tech or 'Unknown'}", 'magenta'))
 
-                    if not detected_tech:
-                        detected_tech = detect_web_tech(result['headers'])
-                        print(colored(f"[•] Web Technology: {detected_tech or 'Unknown'}", 'magenta'))
 
-                    print(colored(f"[★] Vulnerable URL found: {full_url}", 'white', attrs=['bold']))
+                    print(colored(f"[★] Vulnerable URL found: {url}{futures[future]}", 'white', attrs=['bold']))
                     print(colored(f"[•] Vulnerable Parameter: {url.split('?')[1] if '?' in url else 'N/A'}", 'green'))
-                    print(colored(f"[•] Payload: {payload}", 'green'))
+                    print(colored(f"[•] Payload: {futures[future]}", 'green'))
                     print(colored(f"[•] Command Injection Error Pattern: {result['cmdi_error']}", 'blue'))
 
                     if user_decision is None:
