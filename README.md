@@ -2,7 +2,7 @@
 
 **Current Version**: 1.0.8  
 **Author**: Trix Cyrus  
-**Contributions**: Yash (0day-Yash)  
+**Contributions**: Yash (0day-Yash) & Jennin (@JeninSutradhar)
 **Copyright**: © 2024 Trixsec Org  
 
 ## What is Waymap?
@@ -19,6 +19,10 @@ Check out this video to see Waymap in action:
 
 - **Command Injection**  
   ![Command Injection](https://github.com/TrixSec/waymap/blob/main/demo/cmdi-demo.png?raw=true)
+
+- **Server Side Template Injection**  
+  ![Command Injection](https://github.com/TrixSec/waymap/blob/main/demo/ssti-demo.png?raw=true)
+
 
 ## Features Overview
 ### v1.0.3
@@ -45,10 +49,15 @@ Check out this video to see Waymap in action:
 - Improved stability.
 - Added logging functionality.
 
-## Upcoming Updates (Version 1.1.3)
-- LFI Module
-- RCE Module
-- Potential Dork Scraper
+### v1.0.9
+- minor bug fix
+
+### v1.1.0
+- added a new scan type : Server Side Template Injection: --scan ssti
+- now you can do all type scan in one command using : --scan all
+- Added Threading In SSTI(Server Side Template Injection)
+
+--NEW--UPDATES--SOON--
 
 ## Installation and Usage
 
@@ -64,7 +73,7 @@ pip install .
 
 ### Run Waymap:
 ```bash
-python waymap.py --crawl 1 --scan sql/cmdi --target https://example.com
+python waymap.py --crawl 1 --scan sql/cmdi/ssti/all --target https://example.com
 ```
 
 ### Check Help
