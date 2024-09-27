@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='waymap',
-    version='1.1.0', 
+    version='1.1.1', 
     description='Waymap is a powerful web vulnerability scanner designed to identify SQL injection and command injection vulnerabilities in websites.#v1.0.3dev',
     author='Trix Cyrus',
     Core_Developer='Trix',

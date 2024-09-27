@@ -5,8 +5,11 @@ from datetime import datetime
 from termcolor import colored
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import time
+import threading
 
 data_dir = os.path.join(os.getcwd(), 'data')
+
+stop_scan = threading.Event()
 
 def load_ssti_payloads(file_path):
     payloads = []
@@ -28,6 +31,9 @@ def load_ssti_payloads(file_path):
     return payloads
 
 def test_ssti_payload(url, parameter, payload, expected_response, user_agent):
+    if stop_scan.is_set():
+        return {'vulnerable': False}
+
     headers = {'User-Agent': user_agent}
     try:
         response = requests.get(url, params={parameter: payload}, headers=headers, timeout=10)
@@ -37,14 +43,14 @@ def test_ssti_payload(url, parameter, payload, expected_response, user_agent):
         if expected_response in response_content:
             return {'vulnerable': True, 'response': response, 'headers': response.headers}
     except requests.RequestException as e:
-        print(colored(f"[×] Error testing payload on {url}: {e}", 'red'))
+        if not stop_scan.is_set():
+            print(colored(f"[×] Error testing payload on {url}: {e}", 'red'))
 
     return {'vulnerable': False}
 
 def perform_ssti_scan(crawled_urls, user_agents, verbose=False):
     payloads = load_ssti_payloads(os.path.join(data_dir, 'sstipayload.txt'))
     detected_tech = None
-    user_decision = None
 
     use_threads = input(colored("[?] Do you want to use threads for scanning? (y/n, press Enter for default [n]): ", 'yellow')).strip().lower()
 
@@ -53,6 +59,9 @@ def perform_ssti_scan(crawled_urls, user_agents, verbose=False):
             with ThreadPoolExecutor(max_workers=5) as executor:
                 future_to_url = {}
                 for url in crawled_urls:
+                    if stop_scan.is_set():
+                        break
+
                     print(colored(f"\n[•] Testing URL: {url}", 'yellow'))
 
                     base_url = url.split('?')[0]
@@ -69,11 +78,17 @@ def perform_ssti_scan(crawled_urls, user_agents, verbose=False):
                                 continue
 
                     for payload_entry in payloads:
+                        if stop_scan.is_set():
+                            break
+
                         name = payload_entry['name']
                         payload = payload_entry['payload']
                         expected_response = payload_entry['response']
 
                         for param_key in param_dict.keys():
+                            if stop_scan.is_set():
+                                break
+
                             timestamp = datetime.now().strftime("%H:%M:%S")
 
                             if verbose:
@@ -90,6 +105,9 @@ def perform_ssti_scan(crawled_urls, user_agents, verbose=False):
                             future_to_url[future] = full_url
 
                 for future in as_completed(future_to_url):
+                    if stop_scan.is_set():
+                        break
+
                     result = future.result()
                     full_url = future_to_url[future]
 
@@ -103,15 +121,18 @@ def perform_ssti_scan(crawled_urls, user_agents, verbose=False):
                         print(colored(f"[•] Payload: {payload}", 'green'))
                         print(colored(f"[•] Expected Response: {expected_response}", 'blue'))
 
-                        if user_decision is None:
-                            user_input = input(colored("\n[?] Vulnerable URL found. Do you want to continue testing other URLs? (y/n): ", 'yellow')).strip().lower()
-                            if user_input == 'n':
-                                print(colored("[•] Stopping further scans as per user's decision.", 'red'))
-                                return
-                            user_decision = (user_input == 'y')
+                        user_input = input(colored("\n[?] Vulnerable URL found. Do you want to continue testing other URLs? (y/n): ", 'yellow')).strip().lower()
+                        if user_input == 'n':
+                            print(colored("[•] Stopping further scans as per user's decision.", 'red'))
+                            stop_scan.set()  
+                            break
+                        break
 
         else:
             for url in crawled_urls:
+                if stop_scan.is_set():
+                    break
+
                 print(colored(f"\n[•] Testing URL: {url}", 'yellow'))
 
                 base_url = url.split('?')[0]
@@ -128,11 +149,17 @@ def perform_ssti_scan(crawled_urls, user_agents, verbose=False):
                             continue
 
                 for payload_entry in payloads:
+                    if stop_scan.is_set():
+                        break
+
                     name = payload_entry['name']
                     payload = payload_entry['payload']
                     expected_response = payload_entry['response']
 
                     for param_key in param_dict.keys():
+                        if stop_scan.is_set():
+                            break
+
                         timestamp = datetime.now().strftime("%H:%M:%S")
 
                         if verbose:
@@ -157,15 +184,13 @@ def perform_ssti_scan(crawled_urls, user_agents, verbose=False):
                             print(colored(f"[•] Payload: {payload}", 'green'))
                             print(colored(f"[•] Expected Response: {expected_response}", 'blue'))
 
-                        if user_decision is None:
                             user_input = input(colored("\n[?] Vulnerable URL found. Do you want to continue testing other URLs? (y/n): ", 'yellow')).strip().lower()
                             if user_input == 'n':
                                 print(colored("[•] Stopping further scans as per user's decision.", 'red'))
-                                return  
-                            user_decision = (user_input == 'y')  
-
-                        break
+                                stop_scan.set() 
+                                break
+                            break
 
     except KeyboardInterrupt:
         print(colored("\n[!] Scan interrupted by user. Exiting cleanly...", 'red'))
-
+        stop_scan.set()  
