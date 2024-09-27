@@ -157,12 +157,14 @@ def perform_ssti_scan(crawled_urls, user_agents, verbose=False):
                             print(colored(f"[•] Payload: {payload}", 'green'))
                             print(colored(f"[•] Expected Response: {expected_response}", 'blue'))
 
-                            if user_decision is None:
-                                user_input = input(colored("\n[?] Vulnerable URL found. Do you want to continue testing other URLs? (y/n): ", 'yellow')).strip().lower()
-                                if user_input == 'n':
-                                    print(colored("[•] Stopping further scans as per user's decision.", 'red'))
-                                    return
-                                user_decision = (user_input == 'y')
+                        if user_decision is None:
+                            user_input = input(colored("\n[?] Vulnerable URL found. Do you want to continue testing other URLs? (y/n): ", 'yellow')).strip().lower()
+                            if user_input == 'n':
+                                print(colored("[•] Stopping further scans as per user's decision.", 'red'))
+                                return  
+                            user_decision = (user_input == 'y')  
+
+                        break
 
     except KeyboardInterrupt:
         print(colored("\n[!] Scan interrupted by user. Exiting cleanly...", 'red'))
