@@ -25,12 +25,12 @@ Check out this video to see Waymap in action:
 
 
 ## Features Overview
-### v1.0.3
+### v1.0.3 (First Version)
 - SQL Injection
 - Command Injection
 - Web Crawling
 
-### v1.0.4 Update
+### v1.0.4 
 - Updated crawler to operate within target domain boundaries and handle URL redirection.
 - Added auto-update functionality for the scanner (please reclone the repo if using v1.0.4).
 
