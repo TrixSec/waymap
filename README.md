@@ -57,6 +57,9 @@ Check out this video to see Waymap in action:
 - now you can do all type scan in one command using : --scan all
 - Added Threading In SSTI(Server Side Template Injection)
 
+### v1.1.1
+- fixed ssti exiting error
+
 --NEW--UPDATES--SOON--
 
 ## Installation and Usage
