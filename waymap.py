@@ -234,7 +234,7 @@ def main():
     if not check_internet_connection():
         handle_error("No internet connection. Please check your network and try again.")
 
-    required_files = ['sqlipayload.txt', 'cmdipayload.txt', 'basicxsspayload.txt' 'filterbypassxss.txt' 'lfipayload.txt' 'sstipayload.txt', 'ua.txt', 'errors.xml', 'cmdi.xml']
+    required_files = ['sqlipayload.txt', 'cmdipayload.txt', 'basicxsspayload.txt', 'filterbypassxss.txt', 'lfipayload.txt', 'sstipayload.txt', 'ua.txt', 'errors.xml', 'cmdi.xml']
     missing_files = check_required_files(data_dir, session_dir, required_files)
     if missing_files:
         handle_error(f"Missing required files: {', '.join(missing_files)}")
