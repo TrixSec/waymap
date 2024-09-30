@@ -7,7 +7,7 @@
 **Maintained**: Yes
 
 ## What is Waymap?
-Waymap is a fast and optimized web vulnerability scanner designed for penetration testers. It effectively identifies vulnerabilities, such as SQL Injection and Command Injection, by testing against a variety of payloads.
+Waymap is a fast and optimized And Automated web vulnerability scanner designed for penetration testers. It effectively identifies vulnerabilities by testing against a variety of payloads.
 
 ### Demo Video
 Check out this video to see Waymap in action:
