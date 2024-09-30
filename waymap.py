@@ -7,6 +7,8 @@ from lib.crawler import run_crawler
 from lib.sqli import perform_sqli_scan
 from lib.cmdi import perform_cmdi_scan
 from lib.ssti import perform_ssti_scan
+from lib.xss import perform_xss_scan
+from lib.lfi import perform_lfi_scan
 from extras.error_handler import check_internet_connection, check_required_files, check_required_directories, handle_error
 from urllib.parse import urlparse
 session_dir = 'session'
@@ -35,7 +37,7 @@ def log_error(message):
 data_dir = os.path.join(os.getcwd(), 'data')
 session_dir = os.path.join(os.getcwd(), 'session')
 
-WAYMAP_VERSION = "1.1.1"
+WAYMAP_VERSION = "1.2.1"
 AUTHOR = "Trix Cyrus"
 Devs = "@TrixSec & @0day-Yash & @JeninSutradhar"
 COPYRIGHT = "Copyright © 2024 Trixsec Org"
@@ -66,7 +68,7 @@ def print_banner():
 ░╚██╗████╗██╔╝███████║░╚████╔╝░██╔████╔██║███████║██████╔╝
 ░░████╔═████║░██╔══██║░░╚██╔╝░░██║╚██╔╝██║██╔══██║██╔═══╝░
 ░░╚██╔╝░╚██╔╝░██║░░██║░░░██║░░░██║░╚═╝░██║██║░░██║██║░░░░░
-░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v1.1.1
+░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v1.2.1
     """
     print(colored(banner, 'cyan'))
     print(colored(f"Waymap Version: {WAYMAP_VERSION}", 'yellow'))
@@ -186,6 +188,14 @@ def crawl_and_scan(target, crawl_depth, scan_type):
             print(colored(f"[•] Performing Server Side Template Injection scan on {target}", 'yellow'))
             perform_ssti_scan(crawled_urls, user_agents, verbose=True)
 
+        elif scan_type == 'xss':
+            print(colored(f"[•] Performing Cross Site Scripting scan on {target}", 'yellow'))
+            perform_xss_scan(crawled_urls, user_agents, verbose=True)
+
+        elif scan_type == 'lfi': 
+            print(colored(f"[•] Performing Local File Inclusion scan on {target}", 'yellow'))
+            perform_lfi_scan(crawled_urls, user_agents, verbose=True)
+
         elif scan_type == 'all':
             print(colored("\n[•] Performing SQL Injection scan...", 'cyan'))
             perform_sqli_scan(crawled_urls, sql_payloads, user_agents)
@@ -196,6 +206,11 @@ def crawl_and_scan(target, crawl_depth, scan_type):
             print(colored("\n[•] Performing Server-Side Template Injection (SSTI) scan...", 'cyan'))
             perform_ssti_scan(crawled_urls, user_agents, verbose=True)
 
+            print(colored(f"[•] Performing Cross Site Scripting scan on {target}", 'cyan'))
+            perform_xss_scan(crawled_urls, user_agents, verbose=True)        
+
+            print(colored(f"[•] Performing Local File Inclusion scan on {target}", 'cyan'))
+            perform_lfi_scan(crawled_urls, user_agents, verbose=True)
 
         log_scan_end(target, scan_type)  
 
@@ -219,7 +234,7 @@ def main():
     if not check_internet_connection():
         handle_error("No internet connection. Please check your network and try again.")
 
-    required_files = ['sqlipayload.txt', 'cmdipayload.txt', 'sstipayload.txt', 'ua.txt', 'errors.xml', 'cmdi.xml']
+    required_files = ['sqlipayload.txt', 'cmdipayload.txt', 'basicxsspayload.txt' 'filterbypassxss.txt' 'lfipayload.txt' 'sstipayload.txt', 'ua.txt', 'errors.xml', 'cmdi.xml']
     missing_files = check_required_files(data_dir, session_dir, required_files)
     if missing_files:
         handle_error(f"Missing required files: {', '.join(missing_files)}")
@@ -231,7 +246,7 @@ def main():
 
     parser = argparse.ArgumentParser(description="Waymap - Web Vulnerability Scanner")
     parser.add_argument('--crawl', type=int, required=True, help="Crawl depth")
-    parser.add_argument('--scan', type=str, required=True, choices=['sql', 'cmdi', 'all', 'ssti'], help="Scan type: 'sql' or 'cmdi'")
+    parser.add_argument('--scan', type=str, required=True, choices=['sql', 'cmdi', 'all', 'ssti', 'xss', 'lfi'], help="Scan type: 'sql' 'ssti' 'xss' 'lfi' or 'cmdi'")
     parser.add_argument('--target', type=str, help="Target URL (for single target)")
     parser.add_argument('--multi-target', type=str, help="File containing multiple target URLs (one per line)")
     args = parser.parse_args()

