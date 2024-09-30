@@ -1,9 +1,14 @@
 # Waymap - Web Vulnerability Scanner
 
+<<<<<<< HEAD
+**Current Version**: 1.2.1 
+=======
 **Current Version**: 1.1.1  
+>>>>>>> 36305a2e426aa8a412bc533774522008e495d12b
 **Author**: Trix Cyrus  
 **Contributions**: Yash (0day-Yash) & Jennin (@JeninSutradhar)
 **Copyright**: © 2024 Trixsec Org  
+**Maintained**: Yes
 
 ## What is Waymap?
 Waymap is a fast and optimized web vulnerability scanner designed for penetration testers. It effectively identifies vulnerabilities, such as SQL Injection and Command Injection, by testing against a variety of payloads.
@@ -22,6 +27,9 @@ Check out this video to see Waymap in action:
 
 - **Server Side Template Injection**  
   ![Command Injection](https://github.com/TrixSec/waymap/blob/main/demo/ssti-demo.png?raw=true)
+
+  **Can't add more screenshot it'll increase the size of readme.md**
+
 
 
 ## Features Overview
@@ -60,6 +68,13 @@ Check out this video to see Waymap in action:
 ### v1.1.1
 - fixed ssti exiting error
 
+### v1.2.1
+- added new scanning module: xss(cross site scripting) --scan xss
+- added xss filters bypass payload testing
+- added threading in xss testing
+- added new scanning module: LFI(Local File Inclusion) --scan lfi
+- added threading in lfi testing
+
 --NEW--UPDATES--SOON--
 
 ## Installation and Usage
@@ -76,7 +91,7 @@ pip install .
 
 ### Run Waymap:
 ```bash
-python waymap.py --crawl 1 --scan sql/cmdi/ssti/all --target https://example.com
+python waymap.py --crawl 1 --scan sql/cmdi/ssti/xss/lfi/all --target/--multi-target https://example.com/{filename}.txt
 ```
 
 ### Check Help
