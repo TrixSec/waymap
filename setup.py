@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='waymap',
-    version='1.2.1', 
+    version='1.3.1', 
     description='Waymap is a powerful web vulnerability scanner designed to identify vulnerabilities in websites.#v1.0.3dev',
     author='Trix Cyrus',
     Core_Developer='Trix',
@@ -14,7 +14,8 @@ setup(
     install_requires=[
         'requests',
         'termcolor',
-        'beautifulsoup4',  
+        'beautifulsoup4'
+        'threading',  
     ],
     entry_points={
         'console_scripts': [

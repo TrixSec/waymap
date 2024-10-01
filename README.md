@@ -71,6 +71,11 @@ Check out this video to see Waymap in action:
 - added new scanning module: LFI(Local File Inclusion) --scan lfi
 - added threading in lfi testing
 
+### v1.3.1
+- added new scanning module: --scan open-redirect (check for open redirection vulnerability)
+- added custom threads count in open redirect testing
+- fixed minor bugs
+
 --NEW--UPDATES--SOON--
 
 ## Installation and Usage
@@ -87,7 +92,7 @@ pip install .
 
 ### Run Waymap:
 ```bash
-python waymap.py --crawl 1 --scan sql/cmdi/ssti/xss/lfi/all --target/--multi-target https://example.com/{filename}.txt
+python waymap.py --crawl 1 --scan sql/cmdi/ssti/xss/lfi/open-redirect/all --target/--multi-target https://example.com/{filename}.txt
 ```
 
 ### Check Help
