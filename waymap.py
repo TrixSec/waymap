@@ -1,3 +1,6 @@
+# Copyright (c) 2024 waymap developers 
+# See the file 'LICENSE' for copying permission
+
 import os
 import argparse
 import requests
@@ -10,6 +13,7 @@ from lib.ssti import perform_ssti_scan
 from lib.xss import perform_xss_scan
 from lib.lfi import perform_lfi_scan
 from lib.openredirect import perform_redirect_scan
+from lib.crlf import perform_crlf_scan
 from extras.error_handler import check_internet_connection, check_required_files, check_required_directories, handle_error
 from urllib.parse import urlparse
 session_dir = 'session'
@@ -38,7 +42,7 @@ def log_error(message):
 data_dir = os.path.join(os.getcwd(), 'data')
 session_dir = os.path.join(os.getcwd(), 'session')
 
-WAYMAP_VERSION = "1.3.1"
+WAYMAP_VERSION = "1.4.1"
 AUTHOR = "Trix Cyrus"
 Devs = "@TrixSec & @0day-Yash & @JeninSutradhar"
 COPYRIGHT = "Copyright © 2024 Trixsec Org"
@@ -69,7 +73,7 @@ def print_banner():
 ░╚██╗████╗██╔╝███████║░╚████╔╝░██╔████╔██║███████║██████╔╝
 ░░████╔═████║░██╔══██║░░╚██╔╝░░██║╚██╔╝██║██╔══██║██╔═══╝░
 ░░╚██╔╝░╚██╔╝░██║░░██║░░░██║░░░██║░╚═╝░██║██║░░██║██║░░░░░
-░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v1.3.1
+░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v1.4.1
     """
     print(colored(banner, 'cyan'))
     print(colored(f"Waymap Version: {WAYMAP_VERSION}", 'yellow'))
@@ -142,24 +146,24 @@ def is_within_domain(url, base_domain):
 
 def crawl_and_scan(target, crawl_depth, scan_type):
     try:
-        response = requests.head(target, timeout=10)
+        response = requests.get(target, timeout=10)
         response.raise_for_status()
     except requests.RequestException as e:
-        log_error(f"Cannot connect to {target}: {e}")  
+        log_error(f"Cannot connect to {target}: {e}")
         print(colored(f"[×] Cannot connect to the URL: {target}", 'red'))
         return
 
     target = handle_redirection(target)
 
     if not target or not is_valid_url(target):
-        log_error(f"Skipping {target} due to connection issues.")  
+        log_error(f"Skipping {target} due to connection issues.")
         print(colored(f"[×] Skipping {target} due to connection issues.", 'yellow'))
         return
 
     domain = target.split("//")[-1].split("/")[0]
-    setup_logger(domain)  
+    setup_logger(domain)
 
-    log_scan_start(target, scan_type)  
+    log_scan_start(target, scan_type)
 
     crawled_urls = load_crawled_urls(domain)
 
@@ -172,53 +176,79 @@ def crawl_and_scan(target, crawl_depth, scan_type):
 
     sql_payloads = load_payloads(os.path.join(data_dir, 'sqlipayload.txt'))
     cmdi_payloads = load_payloads(os.path.join(data_dir, 'cmdipayload.txt'))
-
     user_agents = load_user_agents(os.path.join(data_dir, 'ua.txt'))
 
     try:
-        log_scan_start(target, scan_type)  
         if scan_type == 'sql':
+            print("\n")  
             print(colored(f"[•] Performing SQL Injection scan on {target}", 'yellow'))
             perform_sqli_scan(crawled_urls, sql_payloads, user_agents)
 
         elif scan_type == 'cmdi':
+            print("\n")  
             print(colored(f"[•] Performing Command Injection scan on {target}", 'yellow'))
             perform_cmdi_scan(crawled_urls, cmdi_payloads, user_agents)
 
         elif scan_type == 'ssti':
+            print("\n")  
             print(colored(f"[•] Performing Server Side Template Injection scan on {target}", 'yellow'))
             perform_ssti_scan(crawled_urls, user_agents, verbose=True)
 
         elif scan_type == 'xss':
+            print("\n")  
             print(colored(f"[•] Performing Cross Site Scripting scan on {target}", 'yellow'))
             perform_xss_scan(crawled_urls, user_agents, verbose=True)
 
-        elif scan_type == 'lfi': 
+        elif scan_type == 'lfi':
+            print("\n")  
             print(colored(f"[•] Performing Local File Inclusion scan on {target}", 'yellow'))
             perform_lfi_scan(crawled_urls, user_agents, verbose=True)
 
-        elif scan_type == 'open-redirect': 
+        elif scan_type == 'open-redirect':
+            print("\n")  
             print(colored(f"[•] Performing Open Redirect scan on {target}", 'yellow'))
             perform_redirect_scan(crawled_urls, user_agents, verbose=True)
+
+        elif scan_type == 'crlf':
+            print("\n")  
+            print(colored(f"[•] Performing Carriage Return and Line Feed scan on {target}", 'yellow'))
+            perform_crlf_scan(crawled_urls, user_agents, user_agents)
 
         elif scan_type == 'all':
-            print(colored("\n[•] Performing SQL Injection scan...", 'cyan'))
+            print("\n[•] Performing all scans on target...\n")  
+            print(colored("[•] Performing SQL Injection scan...", 'cyan'))
             perform_sqli_scan(crawled_urls, sql_payloads, user_agents)
-    
-            print(colored("\n[•] Performing Command Injection (CMDi) scan...", 'cyan'))
+
+            print("\n")  
+            print(colored("[•] Performing Command Injection (CMDi) scan...", 'cyan'))
             perform_cmdi_scan(crawled_urls, cmdi_payloads, user_agents)
-    
-            print(colored("\n[•] Performing Server-Side Template Injection (SSTI) scan...", 'cyan'))
+
+            print("\n")  
+            print(colored("[•] Performing Server-Side Template Injection (SSTI) scan...", 'cyan'))
             perform_ssti_scan(crawled_urls, user_agents, verbose=True)
 
-            print(colored(f"[•] Performing Cross Site Scripting scan on {target}", 'cyan'))
-            perform_xss_scan(crawled_urls, user_agents, verbose=True)        
+            print("\n")  
+            print(colored("[•] Performing Cross Site Scripting scan...", 'cyan'))
+            perform_xss_scan(crawled_urls, user_agents, verbose=True)
 
-            print(colored(f"[•] Performing Local File Inclusion scan on {target}", 'cyan'))
+            print("\n")  
+            print(colored("[•] Performing Local File Inclusion scan...", 'cyan'))
             perform_lfi_scan(crawled_urls, user_agents, verbose=True)
 
-            print(colored(f"[•] Performing Open Redirect scan on {target}", 'yellow'))
+            print("\n")  
+            print(colored("[•] Performing Open Redirect scan...", 'cyan'))
             perform_redirect_scan(crawled_urls, user_agents, verbose=True)
+
+            print("\n")  
+            print(colored(f"[•] Performing Carriage Return and Line Feed scan on {target}", 'yellow'))
+            perform_crlf_scan(crawled_urls, user_agents, user_agents)
+
+        log_scan_end(target, scan_type)
+
+    except KeyboardInterrupt:
+        print(colored("\n[×] Scan interrupted by the user. Exiting...", 'red'))
+        log_error("Scan interrupted by the user.")
+        exit()
 
         log_scan_end(target, scan_type)  
 
@@ -254,7 +284,7 @@ def main():
 
     parser = argparse.ArgumentParser(description="Waymap - Web Vulnerability Scanner")
     parser.add_argument('--crawl', type=int, required=True, help="Crawl depth")
-    parser.add_argument('--scan', type=str, required=True, choices=['sql', 'cmdi', 'all', 'ssti', 'xss', 'lfi', 'open-redirect'], help="Scan type: 'sql' 'ssti' 'xss' 'lfi' 'open-redirect or 'cmdi'")
+    parser.add_argument('--scan', type=str, required=True, choices=['sql', 'cmdi', 'all', 'ssti', 'xss', 'lfi', 'open-redirect', 'crlf'], help="Scan type: 'sql' 'ssti' 'xss' 'lfi' 'open-redirect' 'crlf' or 'cmdi'")
     parser.add_argument('--target', type=str, help="Target URL (for single target)")
     parser.add_argument('--multi-target', type=str, help="File containing multiple target URLs (one per line)")
     args = parser.parse_args()

@@ -1,6 +1,6 @@
 # Waymap - Web Vulnerability Scanner
 
-**Current Version**: 1.3.1 
+**Current Version**: 2.4.1 
 **Author**: Trix Cyrus  
 **Contributions**: Yash (0day-Yash) & Jennin (@JeninSutradhar)
 **Copyright**: © 2024 Trixsec Org  
@@ -75,6 +75,14 @@ Check out this video to see Waymap in action:
 - added new scanning module: --scan open-redirect (check for open redirection vulnerability)
 - added custom threads count in open redirect testing
 - fixed minor bugs
+
+### v2.4.1
+- added new scanning module: --scan crlf(Carriage Return and Line Feed)
+- added custom threading count in crlf 
+- added a more advanced crawler to waymap can crawl at any depth 
+- added custom threading in crawling
+- added new user-agents in ua.txt
+- fixed major bugs/errors
 
 --NEW--UPDATES--SOON--
 
