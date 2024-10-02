@@ -1,5 +1,5 @@
 # Copyright (c) 2024 waymap developers 
-# See the file 'LICENSE' for copying permission
+# See the file 'LICENSE' for copying permission.
 
 import os
 import argparse
@@ -272,7 +272,7 @@ def main():
     if not check_internet_connection():
         handle_error("No internet connection. Please check your network and try again.")
 
-    required_files = ['sqlipayload.txt', 'cmdipayload.txt', 'basicxsspayload.txt', 'filtersbypassxss.txt', 'lfipayload.txt', 'openredirectpayloads.txt', 'sstipayload.txt', 'ua.txt', 'errors.xml', 'cmdi.xml']
+    required_files = ['sqlipayload.txt', 'cmdipayload.txt', 'basicxsspayload.txt', 'filtersbypassxss.txt', 'lfipayload.txt', 'openredirectpayloads.txt', 'crlfpayload.txt', 'sstipayload.txt', 'ua.txt', 'errors.xml', 'cmdi.xml']
     missing_files = check_required_files(data_dir, session_dir, required_files)
     if missing_files:
         handle_error(f"Missing required files: {', '.join(missing_files)}")

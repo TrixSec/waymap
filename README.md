@@ -1,4 +1,4 @@
-# Waymap - Web Vulnerability Scanner
+# Waymap - Web Vulnerability Scanner.
 
 **Current Version**: 2.4.1 
 **Author**: Trix Cyrus  

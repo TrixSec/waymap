@@ -1,5 +1,5 @@
 # Copyright (c) 2024 waymap developers 
-# See the file 'LICENSE' for copying permission
+# See the file 'LICENSE' for copying permission.
 
 import random
 import requests
