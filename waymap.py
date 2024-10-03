@@ -212,7 +212,7 @@ def crawl_and_scan(target, crawl_depth, scan_type):
         elif scan_type == 'crlf':
             print("\n")  
             print(colored(f"[•] Performing Carriage Return and Line Feed scan on {target}", 'yellow'))
-            perform_crlf_scan(crawled_urls, user_agents, user_agents)
+            perform_crlf_scan(crawled_urls, user_agents, verbose=True)
 
         elif scan_type == 'all':
             print("\n[•] Performing all scans on target...\n")  
@@ -241,7 +241,7 @@ def crawl_and_scan(target, crawl_depth, scan_type):
 
             print("\n")  
             print(colored(f"[•] Performing Carriage Return and Line Feed scan on {target}", 'yellow'))
-            perform_crlf_scan(crawled_urls, user_agents, user_agents)
+            perform_crlf_scan(crawled_urls, user_agents, verbose=True)
 
         log_scan_end(target, scan_type)
 
