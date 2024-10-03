@@ -6,14 +6,15 @@ import argparse
 import requests
 import logging
 from termcolor import colored
-from lib.crawler import run_crawler
-from lib.sqli import perform_sqli_scan
-from lib.cmdi import perform_cmdi_scan
-from lib.ssti import perform_ssti_scan
-from lib.xss import perform_xss_scan
-from lib.lfi import perform_lfi_scan
-from lib.openredirect import perform_redirect_scan
-from lib.crlf import perform_crlf_scan
+from lib.waymapcrawlers.crawler import run_crawler
+from lib.injection.sqli import perform_sqli_scan
+from lib.injection.cmdi import perform_cmdi_scan
+from lib.injection.ssti import perform_ssti_scan
+from lib.injection.xss import perform_xss_scan
+from lib.injection.lfi import perform_lfi_scan
+from lib.injection.openredirect import perform_redirect_scan
+from lib.injection.crlf import perform_crlf_scan
+from lib.injection.cors import perform_cors_scan
 from extras.error_handler import check_internet_connection, check_required_files, check_required_directories, handle_error
 from urllib.parse import urlparse
 session_dir = 'session'
@@ -42,7 +43,7 @@ def log_error(message):
 data_dir = os.path.join(os.getcwd(), 'data')
 session_dir = os.path.join(os.getcwd(), 'session')
 
-WAYMAP_VERSION = "2.4.1"
+WAYMAP_VERSION = "2.5.2"
 AUTHOR = "Trix Cyrus"
 Devs = "@TrixSec & @0day-Yash & @JeninSutradhar"
 COPYRIGHT = "Copyright © 2024 Trixsec Org"
@@ -73,7 +74,7 @@ def print_banner():
 ░╚██╗████╗██╔╝███████║░╚████╔╝░██╔████╔██║███████║██████╔╝
 ░░████╔═████║░██╔══██║░░╚██╔╝░░██║╚██╔╝██║██╔══██║██╔═══╝░
 ░░╚██╔╝░╚██╔╝░██║░░██║░░░██║░░░██║░╚═╝░██║██║░░██║██║░░░░░
-░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v2.4.1
+░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v2.5.2
     """
     print(colored(banner, 'cyan'))
     print(colored(f"Waymap Version: {WAYMAP_VERSION}", 'yellow'))
@@ -131,7 +132,7 @@ def handle_redirection(target_url):
         return target_url
     except requests.RequestException as e:
         log_error(f"Error connecting to {target_url}: {e}") 
-        print(colored(f"[×] Cannot connect to the URL: {target_url}", 'red'))
+        print(colored(f"[×]Waymap Cannot connect to the URL: {target_url}", 'red'))
         return target_url
 
 def is_valid_url(url):
@@ -150,7 +151,7 @@ def crawl_and_scan(target, crawl_depth, scan_type):
         response.raise_for_status()
     except requests.RequestException as e:
         log_error(f"Cannot connect to {target}: {e}")
-        print(colored(f"[×] Cannot connect to the URL: {target}", 'red'))
+        print(colored(f"[×]Crawler Cannot connect to the URL: {target}", 'red'))
         return
 
     target = handle_redirection(target)
@@ -214,6 +215,11 @@ def crawl_and_scan(target, crawl_depth, scan_type):
             print(colored(f"[•] Performing Carriage Return and Line Feed scan on {target}", 'yellow'))
             perform_crlf_scan(crawled_urls, user_agents, verbose=True)
 
+        elif scan_type == 'cors':
+            print("\n")  
+            print(colored(f"[•] Performing Cross-origin resource sharing scan on {target}", 'yellow'))
+            perform_cors_scan(crawled_urls, user_agents, verbose=True)
+
         elif scan_type == 'all':
             print("\n[•] Performing all scans on target...\n")  
             print(colored("[•] Performing SQL Injection scan...", 'cyan'))
@@ -242,6 +248,10 @@ def crawl_and_scan(target, crawl_depth, scan_type):
             print("\n")  
             print(colored(f"[•] Performing Carriage Return and Line Feed scan on {target}", 'yellow'))
             perform_crlf_scan(crawled_urls, user_agents, verbose=True)
+
+            print("\n")  
+            print(colored(f"[•] Performing Cross-origin resource sharing scan on {target}", 'yellow'))
+            perform_cors_scan(crawled_urls, user_agents, verbose=True)
 
         log_scan_end(target, scan_type)
 
@@ -272,7 +282,7 @@ def main():
     if not check_internet_connection():
         handle_error("No internet connection. Please check your network and try again.")
 
-    required_files = ['sqlipayload.txt', 'cmdipayload.txt', 'basicxsspayload.txt', 'filtersbypassxss.txt', 'lfipayload.txt', 'openredirectpayloads.txt', 'crlfpayload.txt', 'sstipayload.txt', 'ua.txt', 'errors.xml', 'cmdi.xml']
+    required_files = ['sqlipayload.txt', 'cmdipayload.txt', 'basicxsspayload.txt', 'filtersbypassxss.txt', 'lfipayload.txt', 'openredirectpayloads.txt', 'crlfpayload.txt', 'corspayload.txt', 'sstipayload.txt', 'ua.txt', 'errors.xml', 'cmdi.xml']
     missing_files = check_required_files(data_dir, session_dir, required_files)
     if missing_files:
         handle_error(f"Missing required files: {', '.join(missing_files)}")
@@ -284,7 +294,7 @@ def main():
 
     parser = argparse.ArgumentParser(description="Waymap - Web Vulnerability Scanner")
     parser.add_argument('--crawl', type=int, required=True, help="Crawl depth")
-    parser.add_argument('--scan', type=str, required=True, choices=['sql', 'cmdi', 'all', 'ssti', 'xss', 'lfi', 'open-redirect', 'crlf'], help="Scan type: 'sql' 'ssti' 'xss' 'lfi' 'open-redirect' 'crlf' or 'cmdi'")
+    parser.add_argument('--scan', type=str, required=True, choices=['sql', 'cmdi', 'all', 'ssti', 'xss', 'lfi', 'open-redirect', 'crlf', 'cors'], help="Scan type: 'sql' 'ssti' 'xss' 'lfi' 'open-redirect' 'crlf' 'cors' or 'cmdi'")
     parser.add_argument('--target', type=str, help="Target URL (for single target)")
     parser.add_argument('--multi-target', type=str, help="File containing multiple target URLs (one per line)")
     args = parser.parse_args()

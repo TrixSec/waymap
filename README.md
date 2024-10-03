@@ -1,6 +1,6 @@
 # Waymap - Web Vulnerability Scanner.
 
-**Current Version**: 2.4.1 
+**Current Version**: 2.5.2 
 **Author**: Trix Cyrus  
 **Contributions**: Yash (0day-Yash) & Jennin (@JeninSutradhar)
 **Copyright**: © 2024 Trixsec Org  
@@ -84,6 +84,12 @@ Check out this video to see Waymap in action:
 - added new user-agents in ua.txt
 - fixed major bugs/errors
 
+### v2.5.2
+- added new scan type: --scan cors(cross-origin resource sharing)
+- added threading in cors scan
+- fixed crlf bug
+- fixed minor bugs
+
 --NEW--UPDATES--SOON--
 
 ## Installation and Usage
@@ -100,7 +106,7 @@ pip install .
 
 ### Run Waymap:
 ```bash
-python waymap.py --crawl 1 --scan sql/cmdi/ssti/xss/lfi/open-redirect/all --target/--multi-target https://example.com/{filename}.txt
+python waymap.py --crawl 1 --scan sql/cmdi/ssti/xss/lfi/open-redirect/crlf/cors/all --target/--multi-target https://example.com/{filename}.txt
 ```
 
 ### Check Help

@@ -1,0 +1,15 @@
+Wildcard Origin Test::Origin: *::Access-Control-Allow-Origin: *
+Reflection Test::Origin: https://evil.com::Access-Control-Allow-Origin: https://evil.com
+Null Origin Test::Origin: null::Access-Control-Allow-Origin: null
+Subdomain Origin Test::Origin: https://sub.trusted.com::Access-Control-Allow-Origin: https://sub.trusted.com
+Arbitrary Trusted Origin Test::Origin: https://malicious.com::Access-Control-Allow-Origin: https://malicious.com
+Credentials Misuse Test::Origin: https://malicious.com::Access-Control-Allow-Origin: https://malicious.com, Access-Control-Allow-Credentials: true
+Case Insensitive Origin Test::Origin: https://EVIL.com::Access-Control-Allow-Origin: https://EVIL.com
+Internal Network Origin Test::Origin: http://192.168.1.1::Access-Control-Allow-Origin: http://192.168.1.1
+Invalid TLD Origin Test::Origin: https://evil.local::Access-Control-Allow-Origin: https://evil.local
+Protocol Mismatch Test::Origin: http://trusted.com::Access-Control-Allow-Origin: http://trusted.com
+Unusual Port Origin Test::Origin: https://trusted.com:8080::Access-Control-Allow-Origin: https://trusted.com:8080
+Double Slash Origin Test::Origin: https://trusted.com//::Access-Control-Allow-Origin: https://trusted.com//
+Missing Origin Header Test::Origin: (none)::Access-Control-Allow-Origin: *
+Wildcard with Credentials Test::Origin: *::Access-Control-Allow-Origin: *, Access-Control-Allow-Credentials: true
+Wildcard Subdomain Test::Origin: https://*.trusted.com::Access-Control-Allow-Origin: https://*.trusted.com
