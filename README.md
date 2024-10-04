@@ -90,6 +90,9 @@ Check out this video to see Waymap in action:
 - fixed crlf bug
 - fixed minor bugs
 
+### v2.5.3
+- fixed scanning exiting error
+
 --NEW--UPDATES--SOON--
 
 ## Installation and Usage

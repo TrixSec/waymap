@@ -7,14 +7,14 @@ import requests
 import logging
 from termcolor import colored
 from lib.waymapcrawlers.crawler import run_crawler
-from lib.injection.sqli import perform_sqli_scan
-from lib.injection.cmdi import perform_cmdi_scan
-from lib.injection.ssti import perform_ssti_scan
-from lib.injection.xss import perform_xss_scan
-from lib.injection.lfi import perform_lfi_scan
-from lib.injection.openredirect import perform_redirect_scan
-from lib.injection.crlf import perform_crlf_scan
-from lib.injection.cors import perform_cors_scan
+from lib.sqli import perform_sqli_scan
+from lib.cmdi import perform_cmdi_scan
+from lib.ssti import perform_ssti_scan
+from lib.xss import perform_xss_scan
+from lib.lfi import perform_lfi_scan
+from lib.openredirect import perform_redirect_scan
+from lib.crlf import perform_crlf_scan
+from lib.cors import perform_cors_scan
 from extras.error_handler import check_internet_connection, check_required_files, check_required_directories, handle_error
 from urllib.parse import urlparse
 session_dir = 'session'
@@ -43,7 +43,7 @@ def log_error(message):
 data_dir = os.path.join(os.getcwd(), 'data')
 session_dir = os.path.join(os.getcwd(), 'session')
 
-WAYMAP_VERSION = "2.5.2"
+WAYMAP_VERSION = "2.5.3"
 AUTHOR = "Trix Cyrus"
 Devs = "@TrixSec & @0day-Yash & @JeninSutradhar"
 COPYRIGHT = "Copyright © 2024 Trixsec Org"
@@ -74,7 +74,7 @@ def print_banner():
 ░╚██╗████╗██╔╝███████║░╚████╔╝░██╔████╔██║███████║██████╔╝
 ░░████╔═████║░██╔══██║░░╚██╔╝░░██║╚██╔╝██║██╔══██║██╔═══╝░
 ░░╚██╔╝░╚██╔╝░██║░░██║░░░██║░░░██║░╚═╝░██║██║░░██║██║░░░░░
-░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v2.5.2
+░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v2.5.3
     """
     print(colored(banner, 'cyan'))
     print(colored(f"Waymap Version: {WAYMAP_VERSION}", 'yellow'))
@@ -254,13 +254,6 @@ def crawl_and_scan(target, crawl_depth, scan_type):
             perform_cors_scan(crawled_urls, user_agents, verbose=True)
 
         log_scan_end(target, scan_type)
-
-    except KeyboardInterrupt:
-        print(colored("\n[×] Scan interrupted by the user. Exiting...", 'red'))
-        log_error("Scan interrupted by the user.")
-        exit()
-
-        log_scan_end(target, scan_type)  
 
     except KeyboardInterrupt:
         print(colored("\n[×] Scan interrupted by the user. Exiting...", 'red'))
