@@ -93,6 +93,9 @@ Check out this video to see Waymap in action:
 ### v2.5.3
 - fixed scanning exiting error
 
+### v2.5.4
+- fixed bug in open-redirect, crlf, cors
+
 --NEW--UPDATES--SOON--
 
 ## Installation and Usage

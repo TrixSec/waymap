@@ -1,4 +1,4 @@
-# Copyright (c) 2024 waymap developers 
+# Copyright (c) 2024 waymap developers
 # See the file 'LICENSE' for copying permission.
 
 import requests
@@ -8,7 +8,6 @@ import time
 import sys
 import os
 import threading
-import signal
 
 visited_urls = set()
 valid_urls = []
@@ -26,8 +25,6 @@ CYAN = '\033[96m'
 RESET = '\033[0m'
 
 lock = threading.Lock()
-
-stop_crawling = False
 
 def get_domain_dir(base_domain):
     domain_dir = os.path.join(os.getcwd(), 'sessions', base_domain)
@@ -58,25 +55,15 @@ def remove_crawl_file(base_domain):
         os.remove(crawl_file)
         print(f"\n{GREEN}[•] Removed {crawl_file} as user is re-crawling a previously crawled URL.{RESET}")
 
-def signal_handler(sig, frame):
-    global stop_crawling
-    stop_crawling = True
-    print(f"\n\n{RED}[×] Keyboard interruption detected. Stopping the crawling process...{RESET}")
-
-signal.signal(signal.SIGINT, signal_handler)
-
 def crawl_url(url, base_domain, next_urls_to_crawl):
-    global total_urls, stop_crawling
-    if stop_crawling:
-        return
-
+    global total_urls
     try:
         response = requests.get(url, timeout=REQUEST_TIMEOUT, allow_redirects=True)
         final_url = response.url
 
         parsed_final_url = urlparse(final_url)
         if parsed_final_url.netloc != base_domain:
-            return  
+            return
 
         soup = BeautifulSoup(response.text, 'html.parser')
         links = soup.find_all('a')
@@ -87,7 +74,7 @@ def crawl_url(url, base_domain, next_urls_to_crawl):
                 full_url = urljoin(final_url, href)
 
                 if is_valid_url(full_url) and full_url not in visited_urls and is_within_domain(full_url, base_domain) and has_query_parameters(full_url):
-                    with lock: 
+                    with lock:
                         visited_urls.add(full_url)
                         valid_urls.append(full_url)
                         total_urls += 1
@@ -95,31 +82,28 @@ def crawl_url(url, base_domain, next_urls_to_crawl):
                     sys.stdout.write(f"\r{BOLD}{YELLOW}[•] URLs crawled: {total_urls}{RESET}")
                     sys.stdout.flush()
 
-                    next_urls_to_crawl.append(full_url)  
+                    next_urls_to_crawl.append(full_url)
 
     except requests.RequestException as e:
         print(f"\n{RED}{BOLD}[×] Error crawling {url}: {e}{RESET}")
 
 def crawl_worker(urls_to_crawl, base_domain, next_urls_to_crawl):
-    global stop_crawling
     for url in urls_to_crawl:
-        if stop_crawling:
-            return
         crawl_url(url, base_domain, next_urls_to_crawl)
 
 def crawl(urls_to_crawl, depth, max_depth, base_domain, num_threads):
-    global total_urls, stop_crawling
-    if depth > max_depth or stop_crawling:
+    global total_urls
+    if depth > max_depth:
         return
 
     total_urls = 0
 
-    print(f"\n{BOLD}{BLUE}[•] Crawling depth: {depth}{RESET}")  
-    next_urls_to_crawl = []  
+    print(f"\n{BOLD}{BLUE}[•] Crawling depth: {depth}{RESET}")
+    next_urls_to_crawl = []
 
     scanable_urls_at_depth = 0
 
-    if num_threads > 1:  
+    if num_threads > 1:
         thread_list = []
         for i in range(num_threads):
             urls_chunk = urls_to_crawl[i::num_threads]
@@ -130,18 +114,15 @@ def crawl(urls_to_crawl, depth, max_depth, base_domain, num_threads):
         for thread in thread_list:
             thread.join()
 
-    else:  
+    else:
         crawl_worker(urls_to_crawl, base_domain, next_urls_to_crawl)
-
-    if stop_crawling:
-        return
 
     scanable_urls_at_depth = len(next_urls_to_crawl)
 
     print(f"\n[•] Found {scanable_urls_at_depth} scanable URLs at depth {depth}. Moving to depth {depth + 1}...")
 
     if next_urls_to_crawl and depth < max_depth:
-        time.sleep(1)  
+        time.sleep(1)
         crawl(next_urls_to_crawl, depth + 1, max_depth, base_domain, num_threads)
 
 def is_valid_url(url):
@@ -155,9 +136,8 @@ def is_within_domain(url, base_domain):
     return urlparse(url).netloc == base_domain
 
 def run_crawler(start_url, max_depth):
-    global total_urls, stop_crawling
+    global total_urls
     total_urls = 0
-    stop_crawling = False
     visited_urls.clear()
     valid_urls.clear()
 
@@ -186,9 +166,6 @@ def run_crawler(start_url, max_depth):
 
     try:
         crawl([start_url], 1, max_depth, base_domain, num_threads)
-
-    except KeyboardInterrupt:
-        stop_crawling = True
 
     finally:
         save_crawled_urls(base_domain, valid_urls)
