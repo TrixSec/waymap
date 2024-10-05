@@ -1,6 +1,6 @@
 # Waymap - Web Vulnerability Scanner.
 
-**Current Version**: 2.5.2 
+**Current Version**: 2.5.5
 **Author**: Trix Cyrus  
 **Contributions**: Yash (0day-Yash) & Jennin (@JeninSutradhar)
 **Copyright**: © 2024 Trixsec Org  
@@ -95,6 +95,11 @@ Check out this video to see Waymap in action:
 
 ### v2.5.4
 - fixed bug in open-redirect, crlf, cors
+
+### v2.5.5
+- updated sqli module to handle multiple parameter 
+- added new arg --random-agent : now waymap will use random useragent only when this arg is used
+- updated Waymap To Use Headers During Scan To make your requests to the server look more legitimate and reduce the chance of being flagged or blocked.
 
 --NEW--UPDATES--SOON--
 

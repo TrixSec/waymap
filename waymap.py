@@ -1,10 +1,11 @@
-# Copyright (c) 2024 waymap developers 
+# Copyright (c) 2024 waymap developers
 # See the file 'LICENSE' for copying permission.
 
 import os
 import argparse
 import requests
 import logging
+import random
 from termcolor import colored
 from lib.waymapcrawlers.crawler import run_crawler
 from lib.injection.sqli import perform_sqli_scan
@@ -19,12 +20,45 @@ from extras.error_handler import check_internet_connection, check_required_files
 from urllib.parse import urlparse
 session_dir = 'session'
 
-def setup_logger(domain):
-    
+def save_headers(domain, headers):
     domain_dir = os.path.join(session_dir, domain)
-    os.makedirs(domain_dir, exist_ok=True)  
+    os.makedirs(domain_dir, exist_ok=True)
+    headers_file_path = os.path.join(domain_dir, 'headers.txt')
+
+    if not os.path.exists(headers_file_path):
+        with open(headers_file_path, 'w') as f:
+            for key, value in headers.items():
+                f.write(f"{key}: {value}\n")
+        print(colored(f"[•] Saved headers for {domain}.", 'green'))
+    else:
+        print(colored(f"[•] Headers already exist for {domain}. Skipping header save.", 'yellow'))
+
+def load_headers(domain):
+    headers_file_path = os.path.join(session_dir, domain, 'headers.txt')
+
+    if os.path.exists(headers_file_path):
+        headers = {}
+        with open(headers_file_path, 'r') as f:
+            for line in f:
+                key, value = line.strip().split(": ", 1)
+                headers[key] = value
+        return headers
+    return None
+
+def get_random_user_agent():
+    ua_file_path = os.path.join(data_dir, 'ua.txt')
+    user_agents = load_user_agents(ua_file_path)
+    if user_agents:
+        return random.choice(user_agents)
+    else:
+        return None
+
+def setup_logger(domain):
+
+    domain_dir = os.path.join(session_dir, domain)
+    os.makedirs(domain_dir, exist_ok=True)
     log_file_path = os.path.join(domain_dir, 'logs.txt')
-    
+
     logging.basicConfig(
         filename=log_file_path,
         level=logging.INFO,
@@ -43,7 +77,7 @@ def log_error(message):
 data_dir = os.path.join(os.getcwd(), 'data')
 session_dir = os.path.join(os.getcwd(), 'session')
 
-WAYMAP_VERSION = "2.5.4"
+WAYMAP_VERSION = "2.5.5"
 AUTHOR = "Trix Cyrus"
 Devs = "@TrixSec & @0day-Yash & @JeninSutradhar"
 COPYRIGHT = "Copyright © 2024 Trixsec Org"
@@ -74,7 +108,7 @@ def print_banner():
 ░╚██╗████╗██╔╝███████║░╚████╔╝░██╔████╔██║███████║██████╔╝
 ░░████╔═████║░██╔══██║░░╚██╔╝░░██║╚██╔╝██║██╔══██║██╔═══╝░
 ░░╚██╔╝░╚██╔╝░██║░░██║░░░██║░░░██║░╚═╝░██║██║░░██║██║░░░░░
-░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v2.5.4
+░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v2.5.5
     """
     print(colored(banner, 'cyan'))
     print(colored(f"Waymap Version: {WAYMAP_VERSION}", 'yellow'))
@@ -88,7 +122,7 @@ def load_payloads(file_path):
         with open(file_path, 'r') as f:
             return [line.strip() for line in f.readlines()]
     except FileNotFoundError:
-        log_error(f"Payload file {file_path} not found.")  
+        log_error(f"Payload file {file_path} not found.")
         handle_error(f"Payload file {file_path} not found.")
         return []
 
@@ -115,7 +149,7 @@ def load_user_agents(file_path):
         with open(file_path, 'r') as f:
             return [line.strip() for line in f.readlines()]
     except FileNotFoundError:
-        log_error(f"User-agent file {file_path} not found.")  
+        log_error(f"User-agent file {file_path} not found.")
         handle_error(f"User-agent file {file_path} not found.")
         return []
 
@@ -131,7 +165,7 @@ def handle_redirection(target_url):
             return final_url
         return target_url
     except requests.RequestException as e:
-        log_error(f"Error connecting to {target_url}: {e}") 
+        log_error(f"Error connecting to {target_url}: {e}")
         print(colored(f"[×]Waymap Cannot connect to the URL: {target_url}", 'red'))
         return target_url
 
@@ -145,9 +179,22 @@ def has_query_parameters(url):
 def is_within_domain(url, base_domain):
     return urlparse(url).netloc == base_domain
 
-def crawl_and_scan(target, crawl_depth, scan_type):
+def crawl_and_scan(target, crawl_depth, scan_type, random_agent=False):
+    domain = target.split("//")[-1].split("/")[0]
+    headers = load_headers(domain)
+
+    if headers is None:
+        headers = {
+            'User-Agent': get_random_user_agent() if random_agent else 'Mozilla/5.0',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Connection': 'keep-alive',
+            'Accept-Encoding': 'gzip, deflate',
+            'Accept-Language': 'en-US,en;q=0.5'
+        }
+        save_headers(domain, headers)
+
     try:
-        response = requests.get(target, timeout=10)
+        response = requests.get(target, headers=headers, timeout=10)
         response.raise_for_status()
     except requests.RequestException as e:
         log_error(f"Cannot connect to {target}: {e}")
@@ -161,9 +208,7 @@ def crawl_and_scan(target, crawl_depth, scan_type):
         print(colored(f"[×] Skipping {target} due to connection issues.", 'yellow'))
         return
 
-    domain = target.split("//")[-1].split("/")[0]
     setup_logger(domain)
-
     log_scan_start(target, scan_type)
 
     crawled_urls = load_crawled_urls(domain)
@@ -171,7 +216,6 @@ def crawl_and_scan(target, crawl_depth, scan_type):
     if not crawled_urls:
         print(colored(f"[•] Starting crawling on: {target} with depth {crawl_depth}", 'yellow'))
         crawled_urls = run_crawler(target, crawl_depth)
-
         crawled_urls = [url for url in crawled_urls if is_valid_url(url) and has_query_parameters(url) and is_within_domain(url, domain)]
         save_to_file(domain, crawled_urls)
 
@@ -179,77 +223,78 @@ def crawl_and_scan(target, crawl_depth, scan_type):
     cmdi_payloads = load_payloads(os.path.join(data_dir, 'cmdipayload.txt'))
     user_agents = load_user_agents(os.path.join(data_dir, 'ua.txt'))
 
+
     try:
         if scan_type == 'sql':
-            print("\n")  
+            print("\n")
             print(colored(f"[•] Performing SQL Injection scan on {target}", 'yellow'))
             perform_sqli_scan(crawled_urls, sql_payloads, user_agents)
 
         elif scan_type == 'cmdi':
-            print("\n")  
+            print("\n")
             print(colored(f"[•] Performing Command Injection scan on {target}", 'yellow'))
             perform_cmdi_scan(crawled_urls, cmdi_payloads, user_agents)
 
         elif scan_type == 'ssti':
-            print("\n")  
+            print("\n")
             print(colored(f"[•] Performing Server Side Template Injection scan on {target}", 'yellow'))
             perform_ssti_scan(crawled_urls, user_agents, verbose=True)
 
         elif scan_type == 'xss':
-            print("\n")  
+            print("\n")
             print(colored(f"[•] Performing Cross Site Scripting scan on {target}", 'yellow'))
             perform_xss_scan(crawled_urls, user_agents, verbose=True)
 
         elif scan_type == 'lfi':
-            print("\n")  
+            print("\n")
             print(colored(f"[•] Performing Local File Inclusion scan on {target}", 'yellow'))
             perform_lfi_scan(crawled_urls, user_agents, verbose=True)
 
         elif scan_type == 'open-redirect':
-            print("\n")  
+            print("\n")
             print(colored(f"[•] Performing Open Redirect scan on {target}", 'yellow'))
             perform_redirect_scan(crawled_urls, user_agents, verbose=True)
 
         elif scan_type == 'crlf':
-            print("\n")  
+            print("\n")
             print(colored(f"[•] Performing Carriage Return and Line Feed scan on {target}", 'yellow'))
             perform_crlf_scan(crawled_urls, user_agents, verbose=True)
 
         elif scan_type == 'cors':
-            print("\n")  
+            print("\n")
             print(colored(f"[•] Performing Cross-origin resource sharing scan on {target}", 'yellow'))
             perform_cors_scan(crawled_urls, user_agents, verbose=True)
 
         elif scan_type == 'all':
-            print("\n[•] Performing all scans on target...\n")  
+            print("\n[•] Performing all scans on target...\n")
             print(colored("[•] Performing SQL Injection scan...", 'cyan'))
             perform_sqli_scan(crawled_urls, sql_payloads, user_agents)
 
-            print("\n")  
+            print("\n")
             print(colored("[•] Performing Command Injection (CMDi) scan...", 'cyan'))
             perform_cmdi_scan(crawled_urls, cmdi_payloads, user_agents)
 
-            print("\n")  
+            print("\n")
             print(colored("[•] Performing Server-Side Template Injection (SSTI) scan...", 'cyan'))
             perform_ssti_scan(crawled_urls, user_agents, verbose=True)
 
-            print("\n")  
+            print("\n")
             print(colored("[•] Performing Cross Site Scripting scan...", 'cyan'))
             perform_xss_scan(crawled_urls, user_agents, verbose=True)
 
-            print("\n")  
+            print("\n")
             print(colored("[•] Performing Local File Inclusion scan...", 'cyan'))
             perform_lfi_scan(crawled_urls, user_agents, verbose=True)
 
-            print("\n")  
+            print("\n")
             print(colored("[•] Performing Open Redirect scan...", 'cyan'))
             perform_redirect_scan(crawled_urls, user_agents, verbose=True)
 
-            print("\n")  
+            print("\n")
             print(colored(f"[•] Performing Carriage Return and Line Feed scan on {target}", 'yellow'))
             perform_crlf_scan(crawled_urls, user_agents, verbose=True)
 
-            print("\n")  
+            print("\n")
             print(colored(f"[•] Performing Cross-origin resource sharing scan on {target}", 'yellow'))
             perform_cors_scan(crawled_urls, user_agents, verbose=True)
 
@@ -290,6 +335,7 @@ def main():
     parser.add_argument('--scan', type=str, required=True, choices=['sql', 'cmdi', 'all', 'ssti', 'xss', 'lfi', 'open-redirect', 'crlf', 'cors'], help="Scan type: 'sql' 'ssti' 'xss' 'lfi' 'open-redirect' 'crlf' 'cors' or 'cmdi'")
     parser.add_argument('--target', type=str, help="Target URL (for single target)")
     parser.add_argument('--multi-target', type=str, help="File containing multiple target URLs (one per line)")
+    parser.add_argument('--random-agent', action='store_true', help="Use a random user-agent from ua.txt")
     args = parser.parse_args()
 
     target = args.target
@@ -309,7 +355,7 @@ def main():
         if not target:
             continue
 
-        crawl_and_scan(target, args.crawl, args.scan)
+        crawl_and_scan(target, args.crawl, args.scan, args.random_agent)
 
     for target in targets:
         domain = target.split("//")[-1].split("/")[0]

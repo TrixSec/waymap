@@ -59,14 +59,24 @@ def perform_sqli_scan(crawled_urls, sql_payloads, user_agents):
         for url in crawled_urls:
             print(colored(f"\n[•] Testing URL: {url}", 'yellow'))
 
-            payloads_to_test = random.sample(sql_payloads, 10)
+            base_url = url.split('?')[0]
+            params = url.split('?')[1] if '?' in url else ''
+            param_dict = {param.split('=')[0]: param.split('=')[1] for param in params.split('&')} if params else {}
+
+            payloads_to_test = {key: random.sample(sql_payloads, 10) for key in param_dict.keys()}
             found_vulnerability = False 
 
             with ThreadPoolExecutor(max_workers=5) as executor:
-                futures = {
-                    executor.submit(test_payload, f"{url}{payload}", payload, random.choice(user_agents), dbms_errors): payload 
-                    for payload in payloads_to_test
-                }
+                futures = {}
+                for param_key, payloads in payloads_to_test.items():
+                    for payload in payloads:
+                        test_params = param_dict.copy() 
+                        test_params[param_key] = payload 
+
+                        modified_params = '&'.join([f"{k}={v}" for k, v in test_params.items()])
+                        full_url = f"{base_url}?{modified_params}"
+
+                        futures[executor.submit(test_payload, full_url, payload, random.choice(user_agents), dbms_errors)] = (full_url, payload)
 
                 for future in as_completed(futures):
                     result = future.result()
@@ -76,23 +86,24 @@ def perform_sqli_scan(crawled_urls, sql_payloads, user_agents):
                             detected_tech = detect_web_tech(result['headers'])
                             print(colored(f"[•] Web Technology: {detected_tech or 'Unknown'}", 'magenta'))
 
-                        print(colored(f"[★] Vulnerable URL found: {url}{futures[future]}", 'white', attrs=['bold']))
-                        print(colored(f"[•] Vulnerable Parameter: {url.split('?')[1] if '?' in url else 'N/A'}", 'green'))
-                        print(colored(f"[•] Payload: {futures[future]}", 'green'))
+                        full_url, payload = futures[future]
+                        print(colored(f"[★] Vulnerable URL found: {full_url}", 'white', attrs=['bold']))
+                        print(colored(f"[•] Vulnerable Parameter: {full_url.split('?')[1] if '?' in full_url else 'N/A'}", 'green'))
+                        print(colored(f"[•] Payload: {payload}", 'green'))
                         print(colored(f"[•] Backend DBMS: {result['dbms']}", 'blue'))
 
-                        if user_decision is None:
+                        while True:
                             user_input = input(colored("\n[?] Vulnerable URL found. Do you want to continue testing other URLs? (y/n): ", 'yellow')).strip().lower()
-                            if user_input == 'n':
-                                print(colored("[•] Stopping further scans as per user's decision.", 'red'))
-                                return  
-                            user_decision = (user_input == 'y')  
-
-                        break  
+                            if user_input in ['y', 'n']:
+                                break
+                            print(colored("[×] Invalid input. Please enter 'y' or 'n'.", 'red'))
+                            
+                        if user_input == 'n':
+                            print(colored("[•] Stopping further scans as per user's decision.", 'red'))
+                            return  
 
                 if not found_vulnerability:
                     print(colored(f"[×] No vulnerabilities found on: {url}", 'red'))
 
     except KeyboardInterrupt:
         print(colored("\n[!] Scan interrupted by user. Exiting cleanly...", 'red'))
-
