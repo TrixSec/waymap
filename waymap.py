@@ -18,6 +18,8 @@ from lib.injection.crlf import perform_crlf_scan
 from lib.injection.cors import perform_cors_scan
 from extras.error_handler import check_internet_connection, check_required_files, check_required_directories, handle_error
 from urllib.parse import urlparse
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 session_dir = 'session'
 
 def save_headers(domain, headers):
