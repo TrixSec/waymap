@@ -77,7 +77,7 @@ def log_error(message):
 data_dir = os.path.join(os.getcwd(), 'data')
 session_dir = os.path.join(os.getcwd(), 'session')
 
-WAYMAP_VERSION = "2.5.5"
+WAYMAP_VERSION = "2.5.6"
 AUTHOR = "Trix Cyrus"
 Devs = "@TrixSec & @0day-Yash & @JeninSutradhar"
 COPYRIGHT = "Copyright © 2024 Trixsec Org"
@@ -108,7 +108,7 @@ def print_banner():
 ░╚██╗████╗██╔╝███████║░╚████╔╝░██╔████╔██║███████║██████╔╝
 ░░████╔═████║░██╔══██║░░╚██╔╝░░██║╚██╔╝██║██╔══██║██╔═══╝░
 ░░╚██╔╝░╚██╔╝░██║░░██║░░░██║░░░██║░╚═╝░██║██║░░██║██║░░░░░
-░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v2.5.5
+░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v2.5.6
     """
     print(colored(banner, 'cyan'))
     print(colored(f"Waymap Version: {WAYMAP_VERSION}", 'yellow'))
@@ -155,7 +155,7 @@ def load_user_agents(file_path):
 
 def handle_redirection(target_url):
     try:
-        response = requests.get(target_url, allow_redirects=True, timeout=10)
+        response = requests.get(target_url, allow_redirects=True, timeout=10, verify=False)
         final_url = response.url
         parsed_final_url = urlparse(final_url)
         parsed_target_url = urlparse(target_url)
@@ -178,7 +178,6 @@ def has_query_parameters(url):
 
 def is_within_domain(url, base_domain):
     return urlparse(url).netloc == base_domain
-
 def crawl_and_scan(target, crawl_depth, scan_type, random_agent=False):
     domain = target.split("//")[-1].split("/")[0]
     headers = load_headers(domain)
@@ -194,7 +193,7 @@ def crawl_and_scan(target, crawl_depth, scan_type, random_agent=False):
         save_headers(domain, headers)
 
     try:
-        response = requests.get(target, headers=headers, timeout=10)
+        response = requests.get(target, headers=headers, timeout=10, verify=False)
         response.raise_for_status()
     except requests.RequestException as e:
         log_error(f"Cannot connect to {target}: {e}")

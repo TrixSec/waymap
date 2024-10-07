@@ -58,7 +58,7 @@ def remove_crawl_file(base_domain):
 def crawl_url(url, base_domain, next_urls_to_crawl):
     global total_urls
     try:
-        response = requests.get(url, timeout=REQUEST_TIMEOUT, allow_redirects=True)
+        response = requests.get(url, timeout=REQUEST_TIMEOUT, allow_redirects=True, verify=False)
         final_url = response.url
 
         parsed_final_url = urlparse(final_url)
