@@ -42,9 +42,9 @@ def test_cors_vulnerability(url, payload, expected_response, user_agent):
     headers = {'Origin': payload, 'User-Agent': user_agent}
     
     try:
-        response = requests.options(url, headers=headers, timeout=10)
+        response = requests.options(url, headers=headers, timeout=10, verify=False)
         cors_header = response.headers.get('Access-Control-Allow-Origin', '')
-        time.sleep(random.uniform(1, 3))  # Random sleep to avoid overwhelming the server
+        time.sleep(random.uniform(1, 3))  
 
         if expected_response in cors_header:
             return {'vulnerable': True, 'response': response, 'payload': payload, 'url': url}
@@ -60,7 +60,7 @@ def perform_cors_scan(crawled_urls, user_agents, verbose=False):
 
     use_threads = input(colored("[?] Do you want to use threads for scanning? (y/n, press Enter for default [n]): ", 'yellow')).strip().lower()
 
-    max_threads = 1  # Default to 1 thread if not using threads
+    max_threads = 1  
     if use_threads == 'y':
         max_threads = int(input(colored("[?] How many threads do you want to use (1-10)? ", 'yellow', attrs=['bold'])))
         max_threads = min(max_threads, 10) 

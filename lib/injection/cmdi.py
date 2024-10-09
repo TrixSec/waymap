@@ -37,7 +37,7 @@ def detect_web_tech(headers):
 def test_cmdi_payload(url, payload, user_agent, cmdi_errors):
     headers = {'User-Agent': user_agent}
     try:
-        response = requests.get(url, headers=headers, timeout=10)
+        response = requests.get(url, headers=headers, timeout=10, verify=False)
         response_content = response.text
 
         cmdi_error = detect_cmdi(response_content, cmdi_errors)

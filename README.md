@@ -1,6 +1,6 @@
 # Waymap - Web Vulnerability Scanner.
 
-**Current Version**: 2.5.6
+**Current Version**: 3.5.6
 **Author**: Trix Cyrus  
 **Contributions**: Yash (0day-Yash) & Jennin (@JeninSutradhar)
 **Copyright**: © 2024 Trixsec Org  
@@ -105,6 +105,10 @@ Check out this video to see Waymap in action:
 - bugs fixed
 - no ssl verify update
 --NEW--UPDATES--SOON--
+
+### v3.5.6
+- New Web Crawler With extended Scope
+- fix the injections modules testing errors
 
 ## Installation and Usage
 

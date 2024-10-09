@@ -41,9 +41,9 @@ def test_crlf_payload(url, parameter, payload, expected_response, user_agent):
 
     headers = {'User-Agent': user_agent}
     try:
-        response = requests.get(url, headers=headers, timeout=10)
+        response = requests.get(url, headers=headers, timeout=10, verify=False)
         response_content = response.text
-        time.sleep(random.uniform(1, 3))  # Random sleep to avoid overwhelming the server
+        time.sleep(random.uniform(1, 3))  
 
         if expected_response in response_content:
             return {'vulnerable': True, 'response': response, 'url': url}
@@ -59,7 +59,7 @@ def perform_crlf_scan(crawled_urls, user_agents, verbose=False):
 
     use_threads = input(colored("[?] Do you want to use threads for scanning? (y/n, press Enter for default [n]): ", 'yellow')).strip().lower()
 
-    max_threads = 1  # Default to 1 thread if not using threads
+    max_threads = 1  
     if use_threads == 'y':
         max_threads = int(input(colored("[?] How many threads do you want to use (1-10)? ", 'yellow', attrs=['bold'])))
         max_threads = min(max_threads, 10) 

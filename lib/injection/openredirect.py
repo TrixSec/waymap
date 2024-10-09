@@ -39,7 +39,7 @@ def test_open_redirect_payload(url, parameter, payload, user_agent):
     full_url = f"{url.split('?')[0]}?{parameter}={payload}"
     
     try:
-        response = requests.get(full_url, headers=headers, allow_redirects=True, timeout=10)
+        response = requests.get(full_url, headers=headers, allow_redirects=True, timeout=10, verify=False)
         if response.status_code in [200, 301, 302, 303, 307, 308]:
             redirected_url = response.url
             if redirected_url != full_url:

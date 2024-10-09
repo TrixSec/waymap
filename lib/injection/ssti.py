@@ -39,7 +39,7 @@ def test_ssti_payload(url, parameter, payload, expected_response, user_agent):
 
     headers = {'User-Agent': user_agent}
     try:
-        response = requests.get(url, params={parameter: payload}, headers=headers, timeout=10)
+        response = requests.get(url, params={parameter: payload}, headers=headers, timeout=10, verify=False)
         response_content = response.text
         time.sleep(random.randint(1, 3))
 
