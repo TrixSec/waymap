@@ -1,6 +1,6 @@
 # Waymap - Web Vulnerability Scanner.
 
-**Current Version**: 3.5.6
+**Current Version**: 3.6.6
 **Author**: Trix Cyrus  
 **Contributions**: Yash (0day-Yash) & Jennin (@JeninSutradhar)
 **Copyright**: © 2024 Trixsec Org  
@@ -107,8 +107,14 @@ Check out this video to see Waymap in action:
 --NEW--UPDATES--SOON--
 
 ### v3.5.6
-- New Web Crawler With extended Scope
+- New Web Crawler(v2.5) With extended Scope
 - fix the injections modules testing errors
+
+### v3.6.6
+- Better v3 Crawler, 
+(I think At this point Waymap Crawler Is Better Than Sqlmap Crawler)
+- added new arguments : --url/-u and --multi-url/-mu to scan url/urls without crawling them 
+- bug fixes
 
 ## Installation and Usage
 
@@ -126,11 +132,16 @@ pip install .
 ```bash
 python waymap.py --crawl 1 --scan sql/cmdi/ssti/xss/lfi/open-redirect/crlf/cors/all --target/--multi-target https://example.com/{filename}.txt
 ```
-
+```bash
+python waymap.py --scan sql/cmdi/ssti/xss/lfi/open-redirect/crlf/cors/all --url/--mutli-url https://example.com/index.php?id=1/{filename}.txt
+```
 ### Check Help
 ```bash
 python waymap.py -h
 ```
+### IF There's Any Issue In Waymay Then Submit The Issues Here: https://github.com/TrixSec/waymap/issues
+
+#### Also Star The Repo And Fork It
 
 ### Follow Us on Telegram
 Stay updated with the latest tools and hacking resources. Join our Telegram Channel by clicking the logo below:

@@ -79,7 +79,7 @@ def log_error(message):
 data_dir = os.path.join(os.getcwd(), 'data')
 session_dir = os.path.join(os.getcwd(), 'session')
 
-WAYMAP_VERSION = "3.5.6"
+WAYMAP_VERSION = "3.6.6"
 AUTHOR = "Trix Cyrus"
 Devs = "@TrixSec & @0day-Yash & @JeninSutradhar"
 COPYRIGHT = "Copyright © 2024 Trixsec Org"
@@ -110,7 +110,7 @@ def print_banner():
 ░╚██╗████╗██╔╝███████║░╚████╔╝░██╔████╔██║███████║██████╔╝
 ░░████╔═████║░██╔══██║░░╚██╔╝░░██║╚██╔╝██║██╔══██║██╔═══╝░
 ░░╚██╔╝░╚██╔╝░██║░░██║░░░██║░░░██║░╚═╝░██║██║░░██║██║░░░░░
-░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v3.5.6
+░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v3.6.6
     """
     print(colored(banner, 'cyan'))
     print(colored(f"Waymap Version: {WAYMAP_VERSION}", 'yellow'))
@@ -180,7 +180,8 @@ def has_query_parameters(url):
 
 def is_within_domain(url, base_domain):
     return urlparse(url).netloc == base_domain
-def crawl_and_scan(target, crawl_depth, scan_type, random_agent=False):
+
+def crawl(target, crawl_depth, random_agent=False):
     domain = target.split("//")[-1].split("/")[0]
     headers = load_headers(domain)
 
@@ -200,17 +201,16 @@ def crawl_and_scan(target, crawl_depth, scan_type, random_agent=False):
     except requests.RequestException as e:
         log_error(f"Cannot connect to {target}: {e}")
         print(colored(f"[×]Crawler Cannot connect to the URL: {target}", 'red'))
-        return
+        return None
 
     target = handle_redirection(target)
 
     if not target or not is_valid_url(target):
         log_error(f"Skipping {target} due to connection issues.")
         print(colored(f"[×] Skipping {target} due to connection issues.", 'yellow'))
-        return
+        return None
 
     setup_logger(domain)
-    log_scan_start(target, scan_type)
 
     crawled_urls = load_crawled_urls(domain)
 
@@ -220,91 +220,119 @@ def crawl_and_scan(target, crawl_depth, scan_type, random_agent=False):
         crawled_urls = [url for url in crawled_urls if is_valid_url(url) and has_query_parameters(url) and is_within_domain(url, domain)]
         save_to_file(domain, crawled_urls)
 
+    return crawled_urls
+
+def scan(target, scan_type, crawled_urls=None, provided_urls=None):
+    domain = target.split("//")[-1].split("/")[0]
+    log_scan_start(target, scan_type)
+
     sql_payloads = load_payloads(os.path.join(data_dir, 'sqlipayload.txt'))
     cmdi_payloads = load_payloads(os.path.join(data_dir, 'cmdipayload.txt'))
     user_agents = load_user_agents(os.path.join(data_dir, 'ua.txt'))
 
+    urls_to_scan = provided_urls if provided_urls else crawled_urls
+
+    if not urls_to_scan:
+        print(colored(f"[×] No URLs to scan.", 'red'))
+        return
 
     try:
         if scan_type == 'sql':
             print("\n")
             print(colored(f"[•] Performing SQL Injection scan on {target}", 'yellow'))
-            perform_sqli_scan(crawled_urls, sql_payloads, user_agents)
+            perform_sqli_scan(urls_to_scan, sql_payloads, user_agents)
 
         elif scan_type == 'cmdi':
             print("\n")
             print(colored(f"[•] Performing Command Injection scan on {target}", 'yellow'))
-            perform_cmdi_scan(crawled_urls, cmdi_payloads, user_agents)
+            perform_cmdi_scan(urls_to_scan, cmdi_payloads, user_agents)
 
         elif scan_type == 'ssti':
             print("\n")
             print(colored(f"[•] Performing Server Side Template Injection scan on {target}", 'yellow'))
-            perform_ssti_scan(crawled_urls, user_agents, verbose=True)
+            perform_ssti_scan(urls_to_scan, user_agents, verbose=True)
 
         elif scan_type == 'xss':
             print("\n")
             print(colored(f"[•] Performing Cross Site Scripting scan on {target}", 'yellow'))
-            perform_xss_scan(crawled_urls, user_agents, verbose=True)
+            perform_xss_scan(urls_to_scan, user_agents, verbose=True)
 
         elif scan_type == 'lfi':
             print("\n")
             print(colored(f"[•] Performing Local File Inclusion scan on {target}", 'yellow'))
-            perform_lfi_scan(crawled_urls, user_agents, verbose=True)
+            perform_lfi_scan(urls_to_scan, user_agents, verbose=True)
 
         elif scan_type == 'open-redirect':
             print("\n")
             print(colored(f"[•] Performing Open Redirect scan on {target}", 'yellow'))
-            perform_redirect_scan(crawled_urls, user_agents, verbose=True)
+            perform_redirect_scan(urls_to_scan, user_agents, verbose=True)
 
         elif scan_type == 'crlf':
             print("\n")
             print(colored(f"[•] Performing Carriage Return and Line Feed scan on {target}", 'yellow'))
-            perform_crlf_scan(crawled_urls, user_agents, verbose=True)
+            perform_crlf_scan(urls_to_scan, user_agents, verbose=True)
 
         elif scan_type == 'cors':
             print("\n")
             print(colored(f"[•] Performing Cross-origin resource sharing scan on {target}", 'yellow'))
-            perform_cors_scan(crawled_urls, user_agents, verbose=True)
+            perform_cors_scan(urls_to_scan, user_agents, verbose=True)
 
         elif scan_type == 'all':
             print("\n[•] Performing all scans on target...\n")
             print(colored("[•] Performing SQL Injection scan...", 'cyan'))
-            perform_sqli_scan(crawled_urls, sql_payloads, user_agents)
+            perform_sqli_scan(urls_to_scan, sql_payloads, user_agents)
 
             print("\n")
             print(colored("[•] Performing Command Injection (CMDi) scan...", 'cyan'))
-            perform_cmdi_scan(crawled_urls, cmdi_payloads, user_agents)
+            perform_cmdi_scan(urls_to_scan, cmdi_payloads, user_agents)
 
             print("\n")
             print(colored("[•] Performing Server-Side Template Injection (SSTI) scan...", 'cyan'))
-            perform_ssti_scan(crawled_urls, user_agents, verbose=True)
+            perform_ssti_scan(urls_to_scan, user_agents, verbose=True)
 
             print("\n")
             print(colored("[•] Performing Cross Site Scripting scan...", 'cyan'))
-            perform_xss_scan(crawled_urls, user_agents, verbose=True)
+            perform_xss_scan(urls_to_scan, user_agents, verbose=True)
 
             print("\n")
             print(colored("[•] Performing Local File Inclusion scan...", 'cyan'))
-            perform_lfi_scan(crawled_urls, user_agents, verbose=True)
+            perform_lfi_scan(urls_to_scan, user_agents, verbose=True)
 
             print("\n")
             print(colored("[•] Performing Open Redirect scan...", 'cyan'))
-            perform_redirect_scan(crawled_urls, user_agents, verbose=True)
+            perform_redirect_scan(urls_to_scan, user_agents, verbose=True)
 
             print("\n")
             print(colored(f"[•] Performing Carriage Return and Line Feed scan on {target}", 'yellow'))
-            perform_crlf_scan(crawled_urls, user_agents, verbose=True)
+            perform_crlf_scan(urls_to_scan, user_agents, verbose=True)
 
             print("\n")
             print(colored(f"[•] Performing Cross-origin resource sharing scan on {target}", 'yellow'))
-            perform_cors_scan(crawled_urls, user_agents, verbose=True)
+            perform_cors_scan(urls_to_scan, user_agents, verbose=True)
 
+    finally:
         log_scan_end(target, scan_type)
 
-    except KeyboardInterrupt:
-        print(colored("\n[×] Scan interrupted by the user. Exiting...", 'red'))
-        log_error("Scan interrupted by the user.")
-        exit()
+def crawl_and_scan(target, crawl_depth, scan_type, random_agent=False, url=None, multi_url=None):
+    provided_urls = []
+
+    if url:
+        provided_urls = [url] if is_valid_url(url) and has_query_parameters(url) else []
+
+    elif multi_url:
+        with open(multi_url, 'r') as file:
+            for line in file:
+                line_url = line.strip()
+                if is_valid_url(line_url) and has_query_parameters(line_url):
+                    provided_urls.append(line_url)
+
+    if provided_urls:
+        print(colored(f"[•] Using provided URLs for scanning.", 'green'))
+        scan(target, scan_type, provided_urls=provided_urls)
+    else:
+        crawled_urls = crawl(target, crawl_depth, random_agent=random_agent)
+        if crawled_urls:
+            scan(target, scan_type, crawled_urls=crawled_urls)
 
 def load_targets_from_file(file_path):
     if os.path.exists(file_path):
@@ -331,39 +359,56 @@ def main():
     if missing_dirs:
         handle_error(f"Missing required directories: {', '.join(missing_dirs)}")
 
-    parser = argparse.ArgumentParser(description="Waymap - Web Vulnerability Scanner")
-    parser.add_argument('--crawl', type=int, required=True, help="Crawl depth")
-    parser.add_argument('--scan', type=str, required=True, choices=['sql', 'cmdi', 'all', 'ssti', 'xss', 'lfi', 'open-redirect', 'crlf', 'cors'], help="Scan type: 'sql' 'ssti' 'xss' 'lfi' 'open-redirect' 'crlf' 'cors' or 'cmdi'")
-    parser.add_argument('--target', type=str, help="Target URL (for single target)")
-    parser.add_argument('--multi-target', type=str, help="File containing multiple target URLs (one per line)")
-    parser.add_argument('--random-agent', action='store_true', help="Use a random user-agent from ua.txt")
+    parser = argparse.ArgumentParser(description="Waymap - Fast and Optimized Web Vulnerability Scanner")
+    parser.add_argument('--target', '-t', type=str, help='Target URL for crawling and scanning , example: https://example.com/')
+    parser.add_argument('--multi-target', '-mt', type=str, help='File with multiple target URLs for crawling and scanning')
+    parser.add_argument('--crawl', '-c', type=int, help='Crawl depth')
+    parser.add_argument('--scan', '-s', type=str, choices=['sql', 'cmdi', 'ssti', 'xss', 'lfi', 'open-redirect', 'crlf', 'cors', 'all'], help='Type of scan to perform')
+    parser.add_argument('--url', '-u', type=str, help='Single URL for direct scanning without crawling, example: https://example.com/index.php?id=1')
+    parser.add_argument('--multi-url', '-mu', type=str, help='File with multiple URLs for direct scanning without crawling')
+    parser.add_argument('--random-agent', '-ra', action='store_true', help='Use random user-agent for requests')
     args = parser.parse_args()
 
     target = args.target
     multi_target_file = args.multi_target
+    direct_url = args.url
+    multi_url_file = args.multi_url
+
+    if multi_url_file:
+        targets = load_targets_from_file(multi_url_file)
+        if not targets:
+            return
+        for target in targets:
+            print(colored(f"[•] Direct scanning without crawling on {target}", 'cyan'))
+            scan(target, args.scan, [target]) 
+        return
+
+    if direct_url:
+        print(colored(f"[•] Direct scanning without crawling on {direct_url}", 'cyan'))
+        scan(direct_url, args.scan, [direct_url])
+        return
 
     if multi_target_file:
         targets = load_targets_from_file(multi_target_file)
         if not targets:
             return
-    else:
-        if target is None:
-            print(colored("[×] Error: Please specify a target URL or provide a file with URLs.", 'red'))
-            return
-        targets = [target]
+        for target in targets:
+            print(colored(f"[•] Crawling and scanning on {target}", 'cyan'))
+            crawl_and_scan(target, args.crawl, args.scan, args.random_agent)
+            cleanup_crawl_file(target)
+        return
 
-    for target in targets:
-        if not target:
-            continue
-
+    if target:
+        print(colored(f"[•] Crawling and scanning on {target}", 'cyan'))
         crawl_and_scan(target, args.crawl, args.scan, args.random_agent)
+        cleanup_crawl_file(target)
 
-    for target in targets:
-        domain = target.split("//")[-1].split("/")[0]
-        crawl_file = os.path.join(session_dir, domain, 'crawl.txt')
-        if os.path.exists(crawl_file):
-            os.remove(crawl_file)
-            print(colored(f"[•] Removed crawl file for {domain}.", 'green'))
+def cleanup_crawl_file(target):
+    domain = target.split("//")[-1].split("/")[0]
+    crawl_file = os.path.join(session_dir, domain, 'crawl.txt')
+    if os.path.exists(crawl_file):
+        os.remove(crawl_file)
+        print(colored(f"[•] Removed crawl file for {domain}.", 'green'))
 
 if __name__ == "__main__":
     main()
