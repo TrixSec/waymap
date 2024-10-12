@@ -1,21 +1,28 @@
-# Copyright (c) 2024 waymap developers 
+# Copyright (c) 2024 waymap developers
 # See the file 'LICENSE' for copying permission.
 
 import random
 import requests
 import os
+import logging
+import multiprocessing
+import threading
 from datetime import datetime
 from termcolor import colored
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import time
-import threading
+from settings import DEFAULT_THREADS, MAX_THREADS  
 
 data_dir = os.path.join(os.getcwd(), 'data')
 
+logging.basicConfig(filename='cors_scan.log', level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
+
 stop_scan = threading.Event()
 
+def log_error(url, error):
+    logging.error(f"Error testing payload on {url}: {error}")
+
 def load_cors_payloads(file_path):
-    """Load CORS payloads from the given file."""
     payloads = []
     try:
         with open(file_path, 'r') as file:
@@ -35,7 +42,6 @@ def load_cors_payloads(file_path):
     return payloads
 
 def test_cors_vulnerability(url, payload, expected_response, user_agent):
-    """Test a CORS payload on the given URL."""
     if stop_scan.is_set():
         return {'vulnerable': False}
 
@@ -44,26 +50,23 @@ def test_cors_vulnerability(url, payload, expected_response, user_agent):
     try:
         response = requests.options(url, headers=headers, timeout=10, verify=False)
         cors_header = response.headers.get('Access-Control-Allow-Origin', '')
-        time.sleep(random.uniform(1, 3))  
-
         if expected_response in cors_header:
             return {'vulnerable': True, 'response': response, 'payload': payload, 'url': url}
     except requests.RequestException as e:
         if not stop_scan.is_set():
             print(colored(f"[×] Error testing payload on {url}: {e}", 'red'))
+            log_error(url, e)
 
     return {'vulnerable': False}
 
-def perform_cors_scan(crawled_urls, user_agents, verbose=False):
-    """Perform CORS scanning on the given crawled URLs."""
+def perform_cors_scan(crawled_urls, user_agents, thread_count, verbose=False):
+    if thread_count is None:
+        thread_count = DEFAULT_THREADS 
+
+    cpu_count = multiprocessing.cpu_count()
+    thread_count = max(1, min(thread_count, cpu_count * 2, MAX_THREADS))
+
     payloads = load_cors_payloads(os.path.join(data_dir, 'corspayload.txt'))
-
-    use_threads = input(colored("[?] Do you want to use threads for scanning? (y/n, press Enter for default [n]): ", 'yellow')).strip().lower()
-
-    max_threads = 1  
-    if use_threads == 'y':
-        max_threads = int(input(colored("[?] How many threads do you want to use (1-10)? ", 'yellow', attrs=['bold'])))
-        max_threads = min(max_threads, 10) 
 
     try:
         for url in crawled_urls:
@@ -72,7 +75,7 @@ def perform_cors_scan(crawled_urls, user_agents, verbose=False):
 
             print(colored(f"\n[•] Testing URL: {url}", 'yellow'))
 
-            with ThreadPoolExecutor(max_workers=max_threads) as executor:
+            with ThreadPoolExecutor(max_workers=thread_count) as executor:
                 future_to_payload = {}
                 for payload_entry in payloads:
                     if stop_scan.is_set():
@@ -101,9 +104,13 @@ def perform_cors_scan(crawled_urls, user_agents, verbose=False):
                     if result['vulnerable']:
                         print(colored(f"[★] Vulnerable URL found: {result['url']}", 'white', attrs=['bold']))
                         print(colored(f"[•] Vulnerable Origin: {payload}", 'green'))
-                        print(colored(f"[•] Expected Response: {result['payload']}", 'green'))
 
-                        user_input = input(colored("\n[?] Vulnerable URL found. Do you want to continue testing other URLs? (y/n): ", 'yellow')).strip().lower()
+                        while True:
+                            user_input = input(colored("\n[?] Vulnerable URL found. Do you want to continue testing other URLs? (y/n): ", 'yellow')).strip().lower()
+                            if user_input in ['y', 'n']:
+                                break
+                            print(colored("[×] Invalid input. Please enter 'y' or 'n'.", 'red'))
+
                         if user_input == 'n':
                             print(colored("[•] Stopping further scans as per user's decision.", 'red'))
                             stop_scan.set()

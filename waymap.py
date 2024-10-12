@@ -16,6 +16,7 @@ from lib.injection.lfi import perform_lfi_scan
 from lib.injection.openredirect import perform_redirect_scan
 from lib.injection.crlf import perform_crlf_scan
 from lib.injection.cors import perform_cors_scan
+from lib.core.settings import DEFAULT_THREADS
 from extras.error_handler import check_internet_connection, check_required_files, check_required_directories, handle_error
 from urllib.parse import urlparse
 import urllib3
@@ -79,7 +80,7 @@ def log_error(message):
 data_dir = os.path.join(os.getcwd(), 'data')
 session_dir = os.path.join(os.getcwd(), 'session')
 
-WAYMAP_VERSION = "3.6.6"
+WAYMAP_VERSION = "3.7.6"
 AUTHOR = "Trix Cyrus"
 Devs = "@TrixSec & @0day-Yash & @JeninSutradhar"
 COPYRIGHT = "Copyright © 2024 Trixsec Org"
@@ -110,7 +111,7 @@ def print_banner():
 ░╚██╗████╗██╔╝███████║░╚████╔╝░██╔████╔██║███████║██████╔╝
 ░░████╔═████║░██╔══██║░░╚██╔╝░░██║╚██╔╝██║██╔══██║██╔═══╝░
 ░░╚██╔╝░╚██╔╝░██║░░██║░░░██║░░░██║░╚═╝░██║██║░░██║██║░░░░░
-░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v3.6.6
+░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v3.7.6
     """
     print(colored(banner, 'cyan'))
     print(colored(f"Waymap Version: {WAYMAP_VERSION}", 'yellow'))
@@ -222,7 +223,7 @@ def crawl(target, crawl_depth, random_agent=False):
 
     return crawled_urls
 
-def scan(target, scan_type, crawled_urls=None, provided_urls=None):
+def scan(target, scan_type, crawled_urls=None, provided_urls=None, thread_count=1):
     domain = target.split("//")[-1].split("/")[0]
     log_scan_start(target, scan_type)
 
@@ -240,80 +241,80 @@ def scan(target, scan_type, crawled_urls=None, provided_urls=None):
         if scan_type == 'sql':
             print("\n")
             print(colored(f"[•] Performing SQL Injection scan on {target}", 'yellow'))
-            perform_sqli_scan(urls_to_scan, sql_payloads, user_agents)
+            perform_sqli_scan(urls_to_scan, sql_payloads, user_agents, thread_count=thread_count)
 
         elif scan_type == 'cmdi':
             print("\n")
             print(colored(f"[•] Performing Command Injection scan on {target}", 'yellow'))
-            perform_cmdi_scan(urls_to_scan, cmdi_payloads, user_agents)
+            perform_cmdi_scan(urls_to_scan, cmdi_payloads, user_agents, thread_count=thread_count)
 
         elif scan_type == 'ssti':
             print("\n")
             print(colored(f"[•] Performing Server Side Template Injection scan on {target}", 'yellow'))
-            perform_ssti_scan(urls_to_scan, user_agents, verbose=True)
+            perform_ssti_scan(urls_to_scan, user_agents, thread_count=thread_count, verbose=True)
 
         elif scan_type == 'xss':
             print("\n")
             print(colored(f"[•] Performing Cross Site Scripting scan on {target}", 'yellow'))
-            perform_xss_scan(urls_to_scan, user_agents, verbose=True)
+            perform_xss_scan(urls_to_scan, user_agents, thread_count=thread_count, verbose=True)
 
         elif scan_type == 'lfi':
             print("\n")
             print(colored(f"[•] Performing Local File Inclusion scan on {target}", 'yellow'))
-            perform_lfi_scan(urls_to_scan, user_agents, verbose=True)
+            perform_lfi_scan(urls_to_scan, user_agents, thread_count=thread_count, verbose=True)
 
         elif scan_type == 'open-redirect':
             print("\n")
             print(colored(f"[•] Performing Open Redirect scan on {target}", 'yellow'))
-            perform_redirect_scan(urls_to_scan, user_agents, verbose=True)
+            perform_redirect_scan(urls_to_scan, user_agents, thread_count=thread_count, verbose=True)
 
         elif scan_type == 'crlf':
             print("\n")
             print(colored(f"[•] Performing Carriage Return and Line Feed scan on {target}", 'yellow'))
-            perform_crlf_scan(urls_to_scan, user_agents, verbose=True)
+            perform_crlf_scan(urls_to_scan, user_agents, thread_count=thread_count, verbose=True)
 
         elif scan_type == 'cors':
             print("\n")
             print(colored(f"[•] Performing Cross-origin resource sharing scan on {target}", 'yellow'))
-            perform_cors_scan(urls_to_scan, user_agents, verbose=True)
+            perform_cors_scan(urls_to_scan, user_agents, thread_count=thread_count, verbose=True)
 
         elif scan_type == 'all':
             print("\n[•] Performing all scans on target...\n")
             print(colored("[•] Performing SQL Injection scan...", 'cyan'))
-            perform_sqli_scan(urls_to_scan, sql_payloads, user_agents)
+            perform_sqli_scan(urls_to_scan, sql_payloads, user_agents, thread_count=thread_count)
 
             print("\n")
             print(colored("[•] Performing Command Injection (CMDi) scan...", 'cyan'))
-            perform_cmdi_scan(urls_to_scan, cmdi_payloads, user_agents)
+            perform_cmdi_scan(urls_to_scan, cmdi_payloads, user_agents, thread_count=thread_count)
 
             print("\n")
             print(colored("[•] Performing Server-Side Template Injection (SSTI) scan...", 'cyan'))
-            perform_ssti_scan(urls_to_scan, user_agents, verbose=True)
+            perform_ssti_scan(urls_to_scan, user_agents, thread_count=thread_count, verbose=True)
 
             print("\n")
             print(colored("[•] Performing Cross Site Scripting scan...", 'cyan'))
-            perform_xss_scan(urls_to_scan, user_agents, verbose=True)
+            perform_xss_scan(urls_to_scan, user_agents, thread_count=thread_count, verbose=True)
 
             print("\n")
             print(colored("[•] Performing Local File Inclusion scan...", 'cyan'))
-            perform_lfi_scan(urls_to_scan, user_agents, verbose=True)
+            perform_lfi_scan(urls_to_scan, user_agents, thread_count=thread_count, verbose=True)
 
             print("\n")
             print(colored("[•] Performing Open Redirect scan...", 'cyan'))
-            perform_redirect_scan(urls_to_scan, user_agents, verbose=True)
+            perform_redirect_scan(urls_to_scan, user_agents, thread_count=thread_count, verbose=True)
 
             print("\n")
             print(colored(f"[•] Performing Carriage Return and Line Feed scan on {target}", 'yellow'))
-            perform_crlf_scan(urls_to_scan, user_agents, verbose=True)
+            perform_crlf_scan(urls_to_scan, user_agents, thread_count=thread_count, verbose=True)
 
             print("\n")
             print(colored(f"[•] Performing Cross-origin resource sharing scan on {target}", 'yellow'))
-            perform_cors_scan(urls_to_scan, user_agents, verbose=True)
+            perform_cors_scan(urls_to_scan, user_agents, thread_count=thread_count, verbose=True)
 
     finally:
         log_scan_end(target, scan_type)
 
-def crawl_and_scan(target, crawl_depth, scan_type, random_agent=False, url=None, multi_url=None):
+def crawl_and_scan(target, crawl_depth, scan_type, random_agent=False, url=None, multi_url=None, thread_count=1):
     provided_urls = []
 
     if url:
@@ -328,11 +329,11 @@ def crawl_and_scan(target, crawl_depth, scan_type, random_agent=False, url=None,
 
     if provided_urls:
         print(colored(f"[•] Using provided URLs for scanning.", 'green'))
-        scan(target, scan_type, provided_urls=provided_urls)
+        scan(target, scan_type, provided_urls=provided_urls, thread_count=thread_count)
     else:
         crawled_urls = crawl(target, crawl_depth, random_agent=random_agent)
         if crawled_urls:
-            scan(target, scan_type, crawled_urls=crawled_urls)
+            scan(target, scan_type, crawled_urls=crawled_urls, thread_count=thread_count)
 
 def load_targets_from_file(file_path):
     if os.path.exists(file_path):
@@ -367,12 +368,14 @@ def main():
     parser.add_argument('--url', '-u', type=str, help='Single URL for direct scanning without crawling, example: https://example.com/index.php?id=1')
     parser.add_argument('--multi-url', '-mu', type=str, help='File with multiple URLs for direct scanning without crawling')
     parser.add_argument('--random-agent', '-ra', action='store_true', help='Use random user-agent for requests')
+    parser.add_argument('--threads', '-T', type=int, default=DEFAULT_THREADS, help='Number of threads to use for scanning (default: 1)')
     args = parser.parse_args()
 
     target = args.target
     multi_target_file = args.multi_target
     direct_url = args.url
     multi_url_file = args.multi_url
+    thread_count = args.threads
 
     if multi_url_file:
         targets = load_targets_from_file(multi_url_file)
@@ -380,12 +383,12 @@ def main():
             return
         for target in targets:
             print(colored(f"[•] Direct scanning without crawling on {target}", 'cyan'))
-            scan(target, args.scan, [target]) 
+            scan(target, args.scan, [target], thread_count=thread_count) 
         return
 
     if direct_url:
         print(colored(f"[•] Direct scanning without crawling on {direct_url}", 'cyan'))
-        scan(direct_url, args.scan, [direct_url])
+        scan(direct_url, args.scan, [direct_url], thread_count=thread_count) 
         return
 
     if multi_target_file:
@@ -394,13 +397,13 @@ def main():
             return
         for target in targets:
             print(colored(f"[•] Crawling and scanning on {target}", 'cyan'))
-            crawl_and_scan(target, args.crawl, args.scan, args.random_agent)
+            crawl_and_scan(target, args.crawl, args.scan, args.random_agent, thread_count=thread_count) 
             cleanup_crawl_file(target)
         return
 
     if target:
         print(colored(f"[•] Crawling and scanning on {target}", 'cyan'))
-        crawl_and_scan(target, args.crawl, args.scan, args.random_agent)
+        crawl_and_scan(target, args.crawl, args.scan, args.random_agent, thread_count=thread_count) 
         cleanup_crawl_file(target)
 
 def cleanup_crawl_file(target):

@@ -1,6 +1,6 @@
 # Waymap - Web Vulnerability Scanner.
 
-**Current Version**: 3.6.6
+**Current Version**: 3.7.6
 **Author**: Trix Cyrus  
 **Contributions**: Yash (0day-Yash) & Jennin (@JeninSutradhar)
 **Copyright**: © 2024 Trixsec Org  
@@ -115,6 +115,10 @@ Check out this video to see Waymap in action:
 (I think At this point Waymap Crawler Is Better Than Sqlmap Crawler)
 - added new arguments : --url/-u and --multi-url/-mu to scan url/urls without crawling them 
 - bug fixes
+
+### V3.7.6
+- ADDED new arg --threads/-T (no more prompting for threads)
+- optimised waymap
 
 ## Installation and Usage
 

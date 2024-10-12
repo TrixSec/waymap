@@ -7,7 +7,7 @@ import os
 from datetime import datetime
 from termcolor import colored
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import time
+from settings import DEFAULT_THREADS, MAX_THREADS  
 import threading
 
 data_dir = os.path.join(os.getcwd(), 'data')
@@ -50,12 +50,15 @@ def test_open_redirect_payload(url, parameter, payload, user_agent):
 
     return {'vulnerable': False}
 
-def perform_redirect_scan(crawled_urls, user_agents, verbose=False):
+def perform_redirect_scan(crawled_urls, user_agents, thread_count, verbose=False):
     """Perform open redirect scanning on the given crawled URLs."""
+    if thread_count is None:
+        thread_count = DEFAULT_THREADS  
+
     payloads = load_open_redirect_payloads(os.path.join(data_dir, 'openredirectpayloads.txt'))
     detected_tech = None
 
-    use_threads = input(colored("[?] Do you want to use threads for scanning? (y/n, press Enter for default [n]): ", 'yellow')).strip().lower()
+    thread_count = max(1, min(thread_count, MAX_THREADS))
 
     try:
         for url in crawled_urls:
@@ -64,52 +67,8 @@ def perform_redirect_scan(crawled_urls, user_agents, verbose=False):
 
             print(colored(f"\n[•] Testing URL: {url}", 'yellow'))
 
-            if use_threads == 'y':
-                with ThreadPoolExecutor(max_workers=3) as executor:
-                    future_to_payload = {}
-                    for payload_entry in payloads:
-                        if stop_scan.is_set():
-                            break
-
-                        name = payload_entry['name']
-                        payload = payload_entry['payload']
-
-                        for param_key in url.split('?')[1].split('&'):
-                            if stop_scan.is_set():
-                                break
-
-                            param_key = param_key.split('=')[0]
-                            timestamp = datetime.now().strftime("%H:%M:%S")
-
-                            if verbose:
-                                print(f"[{colored(timestamp, 'blue')}] [Info]: Testing {name} on parameter {param_key}")
-
-                            user_agent = random.choice(user_agents)
-                            future = executor.submit(test_open_redirect_payload, url, param_key, payload, user_agent)
-                            future_to_payload[future] = (url, name)
-
-                    for future in as_completed(future_to_payload):
-                        if stop_scan.is_set():
-                            break
-
-                        result = future.result()
-                        full_url, name = future_to_payload[future]
-
-                        if result['vulnerable']:
-                            if detected_tech is None:
-                                detected_tech = result['redirected_url'] 
-                                print(colored(f"[•] Detected Technology: {detected_tech or 'Unknown'}", 'magenta'))
-
-                            print(colored(f"[★] Vulnerable URL found: {full_url}", 'white', attrs=['bold']))
-                            print(colored(f"[•] Redirected URL: {result['redirected_url']}", 'blue'))
-
-                            user_input = input(colored("\n[?] Vulnerable URL found. Do you want to continue testing other URLs? (y/n): ", 'yellow')).strip().lower()
-                            if user_input == 'n':
-                                print(colored("[•] Stopping further scans as per user's decision.", 'red'))
-                                stop_scan.set()  
-                                break
-
-            else:
+            with ThreadPoolExecutor(max_workers=thread_count) as executor:
+                future_to_payload = {}
                 for payload_entry in payloads:
                     if stop_scan.is_set():
                         break
@@ -128,22 +87,31 @@ def perform_redirect_scan(crawled_urls, user_agents, verbose=False):
                             print(f"[{colored(timestamp, 'blue')}] [Info]: Testing {name} on parameter {param_key}")
 
                         user_agent = random.choice(user_agents)
-                        result = test_open_redirect_payload(url, param_key, payload, user_agent)
+                        future = executor.submit(test_open_redirect_payload, url, param_key, payload, user_agent)
+                        future_to_payload[future] = (url, name)
 
-                        if result['vulnerable']:
-                            if detected_tech is None:
-                                detected_tech = result['redirected_url']  
-                                print(colored(f"[•] Detected Technology: {detected_tech or 'Unknown'}", 'magenta'))
+                for future in as_completed(future_to_payload):
+                    if stop_scan.is_set():
+                        break
 
-                            print(colored(f"[★] Vulnerable URL found: {url}", 'white', attrs=['bold']))
-                            print(colored(f"[•] Redirected URL: {result['redirected_url']}", 'blue'))
+                    result = future.result()
+                    full_url, name = future_to_payload[future]
 
-                            user_input = input(colored("\n[?] Vulnerable URL found. Do you want to continue testing other URLs? (y/n): ", 'yellow')).strip().lower()
-                            if user_input == 'n':
-                                print(colored("[•] Stopping further scans as per user's decision.", 'red'))
-                                stop_scan.set() 
-                                break
+                    if result['vulnerable']:
+                        if detected_tech is None:
+                            detected_tech = result['redirected_url'] 
+                            print(colored(f"[•] Detected Technology: {detected_tech or 'Unknown'}", 'magenta'))
+
+                        print(colored(f"[★] Vulnerable URL found: {full_url}", 'white', attrs=['bold']))
+                        print(colored(f"[•] Redirected URL: {result['redirected_url']}", 'blue'))
+
+                        user_input = input(colored("\n[?] Vulnerable URL found. Do you want to continue testing other URLs? (y/n): ", 'yellow')).strip().lower()
+                        if user_input == 'n':
+                            print(colored("[•] Stopping further scans as per user's decision.", 'red'))
+                            stop_scan.set()  
+                            break
 
     except KeyboardInterrupt:
         print(colored("\n[!] Scan interrupted by user. Exiting cleanly...", 'red'))
         stop_scan.set()
+
