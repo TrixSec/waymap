@@ -10,7 +10,7 @@ import multiprocessing
 import threading
 from termcolor import colored
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from settings import DEFAULT_THREADS, MAX_THREADS  
+from lib.core.settings import DEFAULT_THREADS, MAX_THREADS  
 
 data_dir = os.path.join(os.getcwd(), 'data')
 
