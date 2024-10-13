@@ -1,4 +1,4 @@
-# Copyright (c) 2024 waymap developers 
+# Copyright (c) 2024 waymap developers
 # See the file 'LICENSE' for copying permission.
 
 import random
@@ -9,8 +9,9 @@ from termcolor import colored
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import time
 import threading
-from lib.core.settings import DEFAULT_THREADS, MAX_THREADS  
-
+from lib.core.settings import DEFAULT_THREADS
+from lib.core.settings import MAX_THREADS
+from lib.core.settings import DEFAULT_INPUT 
 
 data_dir = os.path.join(os.getcwd(), 'data')
 
@@ -87,7 +88,9 @@ def test_xss_payload(url, parameter, payload, user_agent):
 
     return {'vulnerable': False}
 
-def choose_scan_level():
+def choose_scan_level(no_prompt):
+    if no_prompt:
+        return 3  
     try:
         while True:
             level = input(colored("[?] Choose scan level (1-7): ", 'yellow')).strip()
@@ -99,7 +102,7 @@ def choose_scan_level():
         print(colored("\n[!] Scan interrupted by user. Exiting...", 'red'))
         stop_scan.set()
 
-def perform_xss_scan(crawled_urls, user_agents, thread_count, verbose=False):
+def perform_xss_scan(crawled_urls, user_agents, thread_count, no_prompt, verbose=False,):
     if thread_count is None:
         thread_count = DEFAULT_THREADS  
 
@@ -173,17 +176,25 @@ def perform_xss_scan(crawled_urls, user_agents, thread_count, verbose=False):
                     print(colored(f"[•] Vulnerable Parameter: {param_key}", 'green'))
                     print(colored(f"[•] Payload: {payload}", 'green'))
 
-                    user_input = input(colored("\n[?] Vulnerable URL found. Do you want to continue testing other URLs? (y/n): ", 'yellow')).strip().lower()
+                    if no_prompt:
+                        user_input = DEFAULT_INPUT 
+                    else:
+                        user_input = input(colored("\n[?] Vulnerable URL found. Do you want to continue testing other URLs? (y/n): ", 'yellow')).strip().lower()
+                    
                     if user_input == 'n':
                         print(colored("[•] Stopping further scans as per user's decision.", 'red'))
                         stop_scan.set()
                         return
                     break
 
-        advanced_scan_choice = input(colored("[?] Do you want to Test XSS Filters Bypass Payload (y/n)(recommended): ", 'yellow')).strip().lower()
+        if no_prompt:
+            advanced_scan_choice = DEFAULT_INPUT
+        else:
+            advanced_scan_choice = input(colored("[?] Do you want to Test XSS Filters Bypass Payload (y/n)(recommended): ", 'yellow')).strip().lower()
+        
         if advanced_scan_choice == 'y':
             advanced_file_path = os.path.join(data_dir, 'filterbypassxss.txt')
-            advanced_payloads = load_advanced_xss_payloads(advanced_file_path, choose_scan_level())
+            advanced_payloads = load_advanced_xss_payloads(advanced_file_path, choose_scan_level(no_prompt))
 
             with ThreadPoolExecutor(max_workers=thread_count) as executor:
                 future_to_url = {}
@@ -249,7 +260,11 @@ def perform_xss_scan(crawled_urls, user_agents, thread_count, verbose=False):
                         print(colored(f"[•] Vulnerable Parameter: {param_key}", 'green'))
                         print(colored(f"[•] Payload: {payload}", 'green'))
 
-                        user_input = input(colored("\n[?] Vulnerable URL found. Do you want to continue testing other URLs? (y/n): ", 'yellow')).strip().lower()
+                        if no_prompt:
+                            user_input = DEFAULT_INPUT
+                        else:
+                            user_input = input(colored("\n[?] Vulnerable URL found. Do you want to continue testing other URLs? (y/n): ", 'yellow')).strip().lower()
+                        
                         if user_input == 'n':
                             print(colored("[•] Stopping further scans as per user's decision.", 'red'))
                             stop_scan.set()
@@ -259,4 +274,3 @@ def perform_xss_scan(crawled_urls, user_agents, thread_count, verbose=False):
     except KeyboardInterrupt:
         print(colored("\n[!] Scan interrupted by user. Exiting...", 'red'))
         stop_scan.set()
-

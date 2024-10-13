@@ -6,3 +6,5 @@ CRAWLING_EXCLUDE_EXTENSIONS = ("3ds", "3g2", "3gp", "7z", "DS_Store", "a", "aac"
 DEFAULT_THREADS = 1
 
 MAX_THREADS = 10
+
+DEFAULT_INPUT = 'n'

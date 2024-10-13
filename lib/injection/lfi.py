@@ -10,7 +10,9 @@ import multiprocessing
 import threading
 from termcolor import colored
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from lib.core.settings import DEFAULT_THREADS, MAX_THREADS  
+from lib.core.settings import DEFAULT_THREADS
+from lib.core.settings import MAX_THREADS
+from lib.core.settings import DEFAULT_INPUT 
 
 data_dir = os.path.join(os.getcwd(), 'data')
 
@@ -59,7 +61,7 @@ def test_lfi_payload(url, parameter, payload, expected_response, user_agent):
 
     return {'vulnerable': False}
 
-def perform_lfi_scan(crawled_urls, user_agents, thread_count, verbose=False):
+def perform_lfi_scan(crawled_urls, user_agents, thread_count, no_prompt, verbose=False):
     """Perform LFI scanning on the given crawled URLs with the specified number of threads."""
     if thread_count is None:
         thread_count = DEFAULT_THREADS  
@@ -131,11 +133,14 @@ def perform_lfi_scan(crawled_urls, user_agents, thread_count, verbose=False):
                         print(colored(f"[•] Payload: {payload}", 'green'))
                         print(colored(f"[•] Expected Response: {expected_response}", 'blue'))
 
-                        while True:
-                            user_input = input(colored("\n[?] Vulnerable URL found. Do you want to continue testing other URLs? (y/n): ", 'yellow')).strip().lower()
-                            if user_input in ['y', 'n']:
-                                break
-                            print(colored("[×] Invalid input. Please enter 'y' or 'n'.", 'red'))
+                        if no_prompt:  
+                            user_input = DEFAULT_INPUT
+                        else:
+                            while True:
+                                user_input = input(colored("\n[?] Vulnerable URL found. Do you want to continue testing other URLs? (y/n): ", 'yellow')).strip().lower()
+                                if user_input in ['y', 'n']:
+                                    break
+                                print(colored("[×] Invalid input. Please enter 'y' or 'n'.", 'red'))
 
                         if user_input == 'n':
                             print(colored("[•] Stopping further scans as per user's decision.", 'red'))

@@ -1,6 +1,6 @@
 # Waymap - Web Vulnerability Scanner.
 
-**Current Version**: 3.7.7
+**Current Version**: 3.8.7
 **Author**: Trix Cyrus  
 **Contributions**: Yash (0day-Yash) & Jennin (@JeninSutradhar)
 **Copyright**: © 2024 Trixsec Org  
@@ -122,6 +122,10 @@ Check out this video to see Waymap in action:
 
 ### v3.7.7
 - fixed bug/error
+
+### v3.8.7
+- ADDED new arg --no-prompt/ -np (it will not prompt for any input during scan default input = 'n' )
+- bug fixed
 
 ## Installation and Usage
 

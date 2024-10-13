@@ -10,7 +10,9 @@ import multiprocessing
 from termcolor import colored
 from xml.etree import ElementTree as ET
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from lib.core.settings import DEFAULT_THREADS, MAX_THREADS  
+from lib.core.settings import DEFAULT_THREADS
+from lib.core.settings import MAX_THREADS
+from lib.core.settings import DEFAULT_INPUT 
 
 
 data_dir = os.path.join(os.getcwd(), 'data')
@@ -57,7 +59,7 @@ def test_cmdi_payload(url, payload, user_agent, cmdi_errors):
 
     return {'vulnerable': False}
 
-def perform_cmdi_scan(crawled_urls, cmdi_payloads, user_agents, thread_count):
+def perform_cmdi_scan(crawled_urls, cmdi_payloads, user_agents, thread_count, no_prompt):
     if thread_count is None:
         thread_count = DEFAULT_THREADS  
 
@@ -93,17 +95,26 @@ def perform_cmdi_scan(crawled_urls, cmdi_payloads, user_agents, thread_count):
                         print(colored(f"[•] Payload: {payload}", 'green'))
                         print(colored(f"[•] Command Injection Error Pattern: {result['cmdi_error']}", 'blue'))
 
-                        if user_decision is None:
-                            user_input = input(colored("\n[?] Vulnerable URL found. Do you want to continue testing other URLs? (y/n): ", 'yellow')).strip().lower()
+                        if not no_prompt:
+                            while True:
+                                user_input = input(colored("\n[?] Vulnerable URL found. Do you want to continue testing other URLs? (y/n): ", 'yellow')).strip().lower()
+                                if user_input in ['y', 'n']:
+                                    break
+                                print(colored("[×] Invalid input. Please enter 'y' or 'n'.", 'red'))
+
                             if user_input == 'n':
                                 print(colored("[•] Stopping further scans as per user's decision.", 'red'))
                                 return
-                            user_decision = (user_input == 'y')
+                        else:
+                            user_input = DEFAULT_INPUT
+                            if user_input == 'n':
+                                print(colored("[•] Stopping further scans as per default value (n).", 'red'))
+                                return
+                            else:
+                                print(colored("[•] Continuing to scan as per default value (y).", 'green'))
 
-                        break 
-
-            if not found_vulnerability:
-                print(colored(f"[×] No vulnerabilities found on: {url}", 'red'))
+                if not found_vulnerability:
+                    print(colored(f"[×] No vulnerabilities found on: {url}", 'red'))
 
     except KeyboardInterrupt:
         print(colored("\n[!] Scan interrupted by user. Exiting cleanly...", 'red'))

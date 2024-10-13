@@ -10,7 +10,9 @@ import threading
 from datetime import datetime
 from termcolor import colored
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from lib.core.settings import DEFAULT_THREADS, MAX_THREADS  
+from lib.core.settings import DEFAULT_THREADS
+from lib.core.settings import MAX_THREADS
+from lib.core.settings import DEFAULT_INPUT  # Add this to get default input behavior
 
 data_dir = os.path.join(os.getcwd(), 'data')
 
@@ -59,9 +61,9 @@ def test_cors_vulnerability(url, payload, expected_response, user_agent):
 
     return {'vulnerable': False}
 
-def perform_cors_scan(crawled_urls, user_agents, thread_count, verbose=False):
+def perform_cors_scan(crawled_urls, user_agents, thread_count, no_prompt, verbose=False):
     if thread_count is None:
-        thread_count = DEFAULT_THREADS 
+        thread_count = DEFAULT_THREADS  
 
     cpu_count = multiprocessing.cpu_count()
     thread_count = max(1, min(thread_count, cpu_count * 2, MAX_THREADS))
@@ -74,6 +76,8 @@ def perform_cors_scan(crawled_urls, user_agents, thread_count, verbose=False):
                 break
 
             print(colored(f"\n[•] Testing URL: {url}", 'yellow'))
+
+            found_vulnerability = False
 
             with ThreadPoolExecutor(max_workers=thread_count) as executor:
                 future_to_payload = {}
@@ -102,19 +106,30 @@ def perform_cors_scan(crawled_urls, user_agents, thread_count, verbose=False):
                     url, payload = future_to_payload[future]
 
                     if result['vulnerable']:
+                        found_vulnerability = True
                         print(colored(f"[★] Vulnerable URL found: {result['url']}", 'white', attrs=['bold']))
                         print(colored(f"[•] Vulnerable Origin: {payload}", 'green'))
 
-                        while True:
-                            user_input = input(colored("\n[?] Vulnerable URL found. Do you want to continue testing other URLs? (y/n): ", 'yellow')).strip().lower()
-                            if user_input in ['y', 'n']:
-                                break
-                            print(colored("[×] Invalid input. Please enter 'y' or 'n'.", 'red'))
+                        if not no_prompt:
+                            while True:
+                                user_input = input(colored("\n[?] Vulnerable URL found. Do you want to continue testing other URLs? (y/n): ", 'yellow')).strip().lower()
+                                if user_input in ['y', 'n']:
+                                    break
+                                print(colored("[×] Invalid input. Please enter 'y' or 'n'.", 'red'))
 
-                        if user_input == 'n':
-                            print(colored("[•] Stopping further scans as per user's decision.", 'red'))
-                            stop_scan.set()
-                            break
+                            if user_input == 'n':
+                                print(colored("[•] Stopping further scans as per user's decision.", 'red'))
+                                return
+                        else:
+                            user_input = DEFAULT_INPUT
+                            if user_input == 'n':
+                                print(colored("[•] Stopping further scans as per default value (n).", 'red'))
+                                return
+                            else:
+                                print(colored("[•] Continuing to scan as per default value (y).", 'green'))
+
+                if not found_vulnerability:
+                    print(colored(f"[×] No vulnerabilities found on: {url}", 'red'))
 
     except KeyboardInterrupt:
         print(colored("\n[!] Scan interrupted by user. Exiting cleanly...", 'red'))
