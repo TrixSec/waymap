@@ -3,8 +3,8 @@
 # gen.py profile critical
 
 from colorama import Fore, Style, init
-from lib.ProfileCritical.Generic.sqlinjection.CVE_2024_24774 import scan_cve_2023_24774
-from lib.ProfileCritical.Generic.sqlinjection.CVE_2024_24775 import scan_cve_2023_24775
+from lib.ProfileCritical.Generic.sqlinjection.CVE_2023_24774 import scan_cve_2023_24774
+from lib.ProfileCritical.Generic.sqlinjection.CVE_2023_24775 import scan_cve_2023_24775
 init(autoreset=True)
 
 def handle_cve_2023_24774(target):
