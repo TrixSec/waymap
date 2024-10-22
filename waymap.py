@@ -423,7 +423,7 @@ def main():
         cleanup_crawl_file(target)
 
     if profile_url:
-        print(colored(f"[•] Scanning on {target}", 'cyan'))
+        print(colored(f"[•] Scanning on {profile_url}", 'cyan'))
         perform_profile_scan(profile_url, profile_type) 
     
 def cleanup_crawl_file(target):
