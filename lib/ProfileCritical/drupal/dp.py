@@ -3,9 +3,9 @@
 # dp.py profile critical
 
 from colorama import Fore, Style, init
-from others.CVE_2019_6339 import scan_cve_2019_6339
-from rce.CVE_2018_7602 import scan_cve_2018_7602
-from others.CVE_2018_7600 import scan_cve_2018_7600
+from lib.ProfileCritical.drupal.others.CVE_2019_6339 import scan_cve_2019_6339
+from lib.ProfileCritical.drupal.rce.CVE_2018_7602 import scan_cve_2018_7602
+from lib.ProfileCritical.drupal.others.CVE_2018_7600 import scan_cve_2018_7600
 init(autoreset=True)
 
 def handle_cve_2019_6339(target):
