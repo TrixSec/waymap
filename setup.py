@@ -1,15 +1,15 @@
 # Copyright (c) 2024 waymap developers 
 # See the file 'LICENSE' for copying permission.
+# setup.py
 
 from setuptools import setup, find_packages
 
 setup(
     name='waymap',
-    version='3.8.7', 
+    version='4.8.7', 
     description='Waymap is a powerful web vulnerability scanner designed to identify vulnerabilities in websites.#v1.0.3dev',
     author='Trix Cyrus',
-    Core_Developer='Trix',
-    Developers_Contributors='jenin,Yash',
+    Developer='Trix',
     author_email='trixcyrus666@gmail.com',  
     url='https://github.com/TrixSec/waymap',  
     packages=find_packages(where='lib'),  
@@ -18,7 +18,8 @@ setup(
         'requests',
         'termcolor',
         'beautifulsoup4'
-        'threading',  
+        'threading'
+        'colorama',  
     ],
     entry_points={
         'console_scripts': [

@@ -2,7 +2,6 @@
 
 **Current Version**: 3.8.7
 **Author**: Trix Cyrus  
-**Contributions**: Yash (0day-Yash) & Jennin (@JeninSutradhar)
 **Copyright**: © 2024 Trixsec Org  
 **Maintained**: Yes
 
@@ -126,6 +125,18 @@ Check out this video to see Waymap in action:
 ### v3.8.7
 - ADDED new arg --no-prompt/ -np (it will not prompt for any input during scan default input = 'n' )
 - bug fixed
+
+### v4.8.7
+- Big Update In Waymap
+- Added New Scan Profiles -- Critical and High -- access with --scan critical-risk, --scan high-risk 
+- these profiles will do the scan using cve scanners and exploits added in waymap according to the severity of NVD 
+- for now there are 32 CVES Exploits and scanners added for now 
+- WordPress: 19 CVEs
+- Drupal: 4 CVEs
+- Joomla: 7 CVEs
+- Generic/Others : 2 CVEs
+
+- More details about these cves will be shared soon...
 
 ## Installation and Usage
 

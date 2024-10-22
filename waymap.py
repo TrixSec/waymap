@@ -14,6 +14,8 @@ from lib.injection.ssti import perform_ssti_scan
 from lib.injection.xss import perform_xss_scan
 from lib.injection.lfi import perform_lfi_scan
 from lib.injection.openredirect import perform_redirect_scan
+from lib.injection.ProfileCritical.profile_critical import critical_risk_scan
+from lib.injection.ProfileHigh.profile_high import high_risk_scan
 from lib.injection.crlf import perform_crlf_scan
 from lib.injection.cors import perform_cors_scan
 from lib.core.settings import DEFAULT_THREADS
@@ -80,9 +82,8 @@ def log_error(message):
 data_dir = os.path.join(os.getcwd(), 'data')
 session_dir = os.path.join(os.getcwd(), 'session')
 
-WAYMAP_VERSION = "3.8.7"
+WAYMAP_VERSION = "4.8.7"
 AUTHOR = "Trix Cyrus"
-Devs = "@TrixSec & @0day-Yash & @JeninSutradhar"
 COPYRIGHT = "Copyright © 2024 Trixsec Org"
 
 def check_for_updates():
@@ -111,12 +112,11 @@ def print_banner():
 ░╚██╗████╗██╔╝███████║░╚████╔╝░██╔████╔██║███████║██████╔╝
 ░░████╔═████║░██╔══██║░░╚██╔╝░░██║╚██╔╝██║██╔══██║██╔═══╝░
 ░░╚██╔╝░╚██╔╝░██║░░██║░░░██║░░░██║░╚═╝░██║██║░░██║██║░░░░░
-░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v3.8.7
+░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v4.8.7
     """
     print(colored(banner, 'cyan'))
     print(colored(f"Waymap Version: {WAYMAP_VERSION}", 'yellow'))
     print(colored(f"Made by {AUTHOR}", 'yellow'))
-    print(colored(f"#Devs {Devs}", 'yellow'))
     print(colored(COPYRIGHT, 'yellow'))
     print("")
 
@@ -278,6 +278,16 @@ def scan(target, scan_type, crawled_urls=None, provided_urls=None, thread_count=
             print(colored(f"[•] Performing Cross-origin resource sharing scan on {target}", 'yellow'))
             perform_cors_scan(urls_to_scan, user_agents, thread_count=thread_count, no_prompt=no_prompt, verbose=True)
 
+        elif scan_type == 'high-risk':
+            print("\n")
+            print("[•] High-risk scan selected.")
+            high_risk_scan(target) 
+
+        elif scan_type == 'critical-risk':
+            print("\n")
+            print("[•] Critical-risk scan selected.")
+            critical_risk_scan(target) 
+
         elif scan_type == 'all':
             print("\n[•] Performing all scans on target...\n")
             print(colored("[•] Performing SQL Injection scan...", 'cyan'))
@@ -310,6 +320,14 @@ def scan(target, scan_type, crawled_urls=None, provided_urls=None, thread_count=
             print("\n")
             print(colored(f"[•] Performing Cross-origin resource sharing scan on {target}", 'yellow'))
             perform_cors_scan(urls_to_scan, user_agents, thread_count=thread_count, no_prompt=no_prompt, verbose=True)
+
+            print("\n")
+            print("[•] High-risk scan selected.")
+            high_risk_scan(target) 
+
+            print("\n")
+            print("[•] Critical-risk scan selected.")
+            critical_risk_scan(target) 
 
     finally:
         log_scan_end(target, scan_type)
@@ -364,7 +382,7 @@ def main():
     parser.add_argument('--target', '-t', type=str, help='Target URL for crawling and scanning , example: https://example.com/')
     parser.add_argument('--multi-target', '-mt', type=str, help='File with multiple target URLs for crawling and scanning')
     parser.add_argument('--crawl', '-c', type=int, help='Crawl depth')
-    parser.add_argument('--scan', '-s', type=str, choices=['sql', 'cmdi', 'ssti', 'xss', 'lfi', 'open-redirect', 'crlf', 'cors', 'all'], help='Type of scan to perform')
+    parser.add_argument('--scan', '-s', type=str, choices=['sql', 'cmdi', 'ssti', 'xss', 'lfi', 'open-redirect', 'crlf', 'cors', 'all' 'high-risk' 'critical-risk'], help='Type of scan to perform')
     parser.add_argument('--url', '-u', type=str, help='Single URL for direct scanning without crawling, example: https://example.com/index.php?id=1')
     parser.add_argument('--multi-url', '-mu', type=str, help='File with multiple URLs for direct scanning without crawling')
     parser.add_argument('--random-agent', '-ra', action='store_true', help='Use random user-agent for requests')

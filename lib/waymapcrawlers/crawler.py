@@ -1,6 +1,6 @@
 # Copyright (c) 2024 waymap developers
 # See the file 'LICENSE' for copying permission.
-
+# crawler.py
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
@@ -9,6 +9,8 @@ import sys
 import os
 import threading
 import signal
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 from lib.core.settings import CRAWLING_EXCLUDE_EXTENSIONS
 
 visited_urls = set()
