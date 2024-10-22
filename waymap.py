@@ -231,7 +231,15 @@ def scan(target, scan_type, crawled_urls=None, provided_urls=None, thread_count=
     cmdi_payloads = load_payloads(os.path.join(data_dir, 'cmdipayload.txt'))
     user_agents = load_user_agents(os.path.join(data_dir, 'ua.txt'))
 
-    urls_to_scan = provided_urls if provided_urls else crawled_urls
+    if scan_type in ['high-risk', 'critical-risk']:
+        print(colored(f"[•] Skipping crawling for {scan_type} scan type.", 'yellow'))
+        urls_to_scan = provided_urls if provided_urls else [target] 
+    else:
+        urls_to_scan = provided_urls if provided_urls else crawled_urls
+
+    if not urls_to_scan:
+        print(colored(f"[×] No URLs to scan.", 'red'))
+        return
 
     if not urls_to_scan:
         print(colored(f"[×] No URLs to scan.", 'red'))
