@@ -9,7 +9,7 @@ from lib.ProfileCritical.wordpress.wp import handle_cve_2022_1386
 from lib.ProfileCritical.wordpress.wp import handle_cve_2022_0739
 from lib.ProfileCritical.wordpress.wp import handle_cve_2022_0441
 from lib.ProfileCritical.wordpress.wp import handle_cve_2022_0316
-from lib.ProfileCritical.wordpress.wp import handle_cve_2021_34646
+from lib.ProfileCritical.wordpress.wp import handle_cve_2021_34656
 from lib.ProfileCritical.wordpress.wp import handle_cve_2021_25003
 from lib.ProfileCritical.wordpress.wp import handle_cve_2021_24884
 from lib.ProfileCritical.wordpress.wp import handle_cve_2021_24741
@@ -57,7 +57,7 @@ def perform_wordpress_critical_scan(target):
         handle_cve_2022_0739(target)
         handle_cve_2022_0441(target)
         handle_cve_2022_0316(target)
-        handle_cve_2021_34646(target)
+        handle_cve_2021_34656(target)
         handle_cve_2021_25003(target)
         handle_cve_2021_24884(target)
         handle_cve_2021_24741(target)
