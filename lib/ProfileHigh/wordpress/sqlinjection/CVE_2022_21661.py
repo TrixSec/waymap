@@ -79,4 +79,3 @@ def scan_cve_2022_21661(target):
     if test_time_based_injection(target):
         return "Target is vulnerable to time-based SQL injection"
     return "No SQL injection vulnerability detected"
-
