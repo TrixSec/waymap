@@ -4,7 +4,7 @@
 
 from colorama import Fore, Style
 from lib.ProfileCritical.wordpress.Improper_Authentication.CVE_2023_28121 import verify_woocommerce_version, create_waymap_admin
-from lib.ProfileCritical.wordpress.others.CVE_2023_2732 import version_check, fetch_usernames_rest_api, select_user, send_exploit
+from lib.ProfileCritical.wordpress.others.CVE_2023_2732 import scan_cve_2023_2732
 from lib.ProfileCritical.wordpress.other.CVE_2022_1386 import run_exploit
 from lib.ProfileCritical.wordpress.sqlinjection.CVE_2022_0739 import scan_cve_2022_0739
 from lib.ProfileCritical.wordpress.Improper_Authentication.CVE_2022_0441 import scan_cve_2022_0441
@@ -17,15 +17,15 @@ from lib.ProfileCritical.wordpress.sqlinjection.CVE_2021_24507 import scan_cve_2
 from lib.ProfileCritical.wordpress.injections.CVE_2021_24499 import scan_cve_2021_24499
 
 
-def handle_wordpress_exploit(target_url):
+def handle_wordpress_exploit(target):
     try:
-        print(Fore.YELLOW + f"[•] Initiating test for CVE-2023-28121 on {target_url}..." + Style.RESET_ALL)
+        print(Fore.YELLOW + f"[•] Initiating test for CVE-2023-28121 on {target}..." + Style.RESET_ALL)
         
         print(Fore.CYAN + "[•] Checking WooCommerce version..." + Style.RESET_ALL)
-        verify_woocommerce_version(target_url)
+        verify_woocommerce_version(target)
         
         print(Fore.CYAN + "[•] Attempting to create Waymap admin account..." + Style.RESET_ALL)
-        create_waymap_admin(target_url)
+        create_waymap_admin(target)
         
         print(Fore.GREEN + "[•] CVE-2023-28121 exploit completed successfully." + Style.RESET_ALL)
 
@@ -33,31 +33,13 @@ def handle_wordpress_exploit(target_url):
         print(Fore.RED + f"[•] An error occurred while handling CVE-2023-28121: {e}" + Style.RESET_ALL)
 
 
-def handle_cve_2023_2732(target_url):
-    try:
-        print(Fore.YELLOW + f"[•] Initiating test for CVE-2023-2732 on {target_url}..." + Style.RESET_ALL)
-        
-        print(Fore.CYAN + "[•] Verifying plugin version..." + Style.RESET_ALL)
-        if version_check(target_url):
-            print(Fore.CYAN + "[•] Fetching usernames from REST API..." + Style.RESET_ALL)
-            users = fetch_usernames_rest_api(target_url)
-            if users:
-                selected_user = select_user(users)
-                if selected_user:
-                    user_id = selected_user['id']
-                    username = selected_user['name']
-                    print(Fore.CYAN + "[•] Sending exploit..." + Style.RESET_ALL)
-                    send_exploit(user_id, username, target_url)
-                    print(Fore.GREEN + "[•] CVE-2023-2732 exploit completed successfully." + Style.RESET_ALL)
-                else:
-                    print(Fore.RED + "[•] No valid user selected for exploitation." + Style.RESET_ALL)
-            else:
-                print(Fore.RED + "[•] No users found for exploitation." + Style.RESET_ALL)
-        else:
-            print(Fore.RED + "[•] Target is not vulnerable to CVE-2023-2732." + Style.RESET_ALL)
+def handle_cve_2023_2732(target):
+    
+    print(f"{Fore.CYAN}[•] Starting scan for {Fore.YELLOW}CVE-2023-2732 {Fore.CYAN}on {Fore.GREEN}{target}{Style.RESET_ALL}...")
 
-    except Exception as e:
-        print(Fore.RED + f"[•] An error occurred while handling CVE-2023-2732: {e}" + Style.RESET_ALL)
+    scan_cve_2023_2732(target)
+
+    print(f"{Fore.CYAN}[•] Completed scan for {Fore.YELLOW}CVE-2023-2732 {Fore.CYAN}on {Fore.GREEN}{target}{Style.RESET_ALL}.")
 
 def handle_cve_2022_1386(target):
 
