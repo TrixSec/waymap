@@ -7,7 +7,7 @@ from lib.ProfileHigh.wordpress.sqlinjection.CVE_2022_21661 import scan_cve_2022_
 from lib.ProfileHigh.wordpress.Missing_Authorization.CVE_2022_1903 import exploit_armember
 from lib.ProfileHigh.wordpress.Missing_Authorization.CVE_2022_0236 import scan_cve_2022_0236
 from lib.ProfileHigh.wordpress.others.CVE_2022_1119 import scan_cve_2022_1119
-from lib.ProfileHigh.wordpress.sqlinjection.CVE_2021_43408 import scan_cve_2021_43408
+from lib.ProfileHigh.wordpress.sqlinjection.CVE_2022_43408 import scan_cve_2022_43408
 from lib.ProfileHigh.wordpress.auth.CVE_2021_25094 import scan_cve_2021_25094
 from lib.ProfileHigh.wordpress.others.CVE_2020_35749 import scan_cve_2020_35749
 
@@ -45,13 +45,13 @@ def handle_cve_2022_0236(target):
 
     print(f"{Fore.CYAN}[-] Completed scan for {Fore.YELLOW}CVE-2022-0236 {Fore.CYAN}on {Fore.GREEN}{target}{Style.RESET_ALL}.")
 
-def handle_cve_2021_43408(target):
+def handle_cve_2022_43408(target):
 
-    print(f"{Fore.CYAN}[+] Starting scan for {Fore.YELLOW}CVE-2021-43408 {Fore.CYAN}on {Fore.GREEN}{target}{Style.RESET_ALL}...")
+    print(f"{Fore.CYAN}[+] Starting scan for {Fore.YELLOW}CVE-2022-43408 {Fore.CYAN}on {Fore.GREEN}{target}{Style.RESET_ALL}...")
 
-    scan_cve_2021_43408(target)
+    scan_cve_2022_43408(target)
 
-    print(f"{Fore.CYAN}[-] Completed scan for {Fore.YELLOW}CVE-2021-43408 {Fore.CYAN}on {Fore.GREEN}{target}{Style.RESET_ALL}.")
+    print(f"{Fore.CYAN}[-] Completed scan for {Fore.YELLOW}CVE-2022-43408 {Fore.CYAN}on {Fore.GREEN}{target}{Style.RESET_ALL}.")
 
 def handle_cve_2021_25049(target):
 
