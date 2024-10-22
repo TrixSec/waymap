@@ -17,9 +17,9 @@ class Color:
 color_random = [Color.IMPORTANT, Color.NOTICE, Color.OKGREEN, Color.WARNING, Color.RED, Color.END]
 
 
-def scan_cve_2019_6340(target):
+def scan_cve_2019_6340(profile_url):
     url_dir = "/node/"
-    vuln_url = target + url_dir
+    vuln_url = profile_url + url_dir
 
     print(color_random[2] + "\n[+] Vuln URL: %s\n" % vuln_url + Color.END)
 

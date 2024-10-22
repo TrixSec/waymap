@@ -131,8 +131,8 @@ def save_raw_request(request, filename):
         f.write(request.body)
 
 
-def run_exploit(target):
-    url = target
+def run_exploit(profile_url):
+    url = profile_url
     domain = url.split("//")[1].split("/")[0]
     make_folder(domain)
 

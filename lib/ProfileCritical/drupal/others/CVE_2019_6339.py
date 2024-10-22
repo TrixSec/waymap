@@ -17,8 +17,8 @@ class Color:
 color_random = [Color.IMPORTANT, Color.NOTICE, Color.OKGREEN, Color.WARNING, Color.RED, Color.END]
 
 
-def scan_cve_2019_6339(target):
-    vuln_url = target + "/phar.phar"
+def scan_cve_2019_6339(profile_url):
+    vuln_url = profile_url + "/phar.phar"
 
     print(color_random[2] + "\n[+] Vulnerable URL: %s\n" % vuln_url + Color.END)
 

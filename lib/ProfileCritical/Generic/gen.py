@@ -7,18 +7,18 @@ from lib.ProfileCritical.Generic.sqlinjection.CVE_2023_24774 import scan_cve_202
 from lib.ProfileCritical.Generic.sqlinjection.CVE_2023_24775 import scan_cve_2023_24775
 init(autoreset=True)
 
-def handle_cve_2023_24774(target):
+def handle_cve_2023_24774(profile_url):
 
-    print(f"{Fore.CYAN}[+] Starting scan for {Fore.YELLOW}CVE-2023_24774 {Fore.CYAN}on {Fore.GREEN}{target}{Style.RESET_ALL}...")
+    print(f"{Fore.CYAN}[+] Starting scan for {Fore.YELLOW}CVE-2023_24774 {Fore.CYAN}on {Fore.GREEN}{profile_url}{Style.RESET_ALL}...")
 
-    scan_cve_2023_24774(target)
+    scan_cve_2023_24774(profile_url)
 
-    print(f"{Fore.CYAN}[-] Completed scan for {Fore.YELLOW}CVE-2023_24774 {Fore.CYAN}on {Fore.GREEN}{target}{Style.RESET_ALL}.")
+    print(f"{Fore.CYAN}[-] Completed scan for {Fore.YELLOW}CVE-2023_24774 {Fore.CYAN}on {Fore.GREEN}{profile_url}{Style.RESET_ALL}.")
 
-def handle_cve_2023_24775(target):
+def handle_cve_2023_24775(profile_url):
 
-    print(f"{Fore.CYAN}[+] Starting scan for {Fore.YELLOW}CVE-2023_24775 {Fore.CYAN}on {Fore.GREEN}{target}{Style.RESET_ALL}...")
+    print(f"{Fore.CYAN}[+] Starting scan for {Fore.YELLOW}CVE-2023_24775 {Fore.CYAN}on {Fore.GREEN}{profile_url}{Style.RESET_ALL}...")
 
-    scan_cve_2023_24775(target)
+    scan_cve_2023_24775(profile_url)
 
-    print(f"{Fore.CYAN}[-] Completed scan for {Fore.YELLOW}CVE-2023_24775 {Fore.CYAN}on {Fore.GREEN}{target}{Style.RESET_ALL}.")
+    print(f"{Fore.CYAN}[-] Completed scan for {Fore.YELLOW}CVE-2023_24775 {Fore.CYAN}on {Fore.GREEN}{profile_url}{Style.RESET_ALL}.")

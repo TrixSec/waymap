@@ -278,16 +278,6 @@ def scan(target, scan_type, crawled_urls=None, provided_urls=None, thread_count=
             print(colored(f"[•] Performing Cross-origin resource sharing scan on {target}", 'yellow'))
             perform_cors_scan(urls_to_scan, user_agents, thread_count=thread_count, no_prompt=no_prompt, verbose=True)
 
-        elif scan_type == 'high-risk':
-            print("\n")
-            print("[•] High-risk scan selected.")
-            high_risk_scan(target) 
-
-        elif scan_type == 'critical-risk':
-            print("\n")
-            print("[•] Critical-risk scan selected.")
-            critical_risk_scan(target) 
-
         elif scan_type == 'all':
             print("\n[•] Performing all scans on target...\n")
             print(colored("[•] Performing SQL Injection scan...", 'cyan'))
@@ -321,14 +311,6 @@ def scan(target, scan_type, crawled_urls=None, provided_urls=None, thread_count=
             print(colored(f"[•] Performing Cross-origin resource sharing scan on {target}", 'yellow'))
             perform_cors_scan(urls_to_scan, user_agents, thread_count=thread_count, no_prompt=no_prompt, verbose=True)
 
-            print("\n")
-            print("[•] High-risk scan selected.")
-            high_risk_scan(target) 
-
-            print("\n")
-            print("[•] Critical-risk scan selected.")
-            critical_risk_scan(target) 
-
     finally:
         log_scan_end(target, scan_type)
 
@@ -361,6 +343,16 @@ def load_targets_from_file(file_path):
         print(colored(f"[×] Target file {file_path} does not exist.", 'red'))
         return []
 
+def perform_profile_scan(profile_url, profile_type):
+    print(f"Starting {profile_type} scan on {profile_url}.")
+    
+    if profile_type == 'high-risk':
+        high_risk_scan(profile_url)
+    elif profile_type == 'critical-risk':
+        critical_risk_scan(profile_url)
+    else:
+        print(f"Error: Unknown scan type '{profile_type}'.")
+
 def main():
     print_banner()
     check_for_updates()
@@ -388,6 +380,7 @@ def main():
     parser.add_argument('--random-agent', '-ra', action='store_true', help='Use random user-agent for requests')
     parser.add_argument('--threads', '-T', type=int, default=DEFAULT_THREADS, help='Number of threads to use for scanning (default: 1)')
     parser.add_argument('--no-prompt', '-np', action='store_true', help='Automatically use default input for prompts')
+    parser.add_argument('--profileurl', '-pu', type=str, help='Target URL for scanning , example: https://example.com/')
     parser.add_argument('--profile', '-p', choices=['high-risk', 'critical-risk'], help="Specify the profile: 'high-risk' or 'critical-risk'. This skips crawling.")
     args = parser.parse_args()
 
@@ -397,8 +390,8 @@ def main():
     multi_url_file = args.multi_url
     thread_count = args.threads
     no_prompt = args.no_prompt
-    scanurl = args.target
-
+    profile_url = args.profileurl
+    profile_type = args.profile
 
     if multi_url_file:
         targets = load_targets_from_file(multi_url_file)
@@ -429,17 +422,10 @@ def main():
         crawl_and_scan(target, args.crawl, args.scan, args.random_agent, thread_count=thread_count, no_prompt=no_prompt) 
         cleanup_crawl_file(target)
 
-
-    perform_profile_scan(scanurl, args.profile)
-
-def perform_profile_scan(scanurl, profile):
-    if profile == 'high-risk':
-        print(f"Skipping crawling. Starting high-risk scan on {scanurl}.")
-        high_risk_scan(scanurl)
-    elif profile == 'critical-risk':
-        print(f"Skipping crawling. Starting critical-risk scan on {scanurl}.")
-        critical_risk_scan(scanurl)
-
+    if profile_url:
+        print(colored(f"[•] Scanning on {target}", 'cyan'))
+        perform_profile_scan(profile_url, profile_type) 
+    
 def cleanup_crawl_file(target):
     domain = target.split("//")[-1].split("/")[0]
     crawl_file = os.path.join(session_dir, domain, 'crawl.txt')

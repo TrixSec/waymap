@@ -8,26 +8,26 @@ from lib.ProfileCritical.drupal.rce.CVE_2018_7602 import scan_cve_2018_7602
 from lib.ProfileCritical.drupal.others.CVE_2018_7600 import scan_cve_2018_7600
 init(autoreset=True)
 
-def handle_cve_2019_6339(target):
+def handle_cve_2019_6339(profile_url):
 
-    print(f"{Fore.CYAN}[+] Starting scan for {Fore.YELLOW}CVE-2019_6339 {Fore.CYAN}on {Fore.GREEN}{target}{Style.RESET_ALL}...")
+    print(f"{Fore.CYAN}[+] Starting scan for {Fore.YELLOW}CVE-2019_6339 {Fore.CYAN}on {Fore.GREEN}{profile_url}{Style.RESET_ALL}...")
 
-    scan_cve_2019_6339(target)
+    scan_cve_2019_6339(profile_url)
 
-    print(f"{Fore.CYAN}[-] Completed scan for {Fore.YELLOW}CVE-2019_6339 {Fore.CYAN}on {Fore.GREEN}{target}{Style.RESET_ALL}.")
+    print(f"{Fore.CYAN}[-] Completed scan for {Fore.YELLOW}CVE-2019_6339 {Fore.CYAN}on {Fore.GREEN}{profile_url}{Style.RESET_ALL}.")
 
-def handle_cve_2018_7602(target):
+def handle_cve_2018_7602(profile_url):
 
-    print(f"{Fore.CYAN}[+] Starting scan for {Fore.YELLOW}CVE-2018_7602 {Fore.CYAN}on {Fore.GREEN}{target}{Style.RESET_ALL}...")
+    print(f"{Fore.CYAN}[+] Starting scan for {Fore.YELLOW}CVE-2018_7602 {Fore.CYAN}on {Fore.GREEN}{profile_url}{Style.RESET_ALL}...")
 
-    scan_cve_2018_7602(target)
+    scan_cve_2018_7602(profile_url)
 
-    print(f"{Fore.CYAN}[-] Completed scan for {Fore.YELLOW}CVE-2018_7602 {Fore.CYAN}on {Fore.GREEN}{target}{Style.RESET_ALL}.")
+    print(f"{Fore.CYAN}[-] Completed scan for {Fore.YELLOW}CVE-2018_7602 {Fore.CYAN}on {Fore.GREEN}{profile_url}{Style.RESET_ALL}.")
 
-def handle_cve_2018_7600(target):
+def handle_cve_2018_7600(profile_url):
 
-    print(f"{Fore.CYAN}[+] Starting scan for {Fore.YELLOW}CVE-2018_7600 {Fore.CYAN}on {Fore.GREEN}{target}{Style.RESET_ALL}...")
+    print(f"{Fore.CYAN}[+] Starting scan for {Fore.YELLOW}CVE-2018_7600 {Fore.CYAN}on {Fore.GREEN}{profile_url}{Style.RESET_ALL}...")
 
-    scan_cve_2018_7600(target)
+    scan_cve_2018_7600(profile_url)
 
-    print(f"{Fore.CYAN}[-] Completed scan for {Fore.YELLOW}CVE-2018_7600 {Fore.CYAN}on {Fore.GREEN}{target}{Style.RESET_ALL}.")
+    print(f"{Fore.CYAN}[-] Completed scan for {Fore.YELLOW}CVE-2018_7600 {Fore.CYAN}on {Fore.GREEN}{profile_url}{Style.RESET_ALL}.")

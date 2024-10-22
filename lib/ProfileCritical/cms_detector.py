@@ -6,10 +6,10 @@ import requests
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-def detect_wordpress(response, target):
+def detect_wordpress(response, profile_url):
     wp_paths = ['/wp-admin', '/wp-login.php']
     for path in wp_paths:
-        if requests.get(target + path, verify=False).status_code == 200:
+        if requests.get(profile_url + path, verify=False).status_code == 200:
             return "WordPress"
 
     if 'meta name="generator" content="WordPress' in response.text:
@@ -17,11 +17,11 @@ def detect_wordpress(response, target):
 
     wp_common_files = ['/wp-content/themes/', '/wp-includes/']
     for file in wp_common_files:
-        if requests.get(target + file, verify=False).status_code == 200:
+        if requests.get(profile_url + file, verify=False).status_code == 200:
             return "WordPress"
 
     try:
-        robots_response = requests.get(target + "/robots.txt", verify=False)
+        robots_response = requests.get(profile_url + "/robots.txt", verify=False)
         if robots_response.status_code == 200:
             robots_content = robots_response.text
             if "Disallow: /wp-admin/" in robots_content and "Allow: /wp-admin/admin-ajax.php" in robots_content:
@@ -31,10 +31,10 @@ def detect_wordpress(response, target):
 
     return None
 
-def detect_drupal(response, target):
+def detect_drupal(response, profile_url):
     drupal_paths = ['/sites/all/', '/sites/default/']
     for path in drupal_paths:
-        if requests.get(target + path, verify=False).status_code == 200:
+        if requests.get(profile_url + path, verify=False).status_code == 200:
             return "Drupal"
     
     if 'X-Generator' in response.headers and 'Drupal' in response.headers['X-Generator']:
@@ -44,15 +44,15 @@ def detect_drupal(response, target):
 
     drupal_common_files = ['/misc/drupal.js', '/modules/system/system.module']
     for file in drupal_common_files:
-        if requests.get(target + file, verify=False).status_code == 200:
+        if requests.get(profile_url + file, verify=False).status_code == 200:
             return "Drupal"
     
     return None
 
-def detect_joomla(response, target):
+def detect_joomla(response, profile_url):
     joomla_paths = ['/administrator/', '/index.php']
     for path in joomla_paths:
-        if requests.get(target + path, verify=False).status_code == 200:
+        if requests.get(profile_url + path, verify=False).status_code == 200:
             return "Joomla"
     
     if 'meta name="generator" content="Joomla' in response.text:
@@ -60,29 +60,29 @@ def detect_joomla(response, target):
 
     joomla_common_files = ['/templates/', '/media/system/js/']
     for file in joomla_common_files:
-        if requests.get(target + file, verify=False).status_code == 200:
+        if requests.get(profile_url + file, verify=False).status_code == 200:
             return "Joomla"
     
     return None
 
-def detect_cms(target):
+def detect_cms(profile_url):
     try:
-        response = requests.get(target, verify=False)
+        response = requests.get(profile_url, verify=False)
 
-        cms = detect_wordpress(response, target)
+        cms = detect_wordpress(response, profile_url)
         if cms:
             return cms
 
-        cms = detect_drupal(response, target)
+        cms = detect_drupal(response, profile_url)
         if cms:
             return cms
 
-        cms = detect_joomla(response, target)
+        cms = detect_joomla(response, profile_url)
         if cms:
             return cms
 
         return "Unknown/Other"
     
     except requests.RequestException as e:
-        print(f"[!] Error connecting to {target}: {str(e)}")
+        print(f"[!] Error connecting to {profile_url}: {str(e)}")
         return "Unknown/Other"
