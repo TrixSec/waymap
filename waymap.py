@@ -231,15 +231,7 @@ def scan(target, scan_type, crawled_urls=None, provided_urls=None, thread_count=
     cmdi_payloads = load_payloads(os.path.join(data_dir, 'cmdipayload.txt'))
     user_agents = load_user_agents(os.path.join(data_dir, 'ua.txt'))
 
-    if scan_type in ['high-risk', 'critical-risk']:
-        print(colored(f"[•] Skipping crawling for {scan_type} scan type.", 'yellow'))
-        urls_to_scan = provided_urls if provided_urls else [target] 
-    else:
-        urls_to_scan = provided_urls if provided_urls else crawled_urls
-
-    if not urls_to_scan:
-        print(colored(f"[×] No URLs to scan.", 'red'))
-        return
+    urls_to_scan = provided_urls if provided_urls else crawled_urls
 
     if not urls_to_scan:
         print(colored(f"[×] No URLs to scan.", 'red'))
@@ -396,6 +388,7 @@ def main():
     parser.add_argument('--random-agent', '-ra', action='store_true', help='Use random user-agent for requests')
     parser.add_argument('--threads', '-T', type=int, default=DEFAULT_THREADS, help='Number of threads to use for scanning (default: 1)')
     parser.add_argument('--no-prompt', '-np', action='store_true', help='Automatically use default input for prompts')
+    parser.add_argument('--profile', '-p', choices=['high-risk', 'critical-risk'], help="Specify the profile: 'high-risk' or 'critical-risk'. This skips crawling.")
     args = parser.parse_args()
 
     target = args.target
@@ -404,6 +397,8 @@ def main():
     multi_url_file = args.multi_url
     thread_count = args.threads
     no_prompt = args.no_prompt
+    scanurl = args.target
+
 
     if multi_url_file:
         targets = load_targets_from_file(multi_url_file)
@@ -433,6 +428,17 @@ def main():
         print(colored(f"[•] Crawling and scanning on {target}", 'cyan'))
         crawl_and_scan(target, args.crawl, args.scan, args.random_agent, thread_count=thread_count, no_prompt=no_prompt) 
         cleanup_crawl_file(target)
+
+
+    perform_profile_scan(scanurl, args.profile)
+
+def perform_profile_scan(scanurl, profile):
+    if profile == 'high-risk':
+        print(f"Skipping crawling. Starting high-risk scan on {scanurl}.")
+        high_risk_scan(scanurl)
+    elif profile == 'critical-risk':
+        print(f"Skipping crawling. Starting critical-risk scan on {scanurl}.")
+        critical_risk_scan(scanurl)
 
 def cleanup_crawl_file(target):
     domain = target.split("//")[-1].split("/")[0]
