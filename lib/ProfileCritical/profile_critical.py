@@ -2,28 +2,28 @@
 # See the file 'LICENSE' for copying permission.
 # profile_critical.py
 
-from cms_detector import detect_cms
-from wordpress.wp import handle_wordpress_exploit
-from wordpress.wp import handle_cve_2023_2732
-from wordpress.wp import handle_cve_2022_1386
-from wordpress.wp import handle_cve_2022_0739
-from wordpress.wp import handle_cve_2022_0441
-from wordpress.wp import handle_cve_2022_0316
-from wordpress.wp import handle_cve_2021_34646
-from wordpress.wp import handle_cve_2021_25003
-from wordpress.wp import handle_cve_2021_24884
-from wordpress.wp import handle_cve_2021_24741
-from wordpress.wp import handle_cve_2021_24507
-from wordpress.wp import handle_cve_2021_24499
-from drupal.dp import handle_cve_2019_6339
-from drupal.dp import handle_cve_2018_7602
-from drupal.dp import handle_cve_2018_7600
-from joomla.jm import handle_cve_2018_6396
-from joomla.jm import handle_cve_2018_17254
-from joomla.jm import handle_cve_2017_18345
-from joomla.jm import handle_cve_2017_8917
-from generic.gen import handle_cve_2023_24774
-from generic.gen import handle_cve_2023_24775
+from lib.ProfileCritical.cms_detector import detect_cms
+from lib.ProfileCritical.wordpress.wp import handle_wordpress_exploit
+from lib.ProfileCritical.wordpress.wp import handle_cve_2023_2732
+from lib.ProfileCritical.wordpress.wp import handle_cve_2022_1386
+from lib.ProfileCritical.wordpress.wp import handle_cve_2022_0739
+from lib.ProfileCritical.wordpress.wp import handle_cve_2022_0441
+from lib.ProfileCritical.wordpress.wp import handle_cve_2022_0316
+from lib.ProfileCritical.wordpress.wp import handle_cve_2021_34646
+from lib.ProfileCritical.wordpress.wp import handle_cve_2021_25003
+from lib.ProfileCritical.wordpress.wp import handle_cve_2021_24884
+from lib.ProfileCritical.wordpress.wp import handle_cve_2021_24741
+from lib.ProfileCritical.wordpress.wp import handle_cve_2021_24507
+from lib.ProfileCritical.wordpress.wp import handle_cve_2021_24499
+from lib.ProfileCritical.drupal.dp import handle_cve_2019_6339
+from lib.ProfileCritical.drupal.dp import handle_cve_2018_7602
+from lib.ProfileCritical.drupal.dp import handle_cve_2018_7600
+from lib.ProfileCritical.joomla.jm import handle_cve_2018_6396
+from lib.ProfileCritical.joomla.jm import handle_cve_2018_17254
+from lib.ProfileCritical.joomla.jm import handle_cve_2017_18345
+from lib.ProfileCritical.joomla.jm import handle_cve_2017_8917
+from lib.ProfileCritical.generic.gen import handle_cve_2023_24774
+from lib.ProfileCritical.generic.gen import handle_cve_2023_24775
 
 
 def critical_risk_scan(target):

@@ -1,15 +1,15 @@
-from cms_detector import detect_cms
-from wordpress.wp import handle_cve_2022_21661
-from wordpress.wp import handle_cve_2022_1903
-from wordpress.wp import handle_cve_2022_1119
-from wordpress.wp import handle_cve_2022_0236
-from wordpress.wp import handle_cve_2021_43408
-from wordpress.wp import handle_cve_2021_25094
-from wordpress.wp import handle_cve_2020_35749
-from drupal.dp import handle_cve_2019_6340
-from joomla.jm import handle_cve_2020_10239
-from joomla.jm import handle_cve_2020_10238
-from joomla.jm import handle_cve_2018_8045
+from lib.ProfileHigh.cms_detector import detect_cms
+from lib.ProfileHigh.wordpress.wp import handle_cve_2022_21661
+from lib.ProfileHigh.wordpress.wp import handle_cve_2022_1903
+from lib.ProfileHigh.wordpress.wp import handle_cve_2022_1119
+from lib.ProfileHigh.wordpress.wp import handle_cve_2022_0236
+from lib.ProfileHigh.wordpress.wp import handle_cve_2021_43408
+from lib.ProfileHigh.wordpress.wp import handle_cve_2021_25094
+from lib.ProfileHigh.wordpress.wp import handle_cve_2020_35749
+from lib.ProfileHigh.drupal.dp import handle_cve_2019_6340
+from lib.ProfileHigh.joomla.jm import handle_cve_2020_10239
+from lib.ProfileHigh.joomla.jm import handle_cve_2020_10238
+from lib.ProfileHigh.joomla.jm import handle_cve_2018_8045
 
 def high_risk_scan(target):
     cms = detect_cms(target)
