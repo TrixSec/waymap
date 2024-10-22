@@ -9,7 +9,7 @@ from lib.ProfileCritical.wordpress.others.CVE_2022_1386 import run_exploit
 from lib.ProfileCritical.wordpress.sqlinjection.CVE_2022_0739 import scan_cve_2022_0739
 from lib.ProfileCritical.wordpress.Improper_Authentication.CVE_2022_0441 import scan_cve_2022_0441
 from lib.ProfileCritical.wordpress.others.CVE_2022_0316 import scan_cve_2022_0316
-from lib.ProfileCritical.wordpress.others.CVE_2021_34646 import scan_cve_2021_34646
+from lib.ProfileCritical.wordpress.others.CVE_2021_34656 import scan_cve_2021_34646
 from lib.ProfileCritical.wordpress.injections.CVE_2021_25001 import scan_cve_2021_25003
 from lib.ProfileCritical.wordpress.injections.CVE_2021_24884 import scan_cve_2021_24884
 from lib.ProfileCritical.wordpress.sqlinjection.CVE_2021_24741 import scan_cve_2021_24741
