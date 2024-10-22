@@ -6,7 +6,7 @@ import re
 import hashlib
 import requests
 from colorama import Fore, Style, init
-from urlparse import urljoin
+from urllib.parse import urljoin
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
