@@ -14,8 +14,8 @@ from lib.injection.ssti import perform_ssti_scan
 from lib.injection.xss import perform_xss_scan
 from lib.injection.lfi import perform_lfi_scan
 from lib.injection.openredirect import perform_redirect_scan
-from lib.injection.ProfileCritical.profile_critical import critical_risk_scan
-from lib.injection.ProfileHigh.profile_high import high_risk_scan
+from lib.ProfileCritical.profile_critical import critical_risk_scan
+from lib.ProfileHigh.profile_high import high_risk_scan
 from lib.injection.crlf import perform_crlf_scan
 from lib.injection.cors import perform_cors_scan
 from lib.core.settings import DEFAULT_THREADS
