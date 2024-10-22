@@ -5,7 +5,7 @@
 from colorama import Fore, Style
 from lib.ProfileCritical.wordpress.Improper_Authentication.CVE_2023_28121 import verify_woocommerce_version, create_waymap_admin
 from lib.ProfileCritical.wordpress.others.CVE_2023_2732 import scan_cve_2023_2732
-from lib.ProfileCritical.wordpress.other.CVE_2022_1386 import run_exploit
+from lib.ProfileCritical.wordpress.others.CVE_2022_1386 import run_exploit
 from lib.ProfileCritical.wordpress.sqlinjection.CVE_2022_0739 import scan_cve_2022_0739
 from lib.ProfileCritical.wordpress.Improper_Authentication.CVE_2022_0441 import scan_cve_2022_0441
 from lib.ProfileCritical.wordpress.others.CVE_2022_0316 import scan_cve_2022_0316

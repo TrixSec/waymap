@@ -19,7 +19,8 @@ setup(
         'termcolor',
         'beautifulsoup4'
         'threading'
-        'colorama',  
+        'colorama'
+        'click',  
     ],
     entry_points={
         'console_scripts': [
