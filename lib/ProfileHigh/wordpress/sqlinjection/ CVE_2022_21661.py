@@ -70,7 +70,13 @@ def test_time_based_injection(target):
         print(f"[•] Error during time-based injection: {e}")
         return False
 
-def scan_url(target):
-    
-        check_admin_ajax_availability(target)
-        test_time_based_injection(target)
+def scan_cve_2022_21661(target):
+    if not check_admin_ajax_availability(target):
+        print("[•] Skipping further tests due to inaccessible admin-ajax.php")
+        return "admin-ajax.php not accessible"
+    if test_md5_injection(target):
+        return "Target is vulnerable to MD5-based SQL injection"
+    if test_time_based_injection(target):
+        return "Target is vulnerable to time-based SQL injection"
+    return "No SQL injection vulnerability detected"
+

@@ -3,7 +3,7 @@
 # wp.py profile high
 
 from colorama import Fore, Style, init
-from lib.ProfileHigh.wordpress.sqlinjection.CVE_2022_21661 import scan_url
+from lib.ProfileHigh.wordpress.sqlinjection.CVE_2022_21661 import scan_cve_2022_21661
 from lib.ProfileHigh.wordpress.Missing_Authorization.CVE_2022_1903 import exploit_armember
 from lib.ProfileHigh.wordpress.Missing_Authorization.CVE_2022_0236 import scan_cve_2022_0236
 from lib.ProfileHigh.wordpress.others.CVE_2022_1119 import scan_cve_2022_1119
@@ -17,7 +17,7 @@ def handle_cve_2022_21661(target):
 
     print(f"{Fore.CYAN}[+] Starting scan for {Fore.YELLOW}CVE-2022-21661 {Fore.CYAN}on {Fore.GREEN}{target}{Style.RESET_ALL}...")
 
-    scan_url(target) 
+    scan_cve_2022_21661(target)
 
     print(f"{Fore.CYAN}[-] Completed scan for {Fore.YELLOW}CVE-2022-21661 {Fore.CYAN}on {Fore.GREEN}{target}{Style.RESET_ALL}.")
 
