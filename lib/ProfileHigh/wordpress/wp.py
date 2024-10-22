@@ -3,13 +3,13 @@
 # wordpress.py profile high
 
 from colorama import Fore, Style, init
-from lib.ProfileHigh.sqlinjection.CVE_2022_21661 import scan_url
-from lib.ProfileHigh.Missing_Authorization.CVE_2022_1903 import exploit_armember
-from lib.ProfileHigh.Missing_Authorization.CVE_2022_0236 import scan_cve_2022_0236
-from lib.ProfileHigh.others.CVE_2022_1119 import scan_cve_2022_1119
-from lib.ProfileHigh.sqlinjection.CVE_2021_43408 import scan_cve_2021_43408
-from lib.ProfileHigh.auth.CVE_2021_25094 import scan_cve_2021_25094
-from lib.ProfileHigh.others.CVE_2020_35749 import scan_cve_2020_35749
+from lib.ProfileHigh.wordpress.sqlinjection.CVE_2022_21661 import scan_url
+from lib.ProfileHigh.wordpress.Missing_Authorization.CVE_2022_1903 import exploit_armember
+from lib.ProfileHigh.wordpress.Missing_Authorization.CVE_2022_0236 import scan_cve_2022_0236
+from lib.ProfileHigh.wordpress.others.CVE_2022_1119 import scan_cve_2022_1119
+from lib.ProfileHigh.wordpress.sqlinjection.CVE_2021_43408 import scan_cve_2021_43408
+from lib.ProfileHigh.wordpress.auth.CVE_2021_25094 import scan_cve_2021_25094
+from lib.ProfileHigh.wordpress.others.CVE_2020_35749 import scan_cve_2020_35749
 
 init(autoreset=True)
 
