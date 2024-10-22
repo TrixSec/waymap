@@ -1,6 +1,6 @@
 # Copyright (c) 2024 waymap developers
 # See the file 'LICENSE' for copying permission.
-# wordpress.py profile high
+# wp.py profile high
 
 from colorama import Fore, Style, init
 from lib.ProfileHigh.wordpress.sqlinjection.CVE_2022_21661 import scan_url

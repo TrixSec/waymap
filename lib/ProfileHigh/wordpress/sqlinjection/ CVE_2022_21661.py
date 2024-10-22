@@ -72,8 +72,5 @@ def test_time_based_injection(target):
 
 def scan_url(target):
     
-    if check_admin_ajax_availability(target):
-        if not test_md5_injection(target):
-            test_time_based_injection(target)
-    else:
-        print("[•] Target does not seem to be vulnerable. (Failed admin-ajax check)")
+        check_admin_ajax_availability(target)
+        test_time_based_injection(target)
