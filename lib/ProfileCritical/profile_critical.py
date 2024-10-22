@@ -22,8 +22,8 @@ from lib.ProfileCritical.joomla.jm import handle_cve_2018_6396
 from lib.ProfileCritical.joomla.jm import handle_cve_2018_17254
 from lib.ProfileCritical.joomla.jm import handle_cve_2017_18345
 from lib.ProfileCritical.joomla.jm import handle_cve_2017_8917
-from lib.ProfileCritical.generic.gen import handle_cve_2023_24774
-from lib.ProfileCritical.generic.gen import handle_cve_2023_24775
+from lib.ProfileCritical.Generic.gen import handle_cve_2023_24774
+from lib.ProfileCritical.Generic.gen import handle_cve_2023_24775
 
 
 def critical_risk_scan(target):
