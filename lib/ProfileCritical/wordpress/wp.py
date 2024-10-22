@@ -9,7 +9,7 @@ from lib.ProfileCritical.wordpress.others.CVE_2022_1386 import run_exploit
 from lib.ProfileCritical.wordpress.sqlinjection.CVE_2022_0739 import scan_cve_2022_0739
 from lib.ProfileCritical.wordpress.Improper_Authentication.CVE_2022_0441 import scan_cve_2022_0441
 from lib.ProfileCritical.wordpress.others.CVE_2022_0316 import scan_cve_2022_0316
-from lib.ProfileCritical.wordpress.others.CVE_2021_34656 import scan_cve_2021_34646
+from lib.ProfileCritical.wordpress.others.CVE_2021_34656 import scan_cve_2021_34656
 from lib.ProfileCritical.wordpress.injections.CVE_2021_25001 import scan_cve_2021_25003
 from lib.ProfileCritical.wordpress.injections.CVE_2021_24884 import scan_cve_2021_24884
 from lib.ProfileCritical.wordpress.sqlinjection.CVE_2021_24741 import scan_cve_2021_24741
@@ -73,13 +73,13 @@ def handle_cve_2022_0316(target):
 
     print(f"{Fore.CYAN}[•] Completed scan for {Fore.YELLOW}CVE-2022-0316 {Fore.CYAN}on {Fore.GREEN}{target}{Style.RESET_ALL}.")
 
-def handle_cve_2021_34646(target):
+def handle_cve_2021_34656(target):
 
-    print(f"{Fore.CYAN}[•] Starting scan for {Fore.YELLOW}CVE-2021_34646 {Fore.CYAN}on {Fore.GREEN}{target}{Style.RESET_ALL}...")
+    print(f"{Fore.CYAN}[•] Starting scan for {Fore.YELLOW}CVE-2021_34656 {Fore.CYAN}on {Fore.GREEN}{target}{Style.RESET_ALL}...")
 
-    scan_cve_2021_34646(target)
+    scan_cve_2021_34656(target)
 
-    print(f"{Fore.CYAN}[•] Completed scan for {Fore.YELLOW}CVE-2021_34646 {Fore.CYAN}on {Fore.GREEN}{target}{Style.RESET_ALL}.")
+    print(f"{Fore.CYAN}[•] Completed scan for {Fore.YELLOW}CVE-2021_34656 {Fore.CYAN}on {Fore.GREEN}{target}{Style.RESET_ALL}.")
 
 def handle_cve_2021_25003(target):
 
