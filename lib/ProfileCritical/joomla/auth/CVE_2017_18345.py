@@ -2,7 +2,7 @@
 # See the file 'LICENSE' for copying permission.
 # CVE-2017-18345
 
-import urllib2
+import urllib.request as urllib2
 from bs4 import BeautifulSoup
 import urlparse
 import requests
