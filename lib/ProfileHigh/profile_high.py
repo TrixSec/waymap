@@ -3,7 +3,7 @@ from lib.ProfileHigh.wordpress.wp import handle_cve_2022_21661
 from lib.ProfileHigh.wordpress.wp import handle_cve_2022_1903
 from lib.ProfileHigh.wordpress.wp import handle_cve_2022_1119
 from lib.ProfileHigh.wordpress.wp import handle_cve_2022_0236
-from lib.ProfileHigh.wordpress.wp import handle_cve_2021_43408
+from lib.ProfileHigh.wordpress.wp import handle_cve_2022_43408
 from lib.ProfileHigh.wordpress.wp import handle_cve_2021_25094
 from lib.ProfileHigh.wordpress.wp import handle_cve_2020_35749
 from lib.ProfileHigh.drupal.dp import handle_cve_2019_6340
@@ -40,7 +40,7 @@ def perform_wordpress_scan(target):
         handle_cve_2022_1903(target) 
         handle_cve_2022_1119(target) 
         handle_cve_2022_0236(target)
-        handle_cve_2021_43408(target)
+        handle_cve_2022_43408(target)
         handle_cve_2021_25094(target)
         handle_cve_2020_35749(target)
     except Exception as e:
