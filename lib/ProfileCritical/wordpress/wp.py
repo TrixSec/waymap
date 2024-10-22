@@ -3,18 +3,19 @@
 # wordpress.py profile critical
 
 from colorama import Fore, Style
-from Improper_Authentication.CVE_2023_28121 import verify_woocommerce_version, create_waymap_admin
-from others.CVE_2023_2732 import version_check, fetch_usernames_rest_api, select_user, send_exploit
-from other.CVE_2022_1386 import run_exploit
-from sqlinjection.CVE_2022_0739 import scan_cve_2022_0739
-from Improper_Authentication.CVE_2022_0441 import scan_cve_2022_0441
-from others.CVE_2022_0316 import scan_cve_2022_0316
-from others.CVE_2021_34646 import scan_cve_2021_34646
-from injections.CVE_2021_25001 import scan_cve_2021_25003
-from injections.CVE_2021_24884 import scan_cve_2021_24884
-from sqlinjection.CVE_2021_24741 import scan_cve_2021_24741
-from sqlinjection.CVE_2021_24507 import scan_cve_2021_24507
-from injections.CVE_2021_24499 import scan_cve_2021_24499
+from lib.ProfileCritical.wordpress.Improper_Authentication.CVE_2023_28121 import verify_woocommerce_version, create_waymap_admin
+from lib.ProfileCritical.wordpress.others.CVE_2023_2732 import version_check, fetch_usernames_rest_api, select_user, send_exploit
+from lib.ProfileCritical.wordpress.other.CVE_2022_1386 import run_exploit
+from lib.ProfileCritical.wordpress.sqlinjection.CVE_2022_0739 import scan_cve_2022_0739
+from lib.ProfileCritical.wordpress.Improper_Authentication.CVE_2022_0441 import scan_cve_2022_0441
+from lib.ProfileCritical.wordpress.others.CVE_2022_0316 import scan_cve_2022_0316
+from lib.ProfileCritical.wordpress.others.CVE_2021_34646 import scan_cve_2021_34646
+from lib.ProfileCritical.wordpress.injections.CVE_2021_25001 import scan_cve_2021_25003
+from lib.ProfileCritical.wordpress.injections.CVE_2021_24884 import scan_cve_2021_24884
+from lib.ProfileCritical.wordpress.sqlinjection.CVE_2021_24741 import scan_cve_2021_24741
+from lib.ProfileCritical.wordpress.sqlinjection.CVE_2021_24507 import scan_cve_2021_24507
+from lib.ProfileCritical.wordpress.injections.CVE_2021_24499 import scan_cve_2021_24499
+
 
 def handle_wordpress_exploit(target_url):
     try:

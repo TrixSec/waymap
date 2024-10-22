@@ -3,9 +3,10 @@
 # wordpress.py profile high
 
 from colorama import Fore, Style, init
-from auth.CVE_2020_10239 import scan_cve_2020_10239
-from others.CVE_2020_10238 import scan_cve_2020_10238
-from sqlinjection.CVE_2018_8045 import scan_cve_2018_8045
+from lib.ProfileHigh.joomla.auth.CVE_2020_10239 import scan_cve_2020_10239
+from lib.ProfileHigh.joomla.others.CVE_2020_10238 import scan_cve_2020_10238
+from lib.ProfileHigh.joomla.sqlinjection.CVE_2018_8045 import scan_cve_2018_8045
+
 
 init(autoreset=True)
 

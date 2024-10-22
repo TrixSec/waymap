@@ -3,10 +3,11 @@
 # jm.py profile critical
 
 from colorama import Fore, Style, init
-from sqlinjection.CVE_2018_6396 import scan_cve_2018_6396
-from sqlinjection.CVE_2012_17254 import scan_cve_2018_17254
-from auth.CVE_2017_18345 import scan_cve_2017_18345
-from sqlinjection.CVE_2017_8917 import scan_cve_2017_8917
+from lib.ProfileCritical.joomla.sqlinjection.CVE_2018_6396 import scan_cve_2018_6396
+from lib.ProfileCritical.joomla.sqlinjection.CVE_2018_17254 import scan_cve_2018_17254
+from lib.ProfileCritical.joomla.auth.CVE_2017_18345 import scan_cve_2017_18345
+from lib.ProfileCritical.joomla.sqlinjection.CVE_2017_8917 import scan_cve_2017_8917
+
 init(autoreset=True)
 
 def handle_cve_2018_6396(target):

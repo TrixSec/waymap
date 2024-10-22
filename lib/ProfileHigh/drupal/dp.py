@@ -3,7 +3,7 @@
 # drupal.py profile high
 
 from colorama import Fore, Style, init
-from others.CVE_2019_6340 import scan_cve_2019_6340
+from lib.ProfileHigh.drupal.others.CVE_2019_6340 import scan_cve_2019_6340
 
 init(autoreset=True)
 
