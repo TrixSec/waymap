@@ -8,7 +8,6 @@ import time
 import sys
 import os
 import threading
-import signal
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 from lib.core.settings import CRAWLING_EXCLUDE_EXTENSIONS
@@ -32,17 +31,6 @@ RESET = '\033[0m'
 
 lock = threading.Lock()
 crawl_done = threading.Event() 
-stop_crawl = False
-
-def handle_interrupt(signal, frame):
-    global stop_crawl
-    if not crawl_done.is_set():  
-        stop_crawl = True
-        print(f"\n{RED}{BOLD}[×] Crawling interrupted. Saving results...{RESET}")
-    else:
-        print(f"\n{GREEN}{BOLD}[✓] Crawling already completed. No interruption necessary.{RESET}")
-
-signal.signal(signal.SIGINT, handle_interrupt)
 
 def get_domain_dir(base_domain):
     domain_dir = os.path.join(os.getcwd(), 'sessions', base_domain)
@@ -73,8 +61,6 @@ def remove_crawl_file(base_domain):
 
 def crawl_url(url, base_domain, next_urls_to_crawl):
     global total_urls, valid_url_count
-    if stop_crawl:
-        return
 
     try:
         headers = {"User-Agent": "Mozilla/5.0"}  
@@ -122,7 +108,7 @@ def crawl_worker(urls_to_crawl, base_domain, next_urls_to_crawl):
 
 def crawl(urls_to_crawl, depth, max_depth, base_domain, num_threads):
     global total_urls
-    if depth > max_depth or stop_crawl:
+    if depth > max_depth:
         return
 
     total_urls = 0
