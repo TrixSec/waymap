@@ -1,6 +1,6 @@
 # Waymap - Web Vulnerability Scanner.
 
-**Current Version**: 3.8.7
+**Current Version**: 4.9.0
 **Author**: Trix Cyrus  
 **Copyright**: © 2024 Trixsec Org  
 **Maintained**: Yes
@@ -127,7 +127,6 @@ Check out this video to see Waymap in action:
 - bug fixed
 
 ### v4.8.7
-- Big Update In Waymap
 - Added New Scan Profiles -- Critical and High -- access with --scan critical-risk, --scan high-risk 
 - these profiles will do the scan using cve scanners and exploits added in waymap according to the severity of NVD 
 - for now there are 32 CVES Exploits and scanners added for now 
@@ -137,6 +136,13 @@ Check out this video to see Waymap in action:
 - Generic/Others : 2 CVEs
 
 - More details about these cves will be shared soon...
+
+### v4.9.0 
+- added new arg to handle the profiles
+- --profile critical-risk/ high-risk
+- --profileurl https://example.com/
+- fixed imports error / optimised waymap
+
 
 ## Installation and Usage
 

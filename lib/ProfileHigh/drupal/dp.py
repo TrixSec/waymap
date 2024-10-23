@@ -10,6 +10,7 @@ init(autoreset=True)
 
 def handle_cve_2019_6340(profile_url):
 
+    print("\n")
     print(f"{Fore.CYAN}[+] Starting scan for {Fore.YELLOW}CVE-2019_6340 {Fore.CYAN}on {Fore.GREEN}{profile_url}{Style.RESET_ALL}...")
 
     scan_cve_2019_6340(profile_url)

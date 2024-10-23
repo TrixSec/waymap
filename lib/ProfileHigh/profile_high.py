@@ -17,6 +17,7 @@ def high_risk_scan(profile_url):
 
     if cms == "WordPress":
         print("[•] Initiating WordPress high-risk scan...")
+        
         perform_wordpress_scan(profile_url)
     
     elif cms == "Drupal":
@@ -34,6 +35,7 @@ def high_risk_scan(profile_url):
 
 def perform_wordpress_scan(profile_url):
     print(f"[•] Running High-risk scan on {profile_url}")
+    print("\n")
     
     try:
         handle_cve_2022_21661(profile_url)
@@ -48,7 +50,7 @@ def perform_wordpress_scan(profile_url):
 
 def perform_drupal_scan(profile_url):
     print(f"[•] Running High-risk scan on {profile_url}")
-    
+    print("\n")
     try:
         handle_cve_2019_6340(profile_url)
 
@@ -57,7 +59,7 @@ def perform_drupal_scan(profile_url):
 
 def perform_joomla_scan(profile_url):
     print(f"[•] Running High-risk scan on {profile_url}")
-    
+    print("\n")
     try:
         handle_cve_2020_10239(profile_url)
         handle_cve_2020_10238(profile_url)
@@ -67,6 +69,5 @@ def perform_joomla_scan(profile_url):
         print(f"[!] Error during Joomla High scan: {e}")
 
 def perform_generic_scan(profile_url):
-
     print(f"[•] No CVE Available For Scan Wait For A New Update Of Waymap")
     pass

@@ -18,7 +18,8 @@ from lib.ProfileCritical.wordpress.injections.CVE_2021_24499 import scan_cve_202
 
 
 def handle_wordpress_exploit(profile_url):
-    try:
+    try:        
+        print("\n")
         print(Fore.YELLOW + f"[•] Initiating test for CVE-2023-28121 on {profile_url}..." + Style.RESET_ALL)
         
         print(Fore.CYAN + "[•] Checking WooCommerce version..." + Style.RESET_ALL)
@@ -35,6 +36,7 @@ def handle_wordpress_exploit(profile_url):
 
 def handle_cve_2023_2732(profile_url):
     
+    print("\n")
     print(f"{Fore.CYAN}[•] Starting scan for {Fore.YELLOW}CVE-2023-2732 {Fore.CYAN}on {Fore.GREEN}{profile_url}{Style.RESET_ALL}...")
 
     scan_cve_2023_2732(profile_url)
@@ -43,6 +45,7 @@ def handle_cve_2023_2732(profile_url):
 
 def handle_cve_2022_1386(profile_url):
 
+    print("\n")
     print(f"{Fore.CYAN}[•] Starting scan for {Fore.YELLOW}CVE-2022-1386 {Fore.CYAN}on {Fore.GREEN}{profile_url}{Style.RESET_ALL}...")
 
     run_exploit(profile_url)
@@ -51,6 +54,7 @@ def handle_cve_2022_1386(profile_url):
 
 def handle_cve_2022_0739(profile_url):
     
+    print("\n")
     print(f"{Fore.CYAN}[•] Starting scan for {Fore.YELLOW}CVE-2022-0739 {Fore.CYAN}on {Fore.GREEN}{profile_url}{Style.RESET_ALL}...")
 
     scan_cve_2022_0739(profile_url)
@@ -59,6 +63,7 @@ def handle_cve_2022_0739(profile_url):
 
 def handle_cve_2022_0441(profile_url):
 
+    print("\n")
     print(f"{Fore.CYAN}[•] Starting scan for {Fore.YELLOW}CVE-2022-0441 {Fore.CYAN}on {Fore.GREEN}{profile_url}{Style.RESET_ALL}...")
 
     scan_cve_2022_0441(profile_url)
@@ -67,6 +72,7 @@ def handle_cve_2022_0441(profile_url):
 
 def handle_cve_2022_0316(profile_url):
 
+    print("\n")
     print(f"{Fore.CYAN}[•] Starting scan for {Fore.YELLOW}CVE-2022-0316 {Fore.CYAN}on {Fore.GREEN}{profile_url}{Style.RESET_ALL}...")
 
     scan_cve_2022_0316(profile_url)
@@ -75,6 +81,7 @@ def handle_cve_2022_0316(profile_url):
 
 def handle_cve_2021_34656(profile_url):
 
+    print("\n")
     print(f"{Fore.CYAN}[•] Starting scan for {Fore.YELLOW}CVE-2021_34656 {Fore.CYAN}on {Fore.GREEN}{profile_url}{Style.RESET_ALL}...")
 
     scan_cve_2021_34656(profile_url)
@@ -83,6 +90,7 @@ def handle_cve_2021_34656(profile_url):
 
 def handle_cve_2021_25003(profile_url):
 
+    print("\n")
     print(f"{Fore.CYAN}[•] Starting scan for {Fore.YELLOW}CVE-2021_25003 {Fore.CYAN}on {Fore.GREEN}{profile_url}{Style.RESET_ALL}...")
 
     scan_cve_2021_25003(profile_url)
@@ -91,6 +99,7 @@ def handle_cve_2021_25003(profile_url):
 
 def handle_cve_2021_24884(profile_url):
 
+    print("\n")
     print(f"{Fore.CYAN}[•] Starting scan for {Fore.YELLOW}CVE-2021_24884 {Fore.CYAN}on {Fore.GREEN}{profile_url}{Style.RESET_ALL}...")
 
     scan_cve_2021_24884(profile_url)
@@ -99,6 +108,7 @@ def handle_cve_2021_24884(profile_url):
 
 def handle_cve_2021_24741(profile_url):
 
+    print("\n")
     print(f"{Fore.CYAN}[•] Starting scan for {Fore.YELLOW}CVE-2021_24741 {Fore.CYAN}on {Fore.GREEN}{profile_url}{Style.RESET_ALL}...")
 
     scan_cve_2021_24741(profile_url)
@@ -107,6 +117,7 @@ def handle_cve_2021_24741(profile_url):
 
 def handle_cve_2021_24507(profile_url):
 
+    print("\n")
     print(f"{Fore.CYAN}[•] Starting scan for {Fore.YELLOW}CVE-2021_24507 {Fore.CYAN}on {Fore.GREEN}{profile_url}{Style.RESET_ALL}...")
 
     scan_cve_2021_24507(profile_url)
@@ -115,6 +126,7 @@ def handle_cve_2021_24507(profile_url):
 
 def handle_cve_2021_24499(profile_url):
 
+    print("\n")
     print(f"{Fore.CYAN}[•] Starting scan for {Fore.YELLOW}CVE-2021_24499 {Fore.CYAN}on {Fore.GREEN}{profile_url}{Style.RESET_ALL}...")
 
     scan_cve_2021_24499(profile_url)

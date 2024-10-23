@@ -12,6 +12,7 @@ init(autoreset=True)
 
 def handle_cve_2020_10239(profile_url):
 
+    print("\n")
     print(f"{Fore.CYAN}[+] Starting scan for {Fore.YELLOW}CVE-2020-10239 {Fore.CYAN}on {Fore.GREEN}{profile_url}{Style.RESET_ALL}...")
 
     scan_cve_2020_10239(profile_url)
@@ -20,6 +21,7 @@ def handle_cve_2020_10239(profile_url):
 
 def handle_cve_2020_10238(profile_url):
 
+    print("\n")
     print(f"{Fore.CYAN}[+] Starting scan for {Fore.YELLOW}CVE-2020-10238 {Fore.CYAN}on {Fore.GREEN}{profile_url}{Style.RESET_ALL}...")
 
     scan_cve_2020_10238(profile_url)
@@ -28,6 +30,7 @@ def handle_cve_2020_10238(profile_url):
 
 def handle_cve_2018_8045(profile_url):
 
+    print("\n")
     print(f"{Fore.CYAN}[+] Starting scan for {Fore.YELLOW}CVE-2018_8045 {Fore.CYAN}on {Fore.GREEN}{profile_url}{Style.RESET_ALL}...")
 
     scan_cve_2018_8045(profile_url)

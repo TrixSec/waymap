@@ -7,7 +7,7 @@ import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def detect_wordpress(response, profile_url):
-    wp_paths = ['/wp-admin', '/wp-login.php']
+    wp_paths = ['/wp-admin', '/wp-login.php', 'wp-admin', 'wp-login.php']
     for path in wp_paths:
         if requests.get(profile_url + path, verify=False).status_code == 200:
             return "WordPress"

