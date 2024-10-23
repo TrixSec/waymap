@@ -25,6 +25,8 @@ def scan_cve_2018_7600(profile_url):
             print(f"{R}[!] The target {profile_url} is vulnerable to SA-CORE-2018-002 / CVE-2018-7600{W}")
         else:
             print(f"{G}[*] - The target {profile_url} is not vulnerable{W}")
+            return
     except Exception as e:
         print(f"{R}[!] - Something went wrong: {str(e)}{W}")
+        return
 

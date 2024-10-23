@@ -24,6 +24,7 @@ def extract_data(response_body):
             print(f"{Style.BRIGHT}{Fore.CYAN}Service Price: {user['bookingpress_service_price']}\n")
     except Exception as e:
         print(f"{Style.BRIGHT}{Fore.RED}[•] Error parsing response: {e}")
+        return False
 
 def exploit(profile_url):
 
@@ -78,3 +79,4 @@ def scan_cve_2022_0739(profile_url):
         extract_data(response_body)
     else:
         print(f"{Style.BRIGHT}{Fore.RED}[•] Exploit failed. No response received.")
+        return False

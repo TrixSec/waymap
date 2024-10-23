@@ -73,4 +73,5 @@ def scan_cve_2018_17254(profile_url):
             print(colored(f"[+] DB found: {db}", "green", attrs=["bold"]))
     else:
         print(colored("[-] Target is not vulnerable.", "red", attrs=["bold"]))
+        return False
 

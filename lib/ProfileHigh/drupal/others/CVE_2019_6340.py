@@ -47,12 +47,14 @@ def scan_cve_2019_6340(profile_url):
             if m:
                 print(color_random[3] + m[0] + Color.END)
         elif response.status_code == 200:
-            print(color_random[2] + "\n[+] Success! Server is vulnerable to CVE-2019-6340. Command executed.\n" + Color.END)
+            print(color_random[2] + "\n[+] Success! Server is vulnerable to CVE-2019-6340. Command executed.\n" + Color.END)        
             print(color_random[3] + response.text + Color.END)
+            return True
         else:
             print(color_random[4] + "\n[!] No vulnerability detected. Status Code: %d\n" % response.status_code + Color.END)
+            return False
     
     except requests.RequestException as e:
         print(color_random[4] + "\n[!] An error occurred while sending the request.\n" + Color.END)
         print(color_random[3] + "Error details: %s" % str(e) + Color.END)
-        exit(1)
+        return

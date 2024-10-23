@@ -30,6 +30,8 @@ def scan_cve_2022_1119(profile_url):
 
     if check_wp_config_accessibility(profile_url):
         print(f"{Style.BRIGHT}{Fore.GREEN}[•] Target is vulnerable to CVE-2022-1119!")
+        return True
     else:
         print(f"{Style.BRIGHT}{Fore.RED}[•] Target does not seem to be vulnerable to CVE-2022-1119.")
+        return
 

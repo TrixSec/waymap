@@ -12,7 +12,6 @@ init(autoreset=True)
 data = {'wpie_download_export_id': '1'}
 
 def check_vulnerability(profile_url):
-
     try:
         print(f"{Style.BRIGHT}{Fore.YELLOW}[•] Checking {profile_url} for vulnerability...")
 
@@ -20,11 +19,14 @@ def check_vulnerability(profile_url):
 
         if response.status_code == 200:
             print(f"{Style.BRIGHT}{Fore.GREEN}[+] {profile_url} is vulnerable to unauthenticated sensitive data disclosure.")
+            return True
         else:
             print(f"{Style.BRIGHT}{Fore.RED}[-] {profile_url} is not vulnerable.")
+            return False
+
     except Exception as e:
         print(f"{Style.BRIGHT}{Fore.RED}[-] An error occurred: {e}")
+        return False
 
 def scan_cve_2022_0236(profile_url):
-
     check_vulnerability(profile_url)

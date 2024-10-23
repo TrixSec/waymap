@@ -45,7 +45,8 @@ def scan_cve_2019_6339(profile_url):
             print(color_random[3] + response.text + Color.END)
         else:
             print(color_random[4] + "\n[!] No vulnerability detected. Status Code: %d\n" % response.status_code + Color.END)
-    
+            return
     except requests.RequestException as e:
         print(color_random[4] + "\n[!] An error occurred while sending the request.\n" + Color.END)
         print(color_random[3] + "Error details: %s" % str(e) + Color.END)
+        return

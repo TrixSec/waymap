@@ -8,9 +8,7 @@ from urllib.parse import urlparse
 requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
 def check_admin_ajax_availability(profile_url):
-    """
-    Check if the 'admin-ajax.php' file is accessible and returns expected status.
-    """
+
     print("[•] Checking for the availability of 'admin-ajax.php' endpoint...")
     try:
         response = requests.get(f'{profile_url}/wp-admin/admin-ajax.php', 
