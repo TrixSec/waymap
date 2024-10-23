@@ -17,7 +17,6 @@ def high_risk_scan(profile_url):
 
     if cms == "WordPress":
         print("[•] Initiating WordPress high-risk scan...")
-        
         perform_wordpress_scan(profile_url)
     
     elif cms == "Drupal":
@@ -45,29 +44,42 @@ def perform_wordpress_scan(profile_url):
         handle_cve_2022_43408(profile_url)
         handle_cve_2021_25049(profile_url)
         handle_cve_2020_35749(profile_url)
+    except KeyboardInterrupt:
+        print("[!] Scan interrupted. Skipping to the next CVE scan...")
+        return  # Move to the next CVE or exit safely
     except Exception as e:
         print(f"[!] Error during WordPress High scan: {e}")
+
 
 def perform_drupal_scan(profile_url):
     print(f"[•] Running High-risk scan on {profile_url}")
     print("\n")
+    
     try:
         handle_cve_2019_6340(profile_url)
-
+    except KeyboardInterrupt:
+        print("[!] Scan interrupted. Skipping to the next CVE scan...")
+        return  # Move to the next CVE or exit safely
     except Exception as e:
         print(f"[!] Error during Drupal High scan: {e}")
+
 
 def perform_joomla_scan(profile_url):
     print(f"[•] Running High-risk scan on {profile_url}")
     print("\n")
+    
     try:
         handle_cve_2020_10239(profile_url)
         handle_cve_2020_10238(profile_url)
         handle_cve_2018_8045(profile_url)
-
+    except KeyboardInterrupt:
+        print("[!] Scan interrupted. Skipping to the next CVE scan...")
+        return  # Move to the next CVE or exit safely
     except Exception as e:
         print(f"[!] Error during Joomla High scan: {e}")
 
+
 def perform_generic_scan(profile_url):
-    print(f"[•] No CVE Available For Scan Wait For A New Update Of Waymap")
+    print(f"[•] No CVE Available For Scan. Wait for a new update of Waymap.")
     pass
+
