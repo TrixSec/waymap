@@ -10,7 +10,7 @@ setup(
     description='Waymap is a powerful web vulnerability scanner designed to identify vulnerabilities in websites.#v1.0.3dev',
     author='Trix Cyrus',
     Developer='Trix',
-    author_email='trixcyrus666@gmail.com',  
+    author_email='',  
     url='https://github.com/TrixSec/waymap',  
     packages=find_packages(where='lib'),  
     package_dir={'': 'lib'},
