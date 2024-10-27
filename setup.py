@@ -17,9 +17,9 @@ setup(
     install_requires=[
         'requests',
         'termcolor',
-        'beautifulsoup4'
-        'threading'
-        'colorama'
+        'beautifulsoup4',
+        'threading',
+        'colorama',
         'click',  
     ],
     entry_points={
