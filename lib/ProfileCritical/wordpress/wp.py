@@ -1,7 +1,7 @@
 # Copyright (c) 2024 waymap developers
 # See the file 'LICENSE' for copying permission.
 # wordpress.py profile critical
-
+from __future__ import unicode_literals
 from colorama import Fore, Style
 
 # CVE-2022-0441 EXPLOIT STARTS
@@ -593,7 +593,6 @@ def scan_cve_2021_24499(profile_url):
 
 # CVE-2021-24507 EXPLOIT Starts
 
-from __future__ import unicode_literals
 import requests
 import re
 import json
