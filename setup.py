@@ -18,7 +18,6 @@ setup(
         'requests',
         'termcolor',
         'beautifulsoup4',
-        'threading',
         'colorama',
         'click',  
     ],

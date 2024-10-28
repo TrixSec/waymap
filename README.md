@@ -1,6 +1,6 @@
 # Waymap - Web Vulnerability Scanner.
 
-**Current Version**: 4.9.0
+**Current Version**: 4.9.1
 **Author**: Trix Cyrus  
 **Copyright**: © 2024 Trixsec Org  
 **Maintained**: Yes
@@ -143,6 +143,8 @@ Check out this video to see Waymap in action:
 - --profileurl https://example.com/
 - fixed imports error / optimised waymap
 
+### v4.9.1
+- made waymap more stable for faster processing
 
 ## Installation and Usage
 
