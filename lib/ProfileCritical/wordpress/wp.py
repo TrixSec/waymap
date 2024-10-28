@@ -858,7 +858,6 @@ def scan_cve_2021_34656(profile_url):
 
 # CVE-2021-24507 EXPLOIT STARTS
 
-from __future__ import unicode_literals
 import requests
 import re
 import json
