@@ -1,7 +1,7 @@
 # Copyright (c) 2024 waymap developers
 # See the file 'LICENSE' for copying permission.
 # jm.py profile critical
-
+from __future__ import print_function
 from colorama import Fore, Style, init
 init(autoreset=True)
 
@@ -73,7 +73,6 @@ def scan_cve_2017_18345(profile_url):
 
 # CVE-2017-8917 EXPLOIT STARTS
 
-from __future__ import print_function
 import requests
 import re
 import binascii
