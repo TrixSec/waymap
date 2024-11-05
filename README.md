@@ -146,6 +146,9 @@ Check out this video to see Waymap in action:
 ### v4.9.1
 - made waymap more stable for faster processing
 
+### v5.0.1
+- added no prompt and --threads usage in crawling
+- bug fix
 ## Installation and Usage
 
 ### Clone the repository:

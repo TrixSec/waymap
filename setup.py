@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='waymap',
-    version='4.9.0', 
+    version='5.0.1', 
     description='Waymap is a powerful web vulnerability scanner designed to identify vulnerabilities in websites.#v1.0.3dev',
     author='Trix Cyrus',
     Developer='Trix',

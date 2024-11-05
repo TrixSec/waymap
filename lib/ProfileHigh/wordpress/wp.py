@@ -1,24 +1,24 @@
 # Copyright (c) 2024 waymap developers
 # See the file 'LICENSE' for copying permission.
 # wp.py profile high
-
-from colorama import Fore, Style, init
-init(autoreset=True)
-
-#---------------------------------------------------------------------
-
 import requests
 import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+import random
+from colorama import Fore, Style, init, colored
+import json
+init(autoreset=True)
+import time
+import hashlib
 import io
 import zipfile
 import string
-import random
 import base64
 from platform import python_version
-from colorama import init, Fore, Style
+#---------------------------------------------------------------------
 
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-init(autoreset=True)
+
+
 
 def generate_zip_25094(compression_level=9, technique="php", keep=True):
     print(f"{Style.BRIGHT}{Fore.YELLOW}[•] Generating ZIP file with shell technique '{technique}'")
@@ -136,13 +136,6 @@ def scan_cve_2021_25094(profile_url):
 
 #---------------------------------------------------------------------
 
-import requests
-from colorama import init, Fore, Style
-import urllib3
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
-init(autoreset=True)
-
 data = {'wpie_download_export_id': '1'}
 
 def check_vulnerability_0236(profile_url):
@@ -170,11 +163,6 @@ def scan_cve_2022_0236(profile_url):
 
 #---------------------------------------------------------------------
 
-from urllib3.exceptions import InsecureRequestWarning
-import requests, json
-from termcolor import colored  
-
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36',
@@ -248,9 +236,6 @@ def exploit_armember(profile_url, timeout=5):
 
 #---------------------------------------------------------------------
 
-import requests
-import time
-requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
 class Color:
     HEADER = '\033[95m'
@@ -328,12 +313,6 @@ def scan_cve_2020_35749(profile_url):
 
 #---------------------------------------------------------------------
 
-import requests
-from urllib.parse import urlparse
-from colorama import init, Fore, Style
-
-init(autoreset=True)
-requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
 def check_wp_config_accessibility_1119(profile_url):
     print(f"{Style.BRIGHT}{Fore.YELLOW}[•] Checking for the accessibility of 'wp-config.php' through the vulnerable plugin endpoint...")
@@ -364,10 +343,6 @@ def scan_cve_2022_1119(profile_url):
 
 #---------------------------------------------------------------------
 
-import requests, hashlib, random
-from urllib.parse import urlparse
-
-requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
 def check_admin_ajax_availability_21661(profile_url):
     print("[•] Checking for the availability of 'admin-ajax.php' endpoint...")
@@ -442,13 +417,6 @@ def scan_cve_2022_21661(profile_url):
 #---------------------------------------------------------------------
 
 #---------------------------------------------------------------------
-
-import requests
-from colorama import init, Fore, Style
-import urllib3
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
-init(autoreset=True)
 
 COMMAND_43408 = '1'  
 
@@ -538,7 +506,7 @@ def handle_cve_2022_21661(profile_url):
         print(f"{Fore.CYAN}[-] Completed scan for {Fore.YELLOW}CVE-2022-21661 {Fore.CYAN}on {Fore.GREEN}{profile_url}{Style.RESET_ALL}.")
     except KeyboardInterrupt:
         print(f"{Fore.RED}[!] Scan interrupted for {Fore.YELLOW}CVE-2022-21661{Style.RESET_ALL}. Skipping to the next CVE...")
-        return  # Move to the next CVE scan safely
+        return  
 
 def handle_cve_2022_1903(profile_url):
     try:

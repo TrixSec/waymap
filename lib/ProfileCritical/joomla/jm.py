@@ -10,7 +10,6 @@ init(autoreset=True)
 import urllib.request as urllib2
 from bs4 import BeautifulSoup
 import urllib.parse as urlparse
-import requests
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -73,11 +72,8 @@ def scan_cve_2017_18345(profile_url):
 
 # CVE-2017-8917 EXPLOIT STARTS
 
-import requests
-import re
 import binascii
-import urllib3
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 
 def extract_csrf_token_8917(response):
     match = re.search(r'name="([a-f0-9]{32})" value="1"', response.text, re.S)
@@ -202,9 +198,6 @@ import os
 import random
 import requests
 from urllib.parse import urljoin
-import urllib3
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 class Colors:
     BLUE = '\033[94m'
@@ -299,12 +292,9 @@ def scan_cve_2018_6396(profile_url):
 
 # CVE-2018-17254 EXPLOIT STARTS
 
-import requests
 import re
 import base64 
 from termcolor import colored
-import urllib3
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def green(text): return f"\033[92m{text}\033[0m"
 def red(text): return f"\033[91m{text}\033[0m"

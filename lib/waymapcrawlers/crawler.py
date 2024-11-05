@@ -1,6 +1,5 @@
 # Copyright (c) 2024 waymap developers
 # See the file 'LICENSE' for copying permission.
-# crawler.py
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
@@ -9,8 +8,9 @@ import sys
 import os
 import threading
 import urllib3
+from lib.core.settings import CRAWLING_EXCLUDE_EXTENSIONS, DEFAULT_THREADS, MAX_THREADS, DEFAULT_INPUT
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-from lib.core.settings import CRAWLING_EXCLUDE_EXTENSIONS
 
 visited_urls = set()
 all_urls = []
@@ -25,12 +25,11 @@ RED = '\033[91m'
 GREEN = '\033[92m'
 YELLOW = '\033[93m'
 BLUE = '\033[94m'
-MAGENTA = '\033[95m'
 CYAN = '\033[96m'
 RESET = '\033[0m'
 
 lock = threading.Lock()
-crawl_done = threading.Event() 
+crawl_done = threading.Event()
 
 def get_domain_dir(base_domain):
     domain_dir = os.path.join(os.getcwd(), 'sessions', base_domain)
@@ -145,7 +144,7 @@ def has_query_parameters(url):
 def is_within_domain(url, base_domain):
     return urlparse(url).netloc == base_domain
 
-def run_crawler(start_url, max_depth):
+def run_crawler(start_url, max_depth, thread_count, no_prompt):
     global total_urls, valid_url_count
     total_urls = 0
     valid_url_count = 0
@@ -161,19 +160,15 @@ def run_crawler(start_url, max_depth):
     if start_url in previously_crawled:
         remove_crawl_file(base_domain)
 
-    use_threads = input(f"{BOLD}{CYAN}Do you want to enable multi-threading? (y/n): {RESET}").strip().lower() == 'y'
+    if no_prompt:
+        use_threads = DEFAULT_INPUT.lower() == 'y'  
+    else:
+        use_threads = input(f"{BOLD}{CYAN}Do you want to enable multi-threading? (y/n): {RESET}").strip().lower() == 'y'
 
-    num_threads = 1
-    if use_threads:
-        while True:
-            try:
-                num_threads = int(input(f"{BOLD}{MAGENTA}How many threads do you want to use? (max 10): {RESET}"))
-                if 1 <= num_threads <= 10:
-                    break
-                else:
-                    print(f"{RED}[×] Please choose a number between 1 and 10.{RESET}")
-            except ValueError:
-                print(f"{RED}[×] Please enter a valid number.{RESET}")
+    if use_threads and thread_count is not None:
+        num_threads = min(thread_count, MAX_THREADS)
+    else:
+        num_threads = 1  
 
     try:
         crawl([start_url], 1, max_depth, base_domain, num_threads)

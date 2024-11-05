@@ -82,7 +82,7 @@ def log_error(message):
 data_dir = os.path.join(os.getcwd(), 'data')
 session_dir = os.path.join(os.getcwd(), 'session')
 
-WAYMAP_VERSION = "4.9.1"
+WAYMAP_VERSION = "5.0.1"
 AUTHOR = "Trix Cyrus"
 COPYRIGHT = "Copyright © 2024 Trixsec Org"
 
@@ -112,7 +112,7 @@ def print_banner():
 ░╚██╗████╗██╔╝███████║░╚████╔╝░██╔████╔██║███████║██████╔╝
 ░░████╔═████║░██╔══██║░░╚██╔╝░░██║╚██╔╝██║██╔══██║██╔═══╝░
 ░░╚██╔╝░╚██╔╝░██║░░██║░░░██║░░░██║░╚═╝░██║██║░░██║██║░░░░░
-░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v4.9.1
+░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v5.0.1
     """
     print(colored(banner, 'cyan'))
     print(colored(f"Waymap Version: {WAYMAP_VERSION}", 'yellow'))
@@ -182,7 +182,7 @@ def has_query_parameters(url):
 def is_within_domain(url, base_domain):
     return urlparse(url).netloc == base_domain
 
-def crawl(target, crawl_depth, random_agent=False):
+def crawl(target, crawl_depth, random_agent=False, thread_count=1, no_prompt=False):
     domain = target.split("//")[-1].split("/")[0]
     headers = load_headers(domain)
 
@@ -217,7 +217,7 @@ def crawl(target, crawl_depth, random_agent=False):
 
     if not crawled_urls:
         print(colored(f"[•] Starting crawling on: {target} with depth {crawl_depth}", 'yellow'))
-        crawled_urls = run_crawler(target, crawl_depth)
+        crawled_urls = run_crawler(target, crawl_depth, random_agent=random_agent, thread_count=thread_count, no_prompt=no_prompt)
         crawled_urls = [url for url in crawled_urls if is_valid_url(url) and has_query_parameters(url) and is_within_domain(url, domain)]
         save_to_file(domain, crawled_urls)
 
@@ -331,7 +331,7 @@ def crawl_and_scan(target, crawl_depth, scan_type, random_agent=False, url=None,
         print(colored(f"[•] Using provided URLs for scanning.", 'green'))
         scan(target, scan_type, provided_urls=provided_urls, thread_count=thread_count, no_prompt=no_prompt)
     else:
-        crawled_urls = crawl(target, crawl_depth, random_agent=random_agent)
+        crawled_urls = crawl(target, crawl_depth, random_agent=random_agent, thread_count=thread_count, no_prompt=no_prompt)
         if crawled_urls:
             scan(target, scan_type, crawled_urls=crawled_urls, thread_count=thread_count, no_prompt=no_prompt)
 

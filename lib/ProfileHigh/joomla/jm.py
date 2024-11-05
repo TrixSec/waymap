@@ -2,9 +2,6 @@
 # See the file 'LICENSE' for copying permission.
 # jm.py profile high
 
-from colorama import Fore, Style, init
-init(autoreset=True)
-
 import requests
 import re
 import random
@@ -163,11 +160,7 @@ def scan_cve_2020_10239(target):
 
 import requests
 import re
-from colorama import Fore, Style, init
-import urllib3
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-init()
 
 def extract_token_10238(resp):
     match = re.search(r'name="([a-f0-9]{32})" value="1"', resp.text, re.S)
@@ -243,15 +236,10 @@ def scan_cve_2020_10238(target):
 
 # -------------------------------------------------------
 
-import re
 import hashlib
-import requests
-from colorama import Fore, Style, init
 from urllib.parse import urljoin
-import urllib3
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-init()
+
 
 author = 'TrixSec'
 
