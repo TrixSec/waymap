@@ -1,6 +1,6 @@
 # Waymap - Web Vulnerability Scanner.
 
-**Current Version**: 4.9.1
+**Current Version**: 5.1.1
 **Author**: Trix Cyrus  
 **Copyright**: © 2024 Trixsec Org  
 **Maintained**: Yes
@@ -148,7 +148,12 @@ Check out this video to see Waymap in action:
 
 ### v5.0.1
 - added no prompt and --threads usage in crawling
-- bug fix
+- bug fix, stablized waymap for faster processing
+
+### v5.1.1
+-- added new arg "--check-updates" when this is used it will check for latest version of waymap and automatically update it 
+
+- no more forced updates
 ## Installation and Usage
 
 ### Clone the repository:

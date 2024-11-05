@@ -82,7 +82,7 @@ def log_error(message):
 data_dir = os.path.join(os.getcwd(), 'data')
 session_dir = os.path.join(os.getcwd(), 'session')
 
-WAYMAP_VERSION = "5.0.1"
+WAYMAP_VERSION = "5.1.1"
 AUTHOR = "Trix Cyrus"
 COPYRIGHT = "Copyright © 2024 Trixsec Org"
 
@@ -112,7 +112,7 @@ def print_banner():
 ░╚██╗████╗██╔╝███████║░╚████╔╝░██╔████╔██║███████║██████╔╝
 ░░████╔═████║░██╔══██║░░╚██╔╝░░██║╚██╔╝██║██╔══██║██╔═══╝░
 ░░╚██╔╝░╚██╔╝░██║░░██║░░░██║░░░██║░╚═╝░██║██║░░██║██║░░░░░
-░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v5.0.1
+░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v5.1.1
     """
     print(colored(banner, 'cyan'))
     print(colored(f"Waymap Version: {WAYMAP_VERSION}", 'yellow'))
@@ -355,7 +355,6 @@ def perform_profile_scan(profile_url, profile_type):
 
 def main():
     print_banner()
-    check_for_updates()
 
     if not check_internet_connection():
         handle_error("No internet connection. Please check your network and try again.")
@@ -382,6 +381,8 @@ def main():
     parser.add_argument('--no-prompt', '-np', action='store_true', help='Automatically use default input for prompts')
     parser.add_argument('--profileurl', '-pu', type=str, help='Target URL for scanning , example: https://example.com/')
     parser.add_argument('--profile', '-p', choices=['high-risk', 'critical-risk'], help="Specify the profile: 'high-risk' or 'critical-risk'. This skips crawling.")
+    parser.add_argument('--check-updates', action='store_true', help='Check for Latest Waymap updates.')
+
     args = parser.parse_args()
 
     target = args.target
@@ -392,6 +393,9 @@ def main():
     no_prompt = args.no_prompt
     profile_url = args.profileurl
     profile_type = args.profile
+
+    if args.check_updates:
+        check_for_updates()
 
     if multi_url_file:
         targets = load_targets_from_file(multi_url_file)
