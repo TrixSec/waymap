@@ -217,7 +217,7 @@ def crawl(target, crawl_depth, random_agent=False, thread_count=1, no_prompt=Fal
 
     if not crawled_urls:
         print(colored(f"[•] Starting crawling on: {target} with depth {crawl_depth}", 'yellow'))
-        crawled_urls = run_crawler(target, crawl_depth, random_agent=random_agent, thread_count=thread_count, no_prompt=no_prompt)
+        crawled_urls = run_crawler(target, crawl_depth, thread_count=thread_count, no_prompt=no_prompt)
         crawled_urls = [url for url in crawled_urls if is_valid_url(url) and has_query_parameters(url) and is_within_domain(url, domain)]
         save_to_file(domain, crawled_urls)
 
