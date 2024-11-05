@@ -5,7 +5,8 @@ import requests
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 import random
-from colorama import Fore, Style, init, colored
+from colorama import Fore, Style, init
+from termcolor import colored
 import json
 init(autoreset=True)
 import time
