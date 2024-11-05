@@ -10,7 +10,6 @@ import re
 import requests
 init(autoreset=True)
 import urllib3
-from termcolor import Fore, Style, init
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
