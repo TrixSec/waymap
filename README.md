@@ -28,132 +28,53 @@ Check out this video to see Waymap in action:
 
 
 ## Features Overview
-### v1.0.3 (First Version)
-- SQL Injection
-- Command Injection
-- Web Crawling
+---
 
-### v1.0.4 
-- Updated crawler to operate within target domain boundaries and handle URL redirection.
-- Added auto-update functionality for the scanner (please reclone the repo if using v1.0.4).
+### Waymap Features
 
-### v1.0.5
-- Fixed minor bugs (please reclone the repo if using v1.0.4).
+1. **Vulnerability Scanning Modules:**
+   - SQL Injection (SQLi)
+   - Command Injection
+   - Server-Side Template Injection (SSTI) with threading support
+   - Cross-Site Scripting (XSS) with filter bypass payload testing and threading support
+   - Local File Inclusion (LFI) with threading support
+   - Open Redirect with custom thread count
+   - Carriage Return and Line Feed (CRLF) with custom threading
+   - Cross-Origin Resource Sharing (CORS) with threading support
+   - Critical and High-Risk Scan Profiles using CVE exploits (32 CVEs: WordPress - 19, Drupal - 4, Joomla - 7, Generic/Others - 2)
 
-### v1.0.6
-- Enhanced the auto-update feature; no need to reclone the repo after this update. Please reclone if using v1.0.5.
+2. **Web Crawling:**
+   - Initial crawling functionality
+   - Enhanced crawler to operate within target domain boundaries and handle URL redirection
+   - Advanced crawler capable of any-depth crawling
+   - Improved v3 crawler (competitive with SQLmap crawler)
 
-### v1.0.7
-- Fixed minor bugs and added support for scanning multiple URLs using `--multi-target {targetfilename}.txt` (ensure the file has one URL per line).
-- Auto-update enabled; no need to reclone unless on version v1.0.5 or older.
+3. **Concurrency & Threading:**
+   - Concurrency to utilize multiple CPU threads for faster scans
+   - Custom thread count for Open Redirect, CRLF, and CORS scans
+   - New argument `--threads/-T` for global threading count (no prompt for threads)
 
-### v1.0.8
-- Added concurrency to utilize more CPU threads, speeding up SQL injection scans.
-- Improved stability.
-- Added logging functionality.
+4. **Multi-Target Scanning:**
+   - Support for scanning multiple URLs with `--multi-target {targetfilename}.txt`
+   - Ability to scan URLs directly without crawling using `--url/-u` and `--multi-url/-mu` arguments
 
-### v1.0.9
-- minor bug fix
+5. **Automation and Convenience:**
+   - Auto-update functionality (version-dependent)
+   - New argument `--check-updates` to check for and perform updates
+   - New argument `--random-agent` to randomize user-agents
+   - Header usage to make requests appear more legitimate and reduce detection/blocking
+   - Argument `--no-prompt/-np` to disable prompts (default input = 'n')
 
-### v1.1.0
-- added a new scan type : Server Side Template Injection: --scan ssti
-- now you can do all type scan in one command using : --scan all
-- Added Threading In SSTI(Server Side Template Injection)
+6. **Scan Profiles & Severity-Based Scanning:**
+   - New critical and high-risk scan profiles (`--scan critical-risk` and `--scan high-risk`) using severity-based CVE exploits
+   - Argument `--profile critical-risk/high-risk` with `--profileurl` for streamlined scanning based on CVE severity
 
-### v1.1.1
-- fixed ssti exiting error
+7. **Logging and Stability:**
+   - Logging functionality for scan sessions
+   - Various bug fixes and optimizations for stability and processing speed
 
-### v1.2.1
-- added new scanning module: xss(cross site scripting) --scan xss
-- added xss filters bypass payload testing
-- added threading in xss testing
-- added new scanning module: LFI(Local File Inclusion) --scan lfi
-- added threading in lfi testing
+---
 
-### v1.3.1
-- added new scanning module: --scan open-redirect (check for open redirection vulnerability)
-- added custom threads count in open redirect testing
-- fixed minor bugs
-
-### v2.4.1
-- added new scanning module: --scan crlf(Carriage Return and Line Feed)
-- added custom threading count in crlf 
-- added a more advanced crawler to waymap can crawl at any depth 
-- added custom threading in crawling
-- added new user-agents in ua.txt
-- fixed major bugs/errors
-
-### v2.5.2
-- added new scan type: --scan cors(cross-origin resource sharing)
-- added threading in cors scan
-- fixed crlf bug
-- fixed minor bugs
-
-### v2.5.3
-- fixed scanning exiting error
-
-### v2.5.4
-- fixed bug in open-redirect, crlf, cors
-
-### v2.5.5
-- updated sqli module to handle multiple parameter 
-- added new arg --random-agent : now waymap will use random useragent only when this arg is used
-- updated Waymap To Use Headers During Scan To make your requests to the server look more legitimate and reduce the chance of being flagged or blocked.
-
-### v2.5.6
-- bugs fixed
-- no ssl verify update
---NEW--UPDATES--SOON--
-
-### v3.5.6
-- New Web Crawler(v2.5) With extended Scope
-- fix the injections modules testing errors
-
-### v3.6.6
-- Better v3 Crawler, 
-(I think At this point Waymap Crawler Is Better Than Sqlmap Crawler)
-- added new arguments : --url/-u and --multi-url/-mu to scan url/urls without crawling them 
-- bug fixes
-
-### V3.7.6
-- ADDED new arg --threads/-T (no more prompting for threads)
-- optimised waymap
-
-### v3.7.7
-- fixed bug/error
-
-### v3.8.7
-- ADDED new arg --no-prompt/ -np (it will not prompt for any input during scan default input = 'n' )
-- bug fixed
-
-### v4.8.7
-- Added New Scan Profiles -- Critical and High -- access with --scan critical-risk, --scan high-risk 
-- these profiles will do the scan using cve scanners and exploits added in waymap according to the severity of NVD 
-- for now there are 32 CVES Exploits and scanners added for now 
-- WordPress: 19 CVEs
-- Drupal: 4 CVEs
-- Joomla: 7 CVEs
-- Generic/Others : 2 CVEs
-
-- More details about these cves will be shared soon...
-
-### v4.9.0 
-- added new arg to handle the profiles
-- --profile critical-risk/ high-risk
-- --profileurl https://example.com/
-- fixed imports error / optimised waymap
-
-### v4.9.1
-- made waymap more stable for faster processing
-
-### v5.0.1
-- added no prompt and --threads usage in crawling
-- bug fix, stablized waymap for faster processing
-
-### v5.1.1
--- added new arg "--check-updates" when this is used it will check for latest version of waymap and automatically update it 
-
-- no more forced updates
 ## Installation and Usage
 
 ### Clone the repository:
