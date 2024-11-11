@@ -104,7 +104,12 @@ python waymap.py --scan sql/cmdi/ssti/xss/lfi/open-redirect/crlf/cors/all --url/
 ### Check Help
 ```bash
 python waymap.py -h
+
 ```
+
+#### Credits
+- SQLMAP For Payloads Xml File
+
 ### IF There's Any Issue In Waymay Then Submit The Issues Here: https://github.com/TrixSec/waymap/issues
 
 #### Also Star The Repo And Fork It
