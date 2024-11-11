@@ -19,8 +19,8 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 successful_requests = 0
 failed_requests = 0
 
-def parse_error_based_tests_from_xml(base_dir="waymap"):
-    xml_file_path = os.path.join(base_dir, 'data', 'payload', 'error_based.xml')
+def parse_error_based_tests_from_xml(base_dir="data"):
+    xml_file_path = os.path.join(base_dir, 'payload', 'error_based.xml')
     
     # Parse the XML file
     tree = ET.parse(xml_file_path)
