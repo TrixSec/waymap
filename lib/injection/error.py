@@ -10,7 +10,6 @@ import time
 from urllib.parse import urlparse, parse_qs
 from colorama import Fore, Style, init
 import urllib3
-import os
 
 init(autoreset=True)
 
@@ -19,14 +18,12 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 successful_requests = 0
 failed_requests = 0
 
-def parse_error_based_tests_from_xml(base_dir="data"):
-    xml_file_path = os.path.join(base_dir, 'payload', 'error_based.xml')
-    
-    # Parse the XML file
-    tree = ET.parse(xml_file_path)
+def parse_error_based_tests_from_xml(file_path="error_based.xml"):
+    """Parse error-based SQLi test cases from XML."""
+    tree = ET.parse(file_path)
     root = tree.getroot()
-
     tests = []
+
     for test in root.findall('test'):
         title = test.find('title').text
         payload_template = test.find('./request/payload').text
@@ -39,7 +36,6 @@ def parse_error_based_tests_from_xml(base_dir="data"):
             'dbms': dbms,
             'dbms_version': dbms_version
         })
-    
     return tests
 
 def replace_placeholders(template, delimiters, rand_numbers):
