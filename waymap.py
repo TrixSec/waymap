@@ -18,7 +18,7 @@ from lib.ProfileCritical.profile_critical import critical_risk_scan
 from lib.ProfileHigh.profile_high import high_risk_scan
 from lib.injection.crlf import perform_crlf_scan
 from lib.injection.cors import perform_cors_scan
-from lib.injection.sql import process_urls
+from lib.injection.sqlin.error import process_urls
 from lib.core.settings import DEFAULT_THREADS
 from lib.core.settings import AUTHOR
 from lib.core.settings import WAYMAP_VERSION
