@@ -1,36 +1,37 @@
 import requests
 import xml.etree.ElementTree as ET
-import random                                                                           
+import random
 import re
-import time                                                                             
+import time
 from urllib.parse import urlparse, parse_qs
-from colorama import Fore, Style, init                                                  
+from colorama import Fore, Style, init
 import urllib3
 import os
 
 init(autoreset=True)
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-successful_requests = 0                                                                 
+successful_requests = 0
 failed_requests = 0
+
 def parse_error_based_tests_from_xml(file_path="data/error_based.xml"):
-    """Parse error-based SQLi test cases from XML."""                                       
+    """Parse error-based SQLi test cases from XML."""
     tree = ET.parse(file_path)
-    root = tree.getroot()                                                                   
+    root = tree.getroot()
     tests = []
 
     for test in root.findall('test'):
-        title = test.find('title').text                                                         
-        payload_template = test.find('./request/payload').text                                  
+        title = test.find('title').text
+        payload_template = test.find('./request/payload').text
         dbms = test.find('./details/dbms').text if test.find('./details/dbms') is not None else 'Unknown'
         dbms_version = test.find('./details/dbms_version').text if test.find('./details/dbms_version') is not None else ''
 
-        tests.append({                                                                              
+        tests.append({
             'title': title,
             'payload_template': payload_template,
             'dbms': dbms,
-            'dbms_version': dbms_version                                                        
-            })
+            'dbms_version': dbms_version
+        })
     return tests
 
 def replace_placeholders(template, delimiters, rand_numbers):
@@ -135,5 +136,18 @@ def run_error_based_tests(target_url):
 def process_urls(urls):
     """Process a list of URLs and perform error-based SQLi testing on each."""
     for url in urls:
-        run_error_based_tests(url)
+        try:
+            run_error_based_tests(url)
+        except KeyboardInterrupt:
+            print(f"\n{Style.BRIGHT}{Fore.YELLOW}Process interrupted by user.{Style.RESET_ALL}")
+            while True:
+                user_input = input(f"{Style.BRIGHT}{Fore.CYAN}Enter 'n' for next URL or 'e' to exit: {Style.RESET_ALL}")
+                if user_input.lower() == 'n':
+                    print(f"{Style.BRIGHT}{Fore.GREEN}Continuing with next URL...{Style.RESET_ALL}")
+                    break
+                elif user_input.lower() == 'e':
+                    print(f"{Style.BRIGHT}{Fore.RED}Exiting...{Style.RESET_ALL}")
+                    exit(0)
+                else:
+                    continue
 
