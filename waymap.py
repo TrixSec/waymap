@@ -18,7 +18,13 @@ from lib.ProfileCritical.profile_critical import critical_risk_scan
 from lib.ProfileHigh.profile_high import high_risk_scan
 from lib.injection.crlf import perform_crlf_scan
 from lib.injection.cors import perform_cors_scan
+from lib.injection.sql import run_sql_injection_test
 from lib.core.settings import DEFAULT_THREADS
+from lib.core.settings import AUTHOR
+from lib.core.settings import WAYMAP_VERSION
+from lib.core.settings import COPYRIGHT
+
+
 from extras.error_handler import check_internet_connection, check_required_files, check_required_directories, handle_error
 from urllib.parse import urlparse
 import urllib3
@@ -82,10 +88,6 @@ def log_error(message):
 data_dir = os.path.join(os.getcwd(), 'data')
 session_dir = os.path.join(os.getcwd(), 'session')
 
-WAYMAP_VERSION = "5.1.1"
-AUTHOR = "Trix Cyrus"
-COPYRIGHT = "Copyright © 2024 Trixsec Org"
-
 def check_for_updates():
     try:
         response = requests.get("https://raw.githubusercontent.com/TrixSec/waymap/main/VERSION")
@@ -112,15 +114,19 @@ def print_banner():
 ░╚██╗████╗██╔╝███████║░╚████╔╝░██╔████╔██║███████║██████╔╝
 ░░████╔═████║░██╔══██║░░╚██╔╝░░██║╚██╔╝██║██╔══██║██╔═══╝░
 ░░╚██╔╝░╚██╔╝░██║░░██║░░░██║░░░██║░╚═╝░██║██║░░██║██║░░░░░
-░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v5.1.1
+░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v5.2.1
     """
     print(colored(banner, 'cyan'))
     print(colored(f"Waymap Version: {WAYMAP_VERSION}", 'yellow'))
     print(colored(f"Made by {AUTHOR}", 'yellow'))
     print(colored(COPYRIGHT, 'yellow'))
-    print("")
+    print(colored(f"New Beta  Version Of Sql Injection Scanning Is Added, ain't removing the old one", 'green'))
+    print(colored(f"It Have High Accuracy Than Previous One, Less Chance of False Positive", 'green'))
+    print("Access It Using Scan Type (--scan sqli)")
+
 
 def load_payloads(file_path):
+
     try:
         with open(file_path, 'r') as f:
             return [line.strip() for line in f.readlines()]
@@ -243,6 +249,11 @@ def scan(target, scan_type, crawled_urls=None, provided_urls=None, thread_count=
             print(colored(f"[•] Performing SQL Injection scan on {target}", 'yellow'))
             perform_sqli_scan(urls_to_scan, sql_payloads, user_agents, thread_count=thread_count, no_prompt=no_prompt)
 
+        elif scan_type == 'sqli':
+            print("\n")
+            print(colored(f"[•] Performing SQL Injection scan on {target}", 'yellow'))
+            run_sql_injection_test(urls_to_scan)
+
         elif scan_type == 'cmdi':
             print("\n")
             print(colored(f"[•] Performing Command Injection scan on {target}", 'yellow'))
@@ -282,6 +293,10 @@ def scan(target, scan_type, crawled_urls=None, provided_urls=None, thread_count=
             print("\n[•] Performing all scans on target...\n")
             print(colored("[•] Performing SQL Injection scan...", 'cyan'))
             perform_sqli_scan(urls_to_scan, sql_payloads, user_agents, thread_count=thread_count, no_prompt=no_prompt)
+
+            print("\n")
+            print(colored(f"[•] Performing SQL Injection scan on {target}", 'yellow'))
+            run_sql_injection_test(urls_to_scan)
 
             print("\n")
             print(colored("[•] Performing Command Injection (CMDi) scan...", 'cyan'))
@@ -373,7 +388,7 @@ def main():
     parser.add_argument('--target', '-t', type=str, help='Target URL for crawling and scanning , example: https://example.com/')
     parser.add_argument('--multi-target', '-mt', type=str, help='File with multiple target URLs for crawling and scanning')
     parser.add_argument('--crawl', '-c', type=int, help='Crawl depth')
-    parser.add_argument('--scan', '-s', type=str, choices=['sql', 'cmdi', 'ssti', 'xss', 'lfi', 'open-redirect', 'crlf', 'cors', 'all', 'high-risk', 'critical-risk'], help='Type of scan to perform')
+    parser.add_argument('--scan', '-s', type=str, choices=['sql', 'sqli', 'cmdi', 'ssti', 'xss', 'lfi', 'open-redirect', 'crlf', 'cors', 'all', 'high-risk', 'critical-risk'], help='Type of scan to perform')
     parser.add_argument('--url', '-u', type=str, help='Single URL for direct scanning without crawling, example: https://example.com/index.php?id=1')
     parser.add_argument('--multi-url', '-mu', type=str, help='File with multiple URLs for direct scanning without crawling')
     parser.add_argument('--random-agent', '-ra', action='store_true', help='Use random user-agent for requests')

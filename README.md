@@ -30,6 +30,13 @@ Check out this video to see Waymap in action:
 ## Features Overview
 ---
 
+### Latest Update
+#### v5.2.1
+
+- New Sql Injection Scanning Module
+- High Accuracy And Less False Positive 
+- Access it using:  --scan sqli
+
 ### Waymap Features
 
 1. **Vulnerability Scanning Modules:**
