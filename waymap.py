@@ -18,6 +18,7 @@ from lib.ProfileCritical.profile_critical import critical_risk_scan
 from lib.ProfileHigh.profile_high import high_risk_scan
 from lib.injection.crlf import perform_crlf_scan
 from lib.injection.cors import perform_cors_scan
+from lib.injection.sql import process_urls
 from lib.core.settings import DEFAULT_THREADS
 from lib.core.settings import AUTHOR
 from lib.core.settings import WAYMAP_VERSION
@@ -248,6 +249,12 @@ def scan(target, scan_type, crawled_urls=None, provided_urls=None, thread_count=
             print(colored(f"[•] Performing SQL Injection scan on {target}", 'yellow'))
             perform_sqli_scan(urls_to_scan, sql_payloads, user_agents, thread_count=thread_count, no_prompt=no_prompt)
 
+        elif scan_type == 'sqli':
+            print("\n")
+            print(colored(f"[•] Performing SQL Injection scan on {target}", 'yellow'))
+            urls = crawled_urls if crawled_urls else provided_urls
+            if urls:
+                process_urls(urls)
         elif scan_type == 'cmdi':
             print("\n")
             print(colored(f"[•] Performing Command Injection scan on {target}", 'yellow'))
@@ -288,6 +295,11 @@ def scan(target, scan_type, crawled_urls=None, provided_urls=None, thread_count=
             print(colored("[•] Performing SQL Injection scan...", 'cyan'))
             perform_sqli_scan(urls_to_scan, sql_payloads, user_agents, thread_count=thread_count, no_prompt=no_prompt)
 
+            print("\n")
+            print(colored(f"[•] Performing SQL Injection scan on {target}", 'yellow'))
+            urls = crawled_urls if crawled_urls else provided_urls
+            if urls:
+                process_urls(urls)
             print("\n")
             print(colored("[•] Performing Command Injection (CMDi) scan...", 'cyan'))
             perform_cmdi_scan(urls_to_scan, cmdi_payloads, user_agents, thread_count=thread_count, no_prompt=no_prompt)
@@ -378,7 +390,7 @@ def main():
     parser.add_argument('--target', '-t', type=str, help='Target URL for crawling and scanning , example: https://example.com/')
     parser.add_argument('--multi-target', '-mt', type=str, help='File with multiple target URLs for crawling and scanning')
     parser.add_argument('--crawl', '-c', type=int, help='Crawl depth')
-    parser.add_argument('--scan', '-s', type=str, choices=['sql', 'cmdi', 'ssti', 'xss', 'lfi', 'open-redirect', 'crlf', 'cors', 'all', 'high-risk', 'critical-risk'], help='Type of scan to perform')
+    parser.add_argument('--scan', '-s', type=str, choices=['sql', 'sqli', 'cmdi', 'ssti', 'xss', 'lfi', 'open-redirect', 'crlf', 'cors', 'all', 'high-risk', 'critical-risk'], help='Type of scan to perform')
     parser.add_argument('--url', '-u', type=str, help='Single URL for direct scanning without crawling, example: https://example.com/index.php?id=1')
     parser.add_argument('--multi-url', '-mu', type=str, help='File with multiple URLs for direct scanning without crawling')
     parser.add_argument('--random-agent', '-ra', action='store_true', help='Use random user-agent for requests')

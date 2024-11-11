@@ -1,7 +1,3 @@
-# Copyright (c) 2024 waymap developers 
-# See the file 'LICENSE' for copying permission.
-# error.py (error based sqli detector)
-
 import requests
 import xml.etree.ElementTree as ET
 import random
@@ -74,6 +70,7 @@ def error_based_sqli(url, test):
     rand_numbers = [random.randint(1000, 9999) for _ in range(5)]
     payload = replace_placeholders(test['payload_template'], delimiters, rand_numbers)
 
+    # Print the timestamp before each test
     current_time = time.strftime('%H:%M:%S', time.localtime())
     print(f"{Style.BRIGHT}[{Fore.BLUE}{current_time}{Style.RESET_ALL}] [{Fore.GREEN}Testing{Style.RESET_ALL}] [{Fore.CYAN}{test['title']}{Style.RESET_ALL}]")
 
@@ -120,9 +117,9 @@ def run_error_based_tests(target_url):
     """Run error-based SQLi tests on the target URL."""
     start_time = time.time()
     tests = parse_error_based_tests_from_xml()
-    
+
     print(f"{Style.BRIGHT}Testing URL: {target_url}{Style.RESET_ALL}")
-    
+
     for test in tests:
         if error_based_sqli(target_url, test):
             end_time = time.time()
@@ -135,3 +132,10 @@ def run_error_based_tests(target_url):
     total_time = (end_time - start_time) / 60
     print(f"{Style.BRIGHT}{Fore.RED}URL not vulnerable to Error-based SQL Injection.{Style.RESET_ALL}")
     print(f"{Fore.CYAN}Total Time Taken: {Fore.WHITE}{total_time:.2f} minutes")
+
+def process_urls(urls):
+    """Process a list of URLs and perform error-based SQLi testing on each."""
+    for url in urls:
+        run_error_based_tests(url)
+
+
