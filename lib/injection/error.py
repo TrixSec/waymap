@@ -6,13 +6,14 @@ import time
 from urllib.parse import urlparse, parse_qs
 from colorama import Fore, Style, init                                                  
 import urllib3
+import os
 
 init(autoreset=True)
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 successful_requests = 0                                                                 
 failed_requests = 0
-def parse_error_based_tests_from_xml(file_path="/data/data/com.termux/files/home/waymap/lib/injection/error_based.xml"):
+def parse_error_based_tests_from_xml(file_path="data/error_based.xml"):
     """Parse error-based SQLi test cases from XML."""                                       
     tree = ET.parse(file_path)
     root = tree.getroot()                                                                   
@@ -31,6 +32,7 @@ def parse_error_based_tests_from_xml(file_path="/data/data/com.termux/files/home
             'dbms_version': dbms_version                                                        
             })
     return tests
+
 def replace_placeholders(template, delimiters, rand_numbers):
     """Replace placeholders in the template with generated values and remove any single quotes."""
     replaced_template = (template
