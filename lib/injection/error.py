@@ -147,7 +147,7 @@ def process_urls(urls):
                     break
                 elif user_input.lower() == 'e':
                     print(f"{Style.BRIGHT}{Fore.RED}Exiting...{Style.RESET_ALL}")
-                    exit(0)
+                    return
                 else:
                     continue
 
