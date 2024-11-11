@@ -2,7 +2,7 @@
 # See the file 'LICENSE' for copying permission.
 # sql.py new version handler
 
-from error import run_error_based_tests
+from lib.injection.error import run_error_based_tests
 from colorama import Fore, Style
 
 def run_sql_injection_test(target_url):
