@@ -18,7 +18,7 @@ from lib.ProfileCritical.profile_critical import critical_risk_scan
 from lib.ProfileHigh.profile_high import high_risk_scan
 from lib.injection.crlf import perform_crlf_scan
 from lib.injection.cors import perform_cors_scan
-from lib.injection.error import process_urls
+from lib.injection.sqlin.sql import run_sql_tests
 from lib.core.settings import DEFAULT_THREADS
 from lib.core.settings import AUTHOR
 from lib.core.settings import WAYMAP_VERSION
@@ -114,7 +114,7 @@ def print_banner():
 ░╚██╗████╗██╔╝███████║░╚████╔╝░██╔████╔██║███████║██████╔╝
 ░░████╔═████║░██╔══██║░░╚██╔╝░░██║╚██╔╝██║██╔══██║██╔═══╝░
 ░░╚██╔╝░╚██╔╝░██║░░██║░░░██║░░░██║░╚═╝░██║██║░░██║██║░░░░░
-░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v5.2.1
+░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v5.3.1
     """
     print(colored(banner, 'cyan'))
     print(colored(f"Waymap Version: {WAYMAP_VERSION}", 'yellow'))
@@ -254,7 +254,7 @@ def scan(target, scan_type, crawled_urls=None, provided_urls=None, thread_count=
             print(colored(f"[•] Performing SQL Injection scan on {target}", 'yellow'))
             urls = crawled_urls if crawled_urls else provided_urls
             if urls:
-                process_urls(urls)
+                run_sql_tests(urls)
         elif scan_type == 'cmdi':
             print("\n")
             print(colored(f"[•] Performing Command Injection scan on {target}", 'yellow'))
@@ -299,7 +299,7 @@ def scan(target, scan_type, crawled_urls=None, provided_urls=None, thread_count=
             print(colored(f"[•] Performing SQL Injection scan on {target}", 'yellow'))
             urls = crawled_urls if crawled_urls else provided_urls
             if urls:
-                process_urls(urls)
+                run_sql_tests(urls)
             print("\n")
             print(colored("[•] Performing Command Injection (CMDi) scan...", 'cyan'))
             perform_cmdi_scan(urls_to_scan, cmdi_payloads, user_agents, thread_count=thread_count, no_prompt=no_prompt)

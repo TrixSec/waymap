@@ -37,6 +37,11 @@ Check out this video to see Waymap in action:
 - High Accuracy And Less False Positive 
 - Access it using:  --scan sqli
 
+#### v5.3.1
+- Added Boolean Based Sqli Testing
+- High Accuracy, Can Give False Positive Sometimes
+- Access it using:  --scan sqli
+
 ### Waymap Features
 
 1. **Vulnerability Scanning Modules:**

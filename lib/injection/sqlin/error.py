@@ -70,9 +70,8 @@ def error_based_sqli(url, test):
     rand_numbers = [random.randint(1000, 9999) for _ in range(5)]
     payload = replace_placeholders(test['payload_template'], delimiters, rand_numbers)
 
-    # Print the timestamp before each test
     current_time = time.strftime('%H:%M:%S', time.localtime())
-    print(f"{Style.BRIGHT}[{Fore.BLUE}{current_time}{Style.RESET_ALL}] [{Fore.GREEN}Testing{Style.RESET_ALL}] [{Fore.CYAN}{test['title']}{Style.RESET_ALL}]")
+    print(f"{Style.BRIGHT}[{Fore.BLUE}{current_time}{Style.RESET_ALL}] [{Fore.GREEN}Testing{Style.RESET_ALL}]: {Fore.CYAN}{test['title']}{Style.RESET_ALL}")
 
     custom_patterns = [
         "Duplicate entry 'qjkvq1qqvkq1' for key 'group_key'",
