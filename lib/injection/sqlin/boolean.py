@@ -1,3 +1,7 @@
+# Copyright (c) 2024 waymap developers
+# See the file 'LICENSE' for copying permission.
+# boolean.py (own logic)
+
 import requests
 import random
 import string

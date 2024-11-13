@@ -38,7 +38,7 @@ Check out this video to see Waymap in action:
 - Access it using:  --scan sqli
 
 #### v5.3.1
-- Added Boolean Based Sqli Testing
+- Added Boolean Based Sqli Testing (OWN LOGIC)
 - High Accuracy, Can Give False Positive Sometimes
 - Access it using:  --scan sqli
 
@@ -113,7 +113,7 @@ python waymap.py -h
 ```
 
 #### Credits
-- SQLMAP For Payloads Xml File
+- Thanks SQLMAP For Payloads Xml File
 
 ### IF There's Any Issue In Waymay Then Submit The Issues Here: https://github.com/TrixSec/waymap/issues
 

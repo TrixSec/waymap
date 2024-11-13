@@ -1,3 +1,7 @@
+# Copyright (c) 2024 waymap developers
+# See the file 'LICENSE' for copying permission.
+# sql.py (new logic)
+
 from lib.injection.sqlin.boolean import process_urls as process_boolean_urls
 from lib.injection.sqlin.error import process_urls as process_error_urls
 
