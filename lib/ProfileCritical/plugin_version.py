@@ -24,11 +24,12 @@ def detect_plugin_version(target_url, plugin_name):
     """
     try:
         urls_to_check = get_plugin_version_urls(plugin_name)
+        failed_urls = []  
+        
         for url_path in urls_to_check:
             full_url = urljoin(target_url, url_path)
             response = requests.get(full_url, timeout=10, verify=False)
             if response.status_code == 200:
-                
                 if "Version:" in response.text:
                     version_line = next(line for line in response.text.splitlines() if "Version:" in line)
                     version = version_line.split(":")[1].strip()
@@ -46,10 +47,12 @@ def detect_plugin_version(target_url, plugin_name):
                             version = line.split()[1]
                             return version
             else:
-                print(f"Failed to fetch {full_url}. Status code: {response.status_code}")
+                failed_urls.append(full_url)
         
-        return f"Plugin '{plugin_name}' not found at {target_url}"
+        if len(failed_urls) == len(urls_to_check):
+            print(f"Plugin '{plugin_name}' not found at {target_url}.")
+        
+        return None  
 
-    
     except requests.exceptions.RequestException as e:
         return None
