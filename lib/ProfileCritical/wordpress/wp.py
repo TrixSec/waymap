@@ -80,11 +80,13 @@ def check_vulnerabilities(target_url):
         current_time = datetime.now().strftime("%H:%M:%S")
         print(f"[{Fore.BLUE}{current_time}{Style.RESET_ALL}]::{Fore.GREEN}[Checking]{Style.RESET_ALL}~ {cve['cve_id']}")
 
-        handle_cve(target_url, cve["cve_id"], cve["plugin_name"], cve["vulnerable_version"])
-
-        plugin_check_result = check_plugin_vulnerability(target_url, cve["plugin_name"], cve["vulnerable_version"])
-        if plugin_check_result and plugin_check_result["is_vulnerable"]:
-            found_vulns = True
+        try:
+            handle_cve(target_url, cve["cve_id"], cve["plugin_name"], cve["vulnerable_version"])
+            plugin_check_result = check_plugin_vulnerability(target_url, cve["plugin_name"], cve["vulnerable_version"])
+            if plugin_check_result and plugin_check_result["is_vulnerable"]:
+                found_vulns = True
+        except Exception as e:
+            continue 
 
     if not found_vulns:
-        print(f"{Style.BRIGHT}{Fore.WHITE}No vulnerabilities found for any CVEs on {target_url}{Style.RESET_ALL}") 
+        print(f"{Style.BRIGHT}{Fore.WHITE}No vulnerabilities found for any CVEs on {target_url}{Style.RESET_ALL}")
