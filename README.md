@@ -1,6 +1,6 @@
 # Waymap - Web Vulnerability Scanner.
 
-**Current Version**: 5.2.1
+**Current Version**: 5.4.1
 **Author**: Trix Cyrus  
 **Copyright**: © 2024 Trixsec Org  
 **Maintained**: Yes
@@ -41,6 +41,10 @@ Check out this video to see Waymap in action:
 - Added Boolean Based Sqli Testing (OWN LOGIC)
 - High Accuracy, Can Give False Positive Sometimes
 - Access it using:  --scan sqli
+
+#### v5.4.1
+- Updated CVE Testing Logic in Profile-Critical CMS-Wordpress
+- Added a More Better Logic 
 
 ### Waymap Features
 

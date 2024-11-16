@@ -11,8 +11,10 @@ MAX_THREADS = 10
 
 DEFAULT_INPUT = 'n'
 
-WAYMAP_VERSION = "5.3.1"
+WAYMAP_VERSION = "5.4.1"
 
 AUTHOR = "Trix Cyrus"
 
 COPYRIGHT = "Copyright © 2024 Trixsec Org"
+
+CVE_DB_URL = "https://cvedb.shodan.io/cve/{cve_id}"
