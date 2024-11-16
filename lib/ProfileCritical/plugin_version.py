@@ -24,7 +24,7 @@ def detect_plugin_version(target_url, plugin_name):
     """
     try:
         urls_to_check = get_plugin_version_urls(plugin_name)
-        failed_urls = []  
+        failed_urls = [] 
         
         for url_path in urls_to_check:
             full_url = urljoin(target_url, url_path)
@@ -50,9 +50,9 @@ def detect_plugin_version(target_url, plugin_name):
                 failed_urls.append(full_url)
         
         if len(failed_urls) == len(urls_to_check):
-            print(f"Plugin '{plugin_name}' not found at {target_url}.")
+            print(f"Plugin '{plugin_name}' not found at {target_url}. All URLs failed.")
         
         return None  
-
     except requests.exceptions.RequestException as e:
         return None
+
