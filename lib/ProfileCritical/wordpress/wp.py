@@ -7,6 +7,7 @@ from datetime import datetime
 from colorama import Fore, Style
 from lib.ProfileCritical.plugin_version import detect_plugin_version
 from lib.core.settings import CVE_DB_URL
+from data.cveinfo import wpcves
 
 
 def determine_severity(cvss_score):
@@ -60,23 +61,13 @@ def handle_cve(target_url, cve_id, plugin_name, vulnerable_version):
 
 def check_vulnerabilities(target_url):
     """Function to check all CVEs."""
-    cves = [
-        {"cve_id": "CVE-2023-2732", "plugin_name": "mstore-api", "vulnerable_version": "3.9.3"},
-        {"cve_id": "CVE-2022-1386", "plugin_name": "fusion-builder", "vulnerable_version": "3.6.2"},
-        {"cve_id": "CVE-2022-0739", "plugin_name": "bookingpress-appointment-booking", "vulnerable_version": "1.0.11"},
-        {"cve_id": "CVE-2022-0441", "plugin_name": "masterstudy-lms-learning-management-system", "vulnerable_version": "2.7.6"},
-        {"cve_id": "CVE-2021-34656", "plugin_name": "webcam-2way-videochat", "vulnerable_version": "5.2.8"},
-        {"cve_id": "CVE-2021-25003", "plugin_name": "wpcargo", "vulnerable_version": "6.9.0"},
-        {"cve_id": "CVE-2021-24884", "plugin_name": "formidable", "vulnerable_version": "4.09.05"},
-        {"cve_id": "CVE-2021-24507", "plugin_name": "astra-addon", "vulnerable_version": "3.5.2"},
-        {"cve_id": "CVE-2023-28121", "plugin_name": "woocommerce-payments", "vulnerable_version": "5.6.2"},
-    ]
+
 
     print(f"{Style.BRIGHT}{Fore.WHITE}[Testing: Target: {target_url}]{Style.RESET_ALL}")
 
     found_vulns = False 
 
-    for cve in cves:
+    for cve in wpcves:
         current_time = datetime.now().strftime("%H:%M:%S")
         print(f"[{Fore.BLUE}{current_time}{Style.RESET_ALL}]::{Fore.GREEN}[Checking]{Style.RESET_ALL}~ {cve['cve_id']}")
 

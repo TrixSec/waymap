@@ -1,11 +1,8 @@
+# Copyright (c) 2024 waymap developers
+# See the file 'LICENSE' for copying permission.
+
 from lib.ProfileHigh.cms_detector import detect_cms
-from lib.ProfileHigh.wordpress.wp import handle_cve_2022_21661
-from lib.ProfileHigh.wordpress.wp import handle_cve_2022_1903
-from lib.ProfileHigh.wordpress.wp import handle_cve_2022_1119
-from lib.ProfileHigh.wordpress.wp import handle_cve_2022_0236
-from lib.ProfileHigh.wordpress.wp import handle_cve_2022_43408
-from lib.ProfileHigh.wordpress.wp import handle_cve_2021_25049
-from lib.ProfileHigh.wordpress.wp import handle_cve_2020_35749
+from lib.ProfileHigh.wordpress.wp import check_vulnerabilities
 from lib.ProfileHigh.drupal.dp import handle_cve_2019_6340
 from lib.ProfileHigh.joomla.jm import handle_cve_2020_10239
 from lib.ProfileHigh.joomla.jm import handle_cve_2020_10238
@@ -32,23 +29,20 @@ def high_risk_scan(profile_url):
         perform_generic_scan(profile_url)
 
 
-def perform_wordpress_scan(profile_url):
-    print(f"[•] Running High-risk scan on {profile_url}")
-    print("\n")
-    
-    try:
-        handle_cve_2022_21661(profile_url)
-        handle_cve_2022_1903(profile_url) 
-        handle_cve_2022_1119(profile_url) 
-        handle_cve_2022_0236(profile_url)
-        handle_cve_2022_43408(profile_url)
-        handle_cve_2021_25049(profile_url)
-        handle_cve_2020_35749(profile_url)
-    except KeyboardInterrupt:
-        print("[!] Scan interrupted. Skipping to the next CVE scan...")
-        return  # Move to the next CVE or exit safely
-    except Exception as e:
-        print(f"[!] Error during WordPress High scan: {e}")
+def perform_wordpress_scan(profile_urls):
+    """
+    Perform a High-risk scan on one or more WordPress URLs.
+    Handles both single URLs and lists of URLs.
+    """
+    if isinstance(profile_urls, str):
+        profile_urls = [profile_urls]
+
+    for target_url in profile_urls:
+        try:
+            print(f"[•] Running WordPress High-risk scan on {target_url}")
+            check_vulnerabilities(target_url)
+        except Exception as e:
+            print(f"[!] Error while scanning {target_url}: {e}")
 
 
 def perform_drupal_scan(profile_url):

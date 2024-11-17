@@ -1,15 +1,15 @@
 # Copyright (c) 2024 waymap developers
 # See the file 'LICENSE' for copying permission.
-# cms_detector.py
+# waymap cms detector
 
 import requests
-import urllib3
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+from urllib.parse import urljoin
 
 def detect_wordpress(response, profile_url):
-    wp_paths = ['/wp-admin', '/wp-login.php', 'wp-admin', 'wp-login.php']
+    wp_paths = ['/wp-admin', '/wp-login.php']
     for path in wp_paths:
-        if requests.get(profile_url + path, verify=False).status_code == 200:
+        full_url = urljoin(profile_url, path)
+        if requests.get(full_url).status_code == 200:
             return "WordPress"
 
     if 'meta name="generator" content="WordPress' in response.text:
@@ -17,11 +17,13 @@ def detect_wordpress(response, profile_url):
 
     wp_common_files = ['/wp-content/themes/', '/wp-includes/']
     for file in wp_common_files:
-        if requests.get(profile_url + file, verify=False).status_code == 200:
+        full_url = urljoin(profile_url, file)
+        if requests.get(full_url).status_code == 200:
             return "WordPress"
 
     try:
-        robots_response = requests.get(profile_url + "/robots.txt", verify=False)
+        robots_url = urljoin(profile_url, "/robots.txt")
+        robots_response = requests.get(robots_url)
         if robots_response.status_code == 200:
             robots_content = robots_response.text
             if "Disallow: /wp-admin/" in robots_content and "Allow: /wp-admin/admin-ajax.php" in robots_content:
@@ -34,7 +36,8 @@ def detect_wordpress(response, profile_url):
 def detect_drupal(response, profile_url):
     drupal_paths = ['/sites/all/', '/sites/default/']
     for path in drupal_paths:
-        if requests.get(profile_url + path, verify=False).status_code == 200:
+        full_url = urljoin(profile_url, path)
+        if requests.get(full_url).status_code == 200:
             return "Drupal"
     
     if 'X-Generator' in response.headers and 'Drupal' in response.headers['X-Generator']:
@@ -44,7 +47,8 @@ def detect_drupal(response, profile_url):
 
     drupal_common_files = ['/misc/drupal.js', '/modules/system/system.module']
     for file in drupal_common_files:
-        if requests.get(profile_url + file, verify=False).status_code == 200:
+        full_url = urljoin(profile_url, file)
+        if requests.get(full_url).status_code == 200:
             return "Drupal"
     
     return None
@@ -52,7 +56,8 @@ def detect_drupal(response, profile_url):
 def detect_joomla(response, profile_url):
     joomla_paths = ['/administrator/', '/index.php']
     for path in joomla_paths:
-        if requests.get(profile_url + path, verify=False).status_code == 200:
+        full_url = urljoin(profile_url, path)
+        if requests.get(full_url).status_code == 200:
             return "Joomla"
     
     if 'meta name="generator" content="Joomla' in response.text:
@@ -60,14 +65,15 @@ def detect_joomla(response, profile_url):
 
     joomla_common_files = ['/templates/', '/media/system/js/']
     for file in joomla_common_files:
-        if requests.get(profile_url + file, verify=False).status_code == 200:
+        full_url = urljoin(profile_url, file)
+        if requests.get(full_url).status_code == 200:
             return "Joomla"
     
     return None
 
 def detect_cms(profile_url):
     try:
-        response = requests.get(profile_url, verify=False)
+        response = requests.get(profile_url)
 
         cms = detect_wordpress(response, profile_url)
         if cms:

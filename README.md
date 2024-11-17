@@ -1,6 +1,6 @@
 # Waymap - Web Vulnerability Scanner.
 
-**Current Version**: 5.4.1
+**Current Version**: 5.5.1
 **Author**: Trix Cyrus  
 **Copyright**: © 2024 Trixsec Org  
 **Maintained**: Yes
@@ -46,18 +46,23 @@ Check out this video to see Waymap in action:
 - Updated CVE Testing Logic in Profile-Critical CMS-Wordpress
 - Added a More Better Logic 
 
+#### v5.5.1 
+- Added 45 CVEs Vulnerability Detections Logics
+- 11 Critical-Risk CVEs And 34 High-Risk CVEs
+- For CVEs Info Read The CVEVULN.md File 
+
 ### Waymap Features
 
 1. **Vulnerability Scanning Modules:**
    - SQL Injection (SQLi)
    - Command Injection
-   - Server-Side Template Injection (SSTI) with threading support
-   - Cross-Site Scripting (XSS) with filter bypass payload testing and threading support
-   - Local File Inclusion (LFI) with threading support
-   - Open Redirect with custom thread count
-   - Carriage Return and Line Feed (CRLF) with custom threading
-   - Cross-Origin Resource Sharing (CORS) with threading support
-   - Critical and High-Risk Scan Profiles using CVE exploits (32 CVEs: WordPress - 19, Drupal - 4, Joomla - 7, Generic/Others - 2)
+   - Server-Side Template Injection (SSTI)
+   - Cross-Site Scripting (XSS) with filter bypass payload testing
+   - Local File Inclusion (LFI)
+   - Open Redirect
+   - Carriage Return and Line Feed (CRLF)
+   - Cross-Origin Resource Sharing (CORS)
+   - Critical and High-Risk Scan Profiles (45 CVEs: WordPress - 19, Drupal - 4, Joomla - 7, Generic/Others - 2)
 
 2. **Web Crawling:**
    - Initial crawling functionality

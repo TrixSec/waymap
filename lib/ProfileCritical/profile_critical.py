@@ -43,7 +43,7 @@ def critical_risk_scan(profile_url):
 
 def perform_wordpress_critical_scan(profile_urls):
     """
-    Perform a critical-risk scan on one or more WordPress URLs.
+    Perform a Critical-risk scan on one or more WordPress URLs.
     Handles both single URLs and lists of URLs.
     """
     if isinstance(profile_urls, str):
@@ -51,7 +51,7 @@ def perform_wordpress_critical_scan(profile_urls):
 
     for target_url in profile_urls:
         try:
-            print(f"[•] Running WordPress critical-risk scan on {target_url}")
+            print(f"[•] Running WordPress Critical-risk scan on {target_url}")
             check_vulnerabilities(target_url)
         except Exception as e:
             print(f"[!] Error while scanning {target_url}: {e}")
