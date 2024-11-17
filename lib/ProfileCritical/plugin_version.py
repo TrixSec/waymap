@@ -53,17 +53,12 @@ def detect_plugin_version(target_url, plugin_name):
                                 return version
                     all_404 = False  
 
-            except requests.exceptions.RequestException as e:
-                print(f"[!] Error occurred with URL {full_url}: {e}")
-                continue  # Continue with next URL if an error occurs
-
         if all_404:
             return f"Plugin '{plugin_name}' not found at {target_url}"
 
     except KeyboardInterrupt:
         print("\n[!] Process interrupted by user. What would you like to do?")
         while True:
-            # Prompt user for action after KeyboardInterrupt
             user_input = input(f"{Style.BRIGHT}{Fore.CYAN}Enter 'n' for next CVE, 'e' to exit, or press Enter to resume: {Style.RESET_ALL}")
             if user_input.lower() == 'n':
                 print(f"{Style.BRIGHT}{Fore.GREEN}Continuing with next CVE...{Style.RESET_ALL}")
