@@ -65,7 +65,7 @@ def detect_plugin_version(target_url, plugin_name):
                 break 
             elif user_input.lower() == 'e':
                 print(f"{Style.BRIGHT}{Fore.RED}Exiting...{Style.RESET_ALL}")
-                return 
+                exit(0) 
             elif user_input == '':
                 print(f"{Style.BRIGHT}{Fore.GREEN}Resuming scan...{Style.RESET_ALL}")
                 break 
