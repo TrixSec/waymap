@@ -64,9 +64,9 @@ def detect_plugin_version(target_url, plugin_name):
         print("\n[!] Process interrupted by user. What would you like to do?")
         while True:
             # Prompt user for action after KeyboardInterrupt
-            user_input = input(f"{Style.BRIGHT}{Fore.CYAN}Enter 'n' for next URL, 'e' to exit, or press Enter to resume: {Style.RESET_ALL}")
+            user_input = input(f"{Style.BRIGHT}{Fore.CYAN}Enter 'n' for next CVE, 'e' to exit, or press Enter to resume: {Style.RESET_ALL}")
             if user_input.lower() == 'n':
-                print(f"{Style.BRIGHT}{Fore.GREEN}Continuing with next URL...{Style.RESET_ALL}")
+                print(f"{Style.BRIGHT}{Fore.GREEN}Continuing with next CVE...{Style.RESET_ALL}")
                 break 
             elif user_input.lower() == 'e':
                 print(f"{Style.BRIGHT}{Fore.RED}Exiting...{Style.RESET_ALL}")
@@ -77,6 +77,6 @@ def detect_plugin_version(target_url, plugin_name):
             else:
                 print(f"{Style.BRIGHT}{Fore.YELLOW}Invalid input, please try again.{Style.RESET_ALL}")
                 continue
-            
+
     except requests.exceptions.RequestException:
         return None
