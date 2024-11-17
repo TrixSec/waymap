@@ -92,8 +92,13 @@ def process_urls(urls):
                 elif user_input.lower() == 'e':
                     print(f"{Style.BRIGHT}{Fore.RED}Exiting...{Style.RESET_ALL}")
                     return
+
+                elif user_input == '': 
+                    print(f"{Style.BRIGHT}{Fore.GREEN}Resuming scan...{Style.RESET_ALL}")
+                    break  
                 else:
-                    continue
+                    print(f"{Style.BRIGHT}{Fore.YELLOW}Invalid input, please try again.{Style.RESET_ALL}")
+
     end_time = time.time()
     elapsed_time = (end_time - start_time) / 60
     print(f"\n{Style.BRIGHT}[{Fore.YELLOW}Summary{Style.RESET_ALL}] Total time taken: {elapsed_time:.2f} minutes")

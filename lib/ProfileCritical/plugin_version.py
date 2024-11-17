@@ -4,6 +4,9 @@
 import requests
 from urllib.parse import urljoin
 import urllib3
+from colorama import Fore, Style  # Added for color and style in prompts
+import time
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def get_plugin_version_urls(plugin_name):
@@ -28,29 +31,52 @@ def detect_plugin_version(target_url, plugin_name):
 
         for url_path in urls_to_check:
             full_url = urljoin(target_url, url_path)
-            response = requests.get(full_url, timeout=10, verify=False)
-            
-            if response.status_code == 200:
-                if "Version:" in response.text:
-                    version_line = next(line for line in response.text.splitlines() if "Version:" in line)
-                    version = version_line.split(":")[1].strip()
-                    return version
+            try:
+                response = requests.get(full_url, timeout=10, verify=False)
+                
+                if response.status_code == 200:
+                    if "Version:" in response.text:
+                        version_line = next(line for line in response.text.splitlines() if "Version:" in line)
+                        version = version_line.split(":")[1].strip()
+                        return version
 
-                elif "Stable tag:" in response.text:
-                    version_line = next(line for line in response.text.splitlines() if "Stable tag:" in line)
-                    version = version_line.split(":")[1].strip()
-                    return version
+                    elif "Stable tag:" in response.text:
+                        version_line = next(line for line in response.text.splitlines() if "Stable tag:" in line)
+                        version = version_line.split(":")[1].strip()
+                        return version
 
-                elif "#" in response.text:
-                    lines = response.text.splitlines()
-                    for line in lines:
-                        if line.startswith("####"):
-                            version = line.split()[1]
-                            return version
-                all_404 = False  
+                    elif "#" in response.text:
+                        lines = response.text.splitlines()
+                        for line in lines:
+                            if line.startswith("####"):
+                                version = line.split()[1]
+                                return version
+                    all_404 = False  
+
+            except requests.exceptions.RequestException as e:
+                print(f"[!] Error occurred with URL {full_url}: {e}")
+                continue  # Continue with next URL if an error occurs
 
         if all_404:
             return f"Plugin '{plugin_name}' not found at {target_url}"
 
+    except KeyboardInterrupt:
+        print("\n[!] Process interrupted by user. What would you like to do?")
+        while True:
+            # Prompt user for action after KeyboardInterrupt
+            user_input = input(f"{Style.BRIGHT}{Fore.CYAN}Enter 'n' for next URL, 'e' to exit, or press Enter to resume: {Style.RESET_ALL}")
+            if user_input.lower() == 'n':
+                print(f"{Style.BRIGHT}{Fore.GREEN}Continuing with next URL...{Style.RESET_ALL}")
+                break 
+            elif user_input.lower() == 'e':
+                print(f"{Style.BRIGHT}{Fore.RED}Exiting...{Style.RESET_ALL}")
+                return 
+            elif user_input == '':
+                print(f"{Style.BRIGHT}{Fore.GREEN}Resuming scan...{Style.RESET_ALL}")
+                break 
+            else:
+                print(f"{Style.BRIGHT}{Fore.YELLOW}Invalid input, please try again.{Style.RESET_ALL}")
+                continue
+            
     except requests.exceptions.RequestException:
         return None
