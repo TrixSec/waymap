@@ -27,7 +27,7 @@ def detect_plugin_version(target_url, plugin_name):
     """
     try:
         urls_to_check = get_plugin_version_urls(plugin_name)
-        all_404 = True 
+        all_404 = True  
 
         for url_path in urls_to_check:
             full_url = urljoin(target_url, url_path)
@@ -51,7 +51,11 @@ def detect_plugin_version(target_url, plugin_name):
                             if line.startswith("####"):
                                 version = line.split()[1]
                                 return version
-                    all_404 = False  
+                    
+                    all_404 = False 
+
+            except requests.exceptions.RequestException as e:
+                continue  
 
         if all_404:
             return f"Plugin '{plugin_name}' not found at {target_url}"
