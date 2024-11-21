@@ -99,7 +99,6 @@ def check_vulnerabilities(target_url):
                 if plugin_check_result and plugin_check_result["is_vulnerable"]:
                     found_vulns = True
             except Exception as e:
-                print(f"{Fore.RED}[!] Error while processing CVE {cve['cve_id']}: {e}{Style.RESET_ALL}")
                 continue
 
     except KeyboardInterrupt:
