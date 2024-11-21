@@ -1,11 +1,13 @@
-# WordPress CVE Vulnerabilities
+# CVE Vulnerabilities Tested By WAYMAP 
 
-This document lists WordPress plugin vulnerabilities categorized by their severity.
-Which Are Being Tested By Waymap
+#### **Current Total Count: 67**
+
+This document lists WordPress/Drupal vulnerabilities categorized by their severity.
+Which Are Being Tested By Waymap 
 
 
 ### **Critical Risk CVEs**:
- **Total CVEs**: 11
+ **Total CVEs**: 19
    - CVE-2023-2732
    - CVE-2022-1386
    - CVE-2022-0739
@@ -17,9 +19,18 @@ Which Are Being Tested By Waymap
    - CVE-2023-28121
    - CVE-2024-7854
    - CVE-2024-3673
+   - CVE-2008-6171
+   - CVE-2018-7600
+   - CVE-2017-6925
+   - CVE-2018-7602
+   - CVE-2020-13665
+   - CVE-2017-6920
+   - CVE-2019-6339
+   - CVE-2011-2715
+
 
 ### **High Risk CVEs**:
- **Total CVEs**: 34
+ **Total CVEs**: 48
    - CVE-2024-7780
    - CVE-2024-7766
    - CVE-2021-24142
@@ -54,12 +65,27 @@ Which Are Being Tested By Waymap
    - CVE-2021-24626
    - CVE-2021-24741
    - CVE-2021-24774
+   - CVE-2006-2742
+   - CVE-2007-6299
+   - CVE-2014-3704
+   - CVE-2006-2742
+   - CVE-2007-6299
+   - CVE-2014-3704
+   - CVE-2016-3163
+   - CVE-2006-2831
+   - CVE-2006-5476
+   - CVE-2020-13671
+   - CVE-2011-2687
+   - CVE-2016-6211
+   - CVE-2011-2726
+   - CVE-2016-3165
+
 
 ---
 
 ### Summary:
-- **Critical Risk CVEs**: 11 vulnerabilities
-- **High Risk CVEs**: 34 vulnerabilities
+- **Critical Risk CVEs**: 19 vulnerabilities
+- **High Risk CVEs**: 48 vulnerabilities
 
 ---
 
@@ -119,5 +145,44 @@ Which Are Being Tested By Waymap
 | CVE-2021-24626   | chameleon-css                                    | < 1.2                  |
 | CVE-2021-24741   | supportboard                                     | < 3.3.4                |
 | CVE-2021-24774   | check-email                                      | < 1.0.3                |
+
+---
+
+Here’s a table for the Drupal CVEs you provided with the associated vulnerable versions:
+
+### Critical Severity Drupal CVEs
+
+Here's the updated table with the additional CVEs included:
+
+| **CVE ID**       | **Vulnerable Component**                         | **Vulnerable Version**                                 |
+|-------------------|--------------------------------------------------|-------------------------------------------------------|
+| CVE-2006-2742    | Drupal Core                                      | 4.6 - 4.7.0                                           |
+| CVE-2007-6299    | Drupal Core                                      | 4.7 - 4.7.9, 5.0 - 5.4                                |
+| CVE-2014-3704    | Drupal Core                                      | 7.0 - 7.31                                            |
+| CVE-2016-3163    | Drupal Core                                      | 6.0 - 6.38, 7.0 - 7.43                                |
+| CVE-2006-2831    | Drupal Core                                      | 4.6 - 4.6.8, 4.7 - 4.7.2                              |
+| CVE-2006-5476    | Drupal Core                                      | 4.6 - 4.6.10, 4.7 - 4.7.4                             |
+| CVE-2020-13671   | Drupal Core                                      | 9.0 - 9.0.8, 8.9 - 8.9.9, 8.8 - 8.8.11, 7 - 7.74      |
+| CVE-2011-2687    | Drupal Core                                      | 7.0 - 7.3                                             |
+| CVE-2016-6211    | Drupal Core                                      | 7.0 - 7.44                                            |
+| CVE-2011-2726    | Drupal Core                                      | 7.0 - 7.5                                             |
+| CVE-2016-3165    | Drupal Core                                      | 6 - 6.38                                              |
+
+---
+
+### High Severity Drupal CVEs
+
+Here is a separate table for the **CVE_DATACRIT_DRUPAL** data:
+
+| **CVE ID**       | **Vulnerable Component**                         | **Vulnerable Version**                                 |
+|-------------------|--------------------------------------------------|-------------------------------------------------------|
+| CVE-2008-6171    | Drupal Core                                      | 5.0 - 5.12, 6.0 - 6.6                                 |
+| CVE-2018-7600    | Drupal Core                                      | 7.5 - 7.58, 8.0 - 8.3.9, 8.4 - 8.4.6, 8.5 - 8.5.1     |
+| CVE-2017-6925    | Drupal Core                                      | 8 - 8.3.7                                             |
+| CVE-2018-7602    | Drupal Core                                      | 7.0 - 8.0                                             |
+| CVE-2020-13665   | Drupal Core                                      | 8.8 - 8.8.8, 8.9 - 8.9.1, 9.0 - 9.0.1                 |
+| CVE-2017-6920    | Drupal Core                                      | 8.0 - 8.3.3                                           |
+| CVE-2019-6339    | Drupal Core                                      | 7 - 7.62, 8.6 - 8.6.6, 8.5 - 8.5.9                    |
+| CVE-2011-2715    | Drupal Core                                      | 6.20                                                  |
 
 ---

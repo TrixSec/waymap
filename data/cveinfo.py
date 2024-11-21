@@ -1,5 +1,6 @@
 # Copyright (c) 2024 waymap developers
 # See the file 'LICENSE' for copying permission.
+# Note: IF YOU ARE USING/COPYING THESE DATA YOU SHOULD HAVE ENOUGH PERMISSIONS FROM THE AUTHOR
 
 # cve vuln version data
 # cveinfo.py
@@ -16,7 +17,6 @@ wpcves = [
         {"cve_id": "CVE-2023-28121", "plugin_name": "woocommerce-payments", "vulnerable_version": "5.6.2"},
         {"cve_id": "CVE-2024-7854", "plugin_name": "woo-inquiry", "vulnerable_version": "0.2"},
         {"cve_id": "CVE-2024-3673", "plugin_name": "web-directory-free", "vulnerable_version": "1.7.3"},
-
 ]
 
 wphighcves = [
@@ -54,4 +54,29 @@ wphighcves = [
         {"cve_id": "CVE-2021-24626", "plugin_name": "chameleon-css", "vulnerable_version": "1.2"},
         {"cve_id": "CVE-2021-24741", "plugin_name": "supportboard", "vulnerable_version": "3.3.4"},
         {"cve_id": "CVE-2021-24774", "plugin_name": "check-email", "vulnerable_version": "1.0.3"},
+]
+
+CVE_DATABASE_DRUPAL = [
+    {"cve_id": "CVE-2006-2742", "vulnerable_version": "4.6 - 4.6.6, 4.7.0"},
+    {"cve_id": "CVE-2007-6299", "vulnerable_version": "4.7 - 4.7.9, 5.0 - 5.4"},
+    {"cve_id": "CVE-2014-3704", "vulnerable_version": "7.0 - 7.31"},
+    {"cve_id": "CVE-2016-3163", "vulnerable_version": "6.0 - 6.38, 7.0 - 7.43"},
+    {"cve_id": "CVE-2006-2831", "vulnerable_version": "4.6 - 4.6.8, 4.7 - 4.7.2"},
+    {"cve_id": "CVE-2006-5476", "vulnerable_version": "4.6 - 4.6.10, 4.7 - 4.7.4"},
+    {"cve_id": "CVE-2020-13671", "vulnerable_version": "9.0 - 9.0.8, 8.9 - 8.9.9, 8.8 - 8.8.11, 7 - 7.74"},
+    {"cve_id": "CVE-2011-2687", "vulnerable_version": "7.0 - 7.3"},
+    {"cve_id": "CVE-2016-6211", "vulnerable_version": "7.0 - 7.44"},
+    {"cve_id": "CVE-2011-2726", "vulnerable_version": "7.0 - 7.5"},
+    {"cve_id": "CVE-2016-3165", "vulnerable_version": "6 - 6.38"},
+]
+
+CVE_DATACRIT_DRUPAL = [
+    {"cve_id": "CVE-2008-6171", "vulnerable_version": "5.0 - 5.12, 6.0 - 6.6"},
+    {"cve_id": "CVE-2018-7600", "vulnerable_version": "7.5 - 7.58, 8.0 - 8.3.9, 8.4 - 8.4.6, 8.5 - 8.5.1"},
+    {"cve_id": "CVE-2017-6925", "vulnerable_version": "8 - 8.3.7"},
+    {"cve_id": "CVE-2018-7602", "vulnerable_version": "7.0 - 8.0"},
+    {"cve_id": "CVE-2020-13665", "vulnerable_version": "8.8 - 8.8.8, 8.9 - 8.9.1, 9.0 - 9.0.1"},
+    {"cve_id": "CVE-2017-6920", "vulnerable_version": "8.0 - 8.3.3"},
+    {"cve_id": "CVE-2019-6339", "vulnerable_version": "7 - 7.62, 8.6 - 8.6.6, 8.5 - 8.5.9"},
+    {"cve_id": "CVE-2011-2715", "vulnerable_version": "6.20"},
 ]

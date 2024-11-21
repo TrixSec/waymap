@@ -1,5 +1,6 @@
 # Copyright (c) 2024 waymap developers
 # See the file 'LICENSE' for copying permission.
+# waymap cms detector
 
 import requests
 from urllib.parse import urljoin
@@ -52,23 +53,6 @@ def detect_drupal(response, profile_url):
     
     return None
 
-def detect_joomla(response, profile_url):
-    joomla_paths = ['/administrator/', '/index.php']
-    for path in joomla_paths:
-        full_url = urljoin(profile_url, path)
-        if requests.get(full_url).status_code == 200:
-            return "Joomla"
-    
-    if 'meta name="generator" content="Joomla' in response.text:
-        return "Joomla"
-
-    joomla_common_files = ['/templates/', '/media/system/js/']
-    for file in joomla_common_files:
-        full_url = urljoin(profile_url, file)
-        if requests.get(full_url).status_code == 200:
-            return "Joomla"
-    
-    return None
 
 def detect_cms(profile_url):
     try:
@@ -79,10 +63,6 @@ def detect_cms(profile_url):
             return cms
 
         cms = detect_drupal(response, profile_url)
-        if cms:
-            return cms
-
-        cms = detect_joomla(response, profile_url)
         if cms:
             return cms
 

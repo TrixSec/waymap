@@ -4,8 +4,7 @@
 import requests
 from urllib.parse import urljoin
 import urllib3
-from colorama import Fore, Style  # Added for color and style in prompts
-import time
+from colorama import Fore, Style  
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 

@@ -1,12 +1,12 @@
 # Waymap - Web Vulnerability Scanner.
 
-**Current Version**: 5.5.1
+**Current Version**: 5.6.1
 **Author**: Trix Cyrus  
 **Copyright**: © 2024 Trixsec Org  
 **Maintained**: Yes
 
 ## What is Waymap?
-Waymap is a fast and optimized And Automated web vulnerability scanner designed for penetration testers. It effectively identifies vulnerabilities by testing against a variety of payloads.
+**Waymap** is a fast and optimized web vulnerability scanner designed to identify security flaws in web applications. With support for multiple scan types and customizable configurations, it is a versatile tool for ethical hackers, penetration testers, and security enthusiasts. And Is Able To Scan For **75+ Web Vulnerabilities**
 
 ### Demo Video
 Check out this video to see Waymap in action:
@@ -51,75 +51,110 @@ Check out this video to see Waymap in action:
 - 11 Critical-Risk CVEs And 34 High-Risk CVEs
 - For CVEs Info Read The CVEVULN.md File 
 
-### Waymap Features
-
-1. **Vulnerability Scanning Modules:**
-   - SQL Injection (SQLi)
-   - Command Injection
-   - Server-Side Template Injection (SSTI)
-   - Cross-Site Scripting (XSS) with filter bypass payload testing
-   - Local File Inclusion (LFI)
-   - Open Redirect
-   - Carriage Return and Line Feed (CRLF)
-   - Cross-Origin Resource Sharing (CORS)
-   - Critical and High-Risk Scan Profiles (45 CVEs: WordPress - 19, Drupal - 4, Joomla - 7, Generic/Others - 2)
-
-2. **Web Crawling:**
-   - Initial crawling functionality
-   - Enhanced crawler to operate within target domain boundaries and handle URL redirection
-   - Advanced crawler capable of any-depth crawling
-   - Improved v3 crawler (competitive with SQLmap crawler)
-
-3. **Concurrency & Threading:**
-   - Concurrency to utilize multiple CPU threads for faster scans
-   - Custom thread count for Open Redirect, CRLF, and CORS scans
-   - New argument `--threads/-T` for global threading count (no prompt for threads)
-
-4. **Multi-Target Scanning:**
-   - Support for scanning multiple URLs with `--multi-target {targetfilename}.txt`
-   - Ability to scan URLs directly without crawling using `--url/-u` and `--multi-url/-mu` arguments
-
-5. **Automation and Convenience:**
-   - Auto-update functionality (version-dependent)
-   - New argument `--check-updates` to check for and perform updates
-   - New argument `--random-agent` to randomize user-agents
-   - Header usage to make requests appear more legitimate and reduce detection/blocking
-   - Argument `--no-prompt/-np` to disable prompts (default input = 'n')
-
-6. **Scan Profiles & Severity-Based Scanning:**
-   - New critical and high-risk scan profiles (`--scan critical-risk` and `--scan high-risk`) using severity-based CVE exploits
-   - Argument `--profile critical-risk/high-risk` with `--profileurl` for streamlined scanning based on CVE severity
-
-7. **Logging and Stability:**
-   - Logging functionality for scan sessions
-   - Various bug fixes and optimizations for stability and processing speed
+#### v5.6.1 
+- Added New 19 CVEs Vulnerability Detections Logics
+- 8 Critical-Risk CVEs And 11 High-Risk CVEs
+- For CVEs Info Read The CVEVULN.md File 
 
 ---
 
-## Installation and Usage
+## 🚀 **Features**
 
-### Clone the repository:
-```bash
-git clone https://github.com/TrixSec/waymap.git
-```
+### 1. **Flexible Scanning Options**
+   - **Target-based scanning:** 
+     Scan single or multiple targets using `--target` or `--multi-target` options (Requires Crawling).
+   - **Direct URL scanning:** 
+     Use `--url` or `--multi-url` to scan specific URLs without crawling.
+   - **Profile-based scanning:** 
+     Supports high-risk and critical-risk scan profiles for targeted assessments.
 
-### Install the required dependencies:
-```bash
-pip install .
-```
+### 2. **Supported Scan Types**
+   - **SQL Injection (SQLi):**  
+     Detect vulnerabilities related to SQL injection.
+   - **Command Injection (CMDi):**  
+     Identify potential command execution vulnerabilities.
+   - **Server-Side Template Injection (SSTI):**  
+     Scan for template injection risks in server-side frameworks.
+   - **Cross-Site Scripting (XSS):**  
+     Check for reflective XSS vulnerabilities.
+   - **Local File Inclusion (LFI):**  
+     Locate file inclusion vulnerabilities.
+   - **Open Redirect:**  
+     Identify redirect-related issues.
+   - **Carriage Return and Line Feed (CRLF):**  
+     Scan for CRLF injection flaws.
+   - **Cross-Origin Resource Sharing (CORS):**  
+     Check for misconfigurations in CORS policies.
+   - **All-in-one scanning:**  
+     Perform all available scans in a single command.
 
-### Run Waymap:
-```bash
-python waymap.py --crawl 1 --scan sql/cmdi/ssti/xss/lfi/open-redirect/crlf/cors/all --target/--multi-target https://example.com/{filename}.txt
-```
-```bash
-python waymap.py --scan sql/cmdi/ssti/xss/lfi/open-redirect/crlf/cors/all --url/--mutli-url https://example.com/index.php?id=1/{filename}.txt
-```
+### 3. **Profile-based Scanning**
+   - **High-Risk Profile:**  
+   - **Critical-Risk Profile:**  
+     Focuses on severe vulnerabilities, such as CVE-based attacks.
+
+### 4. **Crawling Capabilities**
+   - Crawl target websites with customizable depth (`--crawl`).
+   - Automatically discover and extract URLs for scanning.
+
+### 5. **Threaded Scanning**
+   - Speed up scans with multithreading (`--threads`).
+
+### 6. **User-Agent Randomization**
+   - Randomize requests using different user agents (`--random-agent`).
+
+### 7. **Automation Features**
+   - Skip prompts using the `--no-prompt` option.
+   - Automatically handle missing directories, files, and session data.
+
+### 8. **Update Checker**
+   - Easily check for the latest updates (`--check-updates`).
+
+---
+
+## 🛠️ **How to Use**
+
+### Basic Commands
+1. **Scan a single target:**
+   ```bash
+   python waymap.py --crawl 3 --target https://example.com --scan {scan_type}
+   ```
+2. **Scan multiple targets from a file:**
+   ```bash
+   python waymap.py --crawl 3 --multi-target targets.txt --scan {scan_type}
+   ```
+3. **Directly scan a single URL:**
+   ```bash
+   python waymap.py --url https://example.com/page?id=1 --scan {scan_type}
+   ```
+4. **Profile-based scanning:**
+   ```bash
+   python waymap.py --profileurl https://example.com --profile high-risk/critical-risk
+   ```
+
+### Thread Configuration
+1. **Use threading for faster scans:**
+   ```bash
+   python waymap.py --crawl 3 --target https://example.com --scan ssti --threads 10
+   ```
+
+### Update Check
+1. **Ensure you have the latest version:**
+   ```bash
+   python waymap.py --check-updates
+   ```
+
 ### Check Help
 ```bash
 python waymap.py -h
 
 ```
+
+---
+
+
+### Waymap makes web vulnerability scanning efficient and accessible. Start securing your applications today! 🎯
+
 
 #### Credits
 - Thanks SQLMAP For Payloads Xml File

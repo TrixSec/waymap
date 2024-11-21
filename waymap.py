@@ -114,7 +114,7 @@ def print_banner():
 ░╚██╗████╗██╔╝███████║░╚████╔╝░██╔████╔██║███████║██████╔╝
 ░░████╔═████║░██╔══██║░░╚██╔╝░░██║╚██╔╝██║██╔══██║██╔═══╝░
 ░░╚██╔╝░╚██╔╝░██║░░██║░░░██║░░░██║░╚═╝░██║██║░░██║██║░░░░░
-░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v5.5.1
+░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v5.6.1
     """
     print(colored(banner, 'cyan'))
     print(colored(f"Waymap Version: {WAYMAP_VERSION}", 'yellow'))

