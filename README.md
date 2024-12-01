@@ -1,6 +1,6 @@
 # Waymap - Web Vulnerability Scanner.
 
-**Current Version**: 5.7.1
+**Current Version**: 5.7.2
 **Author**: Trix Cyrus  
 **Copyright**: © 2024 Trixsec Org  
 **Maintained**: Yes
@@ -28,6 +28,9 @@
 - Added IP Spoofing for more anonymity
 - Updated Wp Plugin Checking Logic In Both High Profile And Critical Profile
 - some minor bug fix
+
+#### v5.7.2 
+- Added New Logic To Update Waymap
 ---
 
 ## 🚀 **Features**

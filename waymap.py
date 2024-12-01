@@ -5,6 +5,7 @@ import os
 import argparse
 import requests
 import logging
+import shutil
 from termcolor import colored
 from lib.parse.random_headers import generate_random_headers
 from lib.waymapcrawlers.crawler import run_crawler
@@ -65,17 +66,38 @@ def check_for_updates():
 
         if WAYMAP_VERSION != latest_version:
             print(colored(f"[•] New version available: {latest_version}. Updating...", 'yellow'))
-            os.system('git reset --hard HEAD')
-            os.system('git pull')
+
+            temp_dir = "waymap_update_temp"
+            if os.path.exists(temp_dir):
+                shutil.rmtree(temp_dir)  
+            os.makedirs(temp_dir)
+
+            os.system(f'git clone --quiet https://github.com/TrixSec/waymap {temp_dir}')
+
+            for item in os.listdir(temp_dir):
+                if item not in ['.git', 'VERSION']:
+                    src_path = os.path.join(temp_dir, item)
+                    dst_path = os.path.join(os.getcwd(), item)
+                    if os.path.isdir(src_path):
+                        if os.path.exists(dst_path):
+                            shutil.rmtree(dst_path)
+                        shutil.copytree(src_path, dst_path)
+                    else:
+                        shutil.copy2(src_path, dst_path)
+
             with open('VERSION', 'w') as version_file:
                 version_file.write(latest_version)
+
+            shutil.rmtree(temp_dir)
+
             print(colored("[•] Update completed. Please rerun Waymap.", 'green'))
             exit()
 
         print(colored(f"[•] You are using the latest version: {latest_version}.", 'green'))
     except requests.RequestException as e:
         print(colored(f"[×] Error fetching the latest version: {e}. Please check your internet connection.", 'red'))
-
+    except Exception as e:
+        print(colored(f"[×] Unexpected error during the update process: {e}.", 'red'))
 def print_banner():
     banner = r"""
 ░██╗░░░░░░░██╗░█████╗░██╗░░░██╗███╗░░░███╗░█████╗░██████╗░
@@ -83,7 +105,7 @@ def print_banner():
 ░╚██╗████╗██╔╝███████║░╚████╔╝░██╔████╔██║███████║██████╔╝
 ░░████╔═████║░██╔══██║░░╚██╔╝░░██║╚██╔╝██║██╔══██║██╔═══╝░
 ░░╚██╔╝░╚██╔╝░██║░░██║░░░██║░░░██║░╚═╝░██║██║░░██║██║░░░░░
-░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v5.7.1
+░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v5.7.2
     """
     print(colored(banner, 'cyan'))
     print(colored(f"Waymap Version: {WAYMAP_VERSION}", 'yellow'))
