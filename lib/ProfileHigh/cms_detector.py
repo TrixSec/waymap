@@ -4,12 +4,15 @@
 
 import requests
 from urllib.parse import urljoin
+from lib.parse.random_headers import generate_random_headers
+
+headers = generate_random_headers()
 
 def detect_wordpress(response, profile_url):
     wp_paths = ['/wp-admin', '/wp-login.php']
     for path in wp_paths:
         full_url = urljoin(profile_url, path)
-        if requests.get(full_url).status_code == 200:
+        if requests.get(full_url, headers=headers).status_code == 200:
             return "WordPress"
 
     if 'meta name="generator" content="WordPress' in response.text:
@@ -18,7 +21,7 @@ def detect_wordpress(response, profile_url):
     wp_common_files = ['/wp-content/themes/', '/wp-includes/']
     for file in wp_common_files:
         full_url = urljoin(profile_url, file)
-        if requests.get(full_url).status_code == 200:
+        if requests.get(full_url, headers=headers).status_code == 200:
             return "WordPress"
 
     try:
@@ -37,7 +40,7 @@ def detect_drupal(response, profile_url):
     drupal_paths = ['/sites/all/', '/sites/default/']
     for path in drupal_paths:
         full_url = urljoin(profile_url, path)
-        if requests.get(full_url).status_code == 200:
+        if requests.get(full_url, headers=headers).status_code == 200:
             return "Drupal"
     
     if 'X-Generator' in response.headers and 'Drupal' in response.headers['X-Generator']:
@@ -48,11 +51,10 @@ def detect_drupal(response, profile_url):
     drupal_common_files = ['/misc/drupal.js', '/modules/system/system.module']
     for file in drupal_common_files:
         full_url = urljoin(profile_url, file)
-        if requests.get(full_url).status_code == 200:
+        if requests.get(full_url, headers=headers).status_code == 200:
             return "Drupal"
     
     return None
-
 
 def detect_cms(profile_url):
     try:
@@ -71,4 +73,5 @@ def detect_cms(profile_url):
     except requests.RequestException as e:
         print(f"[!] Error connecting to {profile_url}: {str(e)}")
         return "Unknown/Other"
+
 

@@ -4,8 +4,11 @@
 import requests
 import urllib3
 from colorama import Fore, Style 
-
+from lib.parse.random_headers import generate_random_headers
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+headers = generate_random_headers()
+
 
 def fetch_drupal_version(target_url):
     """
@@ -16,14 +19,14 @@ def fetch_drupal_version(target_url):
         - Drupal version number as a string (e.g., '10') or None if not found.
     """
     try:
-        response = requests.get(target_url, timeout=10, verify=False)
+        response = requests.get(target_url, headers=headers, timeout=10, verify=False)
         if response.status_code == 200:
             for line in response.text.splitlines():
                 if '<meta name="Generator"' in line and 'Drupal' in line:
                     version = line.split('content="Drupal ')[1].split()[0]
                     return version
 
-        response = requests.head(target_url, timeout=10, verify=False)
+        response = requests.head(target_url, headers=headers, timeout=10, verify=False)
         if response.status_code == 200:
             x_generator = response.headers.get("x-generator")
             if x_generator and "Drupal" in x_generator:

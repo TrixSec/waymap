@@ -10,6 +10,7 @@ import multiprocessing
 from termcolor import colored
 from xml.etree import ElementTree as ET
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from lib.parse.random_headers import generate_random_headers
 from lib.core.settings import DEFAULT_THREADS
 from lib.core.settings import MAX_THREADS
 from lib.core.settings import DEFAULT_INPUT 
@@ -44,8 +45,8 @@ def detect_web_tech(headers):
         return headers['server']
     return 'Unknown'
 
-def test_cmdi_payload(url, payload, user_agent, cmdi_errors):
-    headers = {'User-Agent': user_agent}
+def test_cmdi_payload(url, payload, cmdi_errors):
+    headers = generate_random_headers()
     try:
         response = requests.get(url, headers=headers, timeout=10, verify=False)
         response_content = response.text
@@ -59,7 +60,7 @@ def test_cmdi_payload(url, payload, user_agent, cmdi_errors):
 
     return {'vulnerable': False}
 
-def perform_cmdi_scan(crawled_urls, cmdi_payloads, user_agents, thread_count, no_prompt):
+def perform_cmdi_scan(crawled_urls, cmdi_payloads, thread_count, no_prompt):
     if thread_count is None:
         thread_count = DEFAULT_THREADS  
 
@@ -78,7 +79,7 @@ def perform_cmdi_scan(crawled_urls, cmdi_payloads, user_agents, thread_count, no
             found_vulnerability = False
 
             with ThreadPoolExecutor(max_workers=thread_count) as executor:
-                futures = {executor.submit(test_cmdi_payload, f"{url}{payload}", payload, random.choice(user_agents), cmdi_errors): payload for payload in payloads_to_test}
+                futures = {executor.submit(test_cmdi_payload, f"{url}{payload}", payload, cmdi_errors): payload for payload in payloads_to_test}
 
                 for future in as_completed(futures):
                     result = future.result()

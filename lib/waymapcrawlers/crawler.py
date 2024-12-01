@@ -8,6 +8,7 @@ import sys
 import os
 import threading
 import urllib3
+from lib.parse.random_headers import generate_random_headers
 from lib.core.settings import CRAWLING_EXCLUDE_EXTENSIONS, DEFAULT_THREADS, MAX_THREADS, DEFAULT_INPUT
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -62,7 +63,7 @@ def crawl_url(url, base_domain, next_urls_to_crawl):
     global total_urls, valid_url_count
 
     try:
-        headers = {"User-Agent": "Mozilla/5.0"}  
+        headers = generate_random_headers()
         response = requests.get(url, timeout=REQUEST_TIMEOUT, allow_redirects=True, verify=False, headers=headers)
         final_url = response.url
 

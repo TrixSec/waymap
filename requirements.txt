@@ -1,0 +1,8 @@
+requests
+termcolor
+beautifulsoup4
+colorama
+packaging
+bs4 
+urllib3
+logging

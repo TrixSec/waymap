@@ -21,6 +21,7 @@ wpcves = [
 
 wphighcves = [
         {"cve_id": "CVE-2024-7780", "plugin_name": "bit-form", "vulnerable_version": "2.13.9"},
+        {"cve_id": "CVE-2023-5761", "plugin_name": "burst-statistics", "vulnerable_version": "1.5.4"},
         {"cve_id": "CVE-2024-7766", "plugin_name": "adicons", "vulnerable_version": "1.2"},        
         {"cve_id": "CVE-2021-24142", "plugin_name": "eps-301-redirects", "vulnerable_version": "2.51"},
         {"cve_id": "CVE-2015-9323", "plugin_name": "404-to-301", "vulnerable_version": "2.0.2"},
@@ -54,6 +55,8 @@ wphighcves = [
         {"cve_id": "CVE-2021-24626", "plugin_name": "chameleon-css", "vulnerable_version": "1.2"},
         {"cve_id": "CVE-2021-24741", "plugin_name": "supportboard", "vulnerable_version": "3.3.4"},
         {"cve_id": "CVE-2021-24774", "plugin_name": "check-email", "vulnerable_version": "1.0.3"},
+        {"cve_id": "CVE-2023-5761", "plugin_name": "burst-pro", "vulnerable_version": "1.5.1"},
+
 ]
 
 CVE_DATABASE_DRUPAL = [

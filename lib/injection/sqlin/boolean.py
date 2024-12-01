@@ -8,6 +8,8 @@ import string
 import time
 from colorama import Fore, Style, init
 import warnings
+from lib.parse.random_headers import generate_random_headers
+
 
 init(autoreset=True)
 
@@ -25,6 +27,9 @@ FALSE_PAYLOADS = [
     "' AND (3*3*0)=(2*4*1*0) AND 'randomString'='randomString"
 ]
 
+headers = generate_random_headers()
+
+
 def generate_random_string(length=8):
     return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
 
@@ -36,7 +41,7 @@ def test_payload(url, payload, retries=2):
     for _ in range(retries):
         try:
             full_url = url + payload.replace("randomString", generate_random_string())
-            response = requests.get(full_url, verify=False, timeout=10)
+            response = requests.get(full_url, headers=headers, verify=False, timeout=10)
             response_signatures.append((response.status_code, len(response.text), response.text[:100]))
         except requests.RequestException:
             response_signatures.append(None)  

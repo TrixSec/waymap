@@ -10,13 +10,17 @@ import time
 from urllib.parse import urlparse, parse_qs
 from colorama import Fore, Style, init
 import urllib3
-import os
+from lib.parse.random_headers import generate_random_headers
+
 
 init(autoreset=True)
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 successful_requests = 0
 failed_requests = 0
+
+headers = generate_random_headers()
+
 
 def parse_error_based_tests_from_xml(file_path="data/error_based.xml"):
     """Parse error-based SQLi test cases from XML."""
@@ -61,7 +65,7 @@ def inject_payload(url, payload):
 
 def detect_server_info(url):
     """Detect server and web technology from headers."""
-    response = requests.head(url, verify=False)
+    response = requests.head(url, headers=headers, verify=False)
     server = response.headers.get('Server', 'Unknown')
     technology = response.headers.get('X-Powered-By', 'Unknown')
     return server, technology
@@ -105,7 +109,7 @@ def make_request(test_url, custom_patterns):
     """Make a request and check for custom patterns in response."""
     global successful_requests, failed_requests
     try:
-        response = requests.get(test_url, verify=False)
+        response = requests.get(test_url, headers=headers, verify=False)
         successful_requests += 1
 
         for pattern in custom_patterns:

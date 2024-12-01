@@ -1,14 +1,13 @@
 # Copyright (c) 2024 waymap developers
 # See the file 'LICENSE' for copying permission.
 
-import random
 import requests
 import os
 from datetime import datetime
 from termcolor import colored
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import time
 import threading
+from lib.parse.random_headers import generate_random_headers
 from lib.core.settings import DEFAULT_THREADS
 from lib.core.settings import MAX_THREADS
 from lib.core.settings import DEFAULT_INPUT 
@@ -70,15 +69,14 @@ def load_advanced_xss_payloads(file_path, level):
 
     return payloads
 
-def test_xss_payload(url, parameter, payload, user_agent):
+def test_xss_payload(url, parameter, payload):
     if stop_scan.is_set():
         return {'vulnerable': False}
 
-    headers = {'User-Agent': user_agent}
+    headers = generate_random_headers()
     try:
         response = requests.get(url, params={parameter: payload}, headers=headers, timeout=10, verify=False)
         response_content = response.text
-        time.sleep(random.randint(1, 3))
 
         if payload in response_content:
             return {'vulnerable': True, 'response': response, 'headers': response.headers}
@@ -102,7 +100,7 @@ def choose_scan_level(no_prompt):
         print(colored("\n[!] Scan interrupted by user. Exiting...", 'red'))
         stop_scan.set()
 
-def perform_xss_scan(crawled_urls, user_agents, thread_count, no_prompt, verbose=False,):
+def perform_xss_scan(crawled_urls, thread_count, no_prompt, verbose=False,):
     if thread_count is None:
         thread_count = DEFAULT_THREADS  
 
@@ -150,14 +148,13 @@ def perform_xss_scan(crawled_urls, user_agents, thread_count, no_prompt, verbose
                         if verbose:
                             print(f"[{colored(timestamp, 'blue')}] [Info]: Testing {name} on parameter {param_key}")
 
-                        user_agent = random.choice(user_agents)
                         test_params = param_dict.copy()
                         test_params[param_key] = payload
 
                         modified_params = '&'.join([f"{k}={v}" for k, v in test_params.items()])
                         full_url = f"{base_url}?{modified_params}"
 
-                        future = executor.submit(test_xss_payload, full_url, param_key, payload, user_agent)
+                        future = executor.submit(test_xss_payload, full_url, param_key, payload)
                         future_to_url[future] = (full_url, param_key)
 
             for future in as_completed(future_to_url):
@@ -234,14 +231,13 @@ def perform_xss_scan(crawled_urls, user_agents, thread_count, no_prompt, verbose
                             if verbose:
                                 print(f"[{colored(timestamp, 'blue')}] [Info]: Testing {name} on parameter {param_key}")
 
-                            user_agent = random.choice(user_agents)
                             test_params = param_dict.copy()
                             test_params[param_key] = payload
 
                             modified_params = '&'.join([f"{k}={v}" for k, v in test_params.items()])
                             full_url = f"{base_url}?{modified_params}"
 
-                            future = executor.submit(test_xss_payload, full_url, param_key, payload, user_agent)
+                            future = executor.submit(test_xss_payload, full_url, param_key, payload)
                             future_to_url[future] = (full_url, param_key)
 
                 for future in as_completed(future_to_url):

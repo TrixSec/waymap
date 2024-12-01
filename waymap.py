@@ -5,8 +5,8 @@ import os
 import argparse
 import requests
 import logging
-import random
 from termcolor import colored
+from lib.parse.random_headers import generate_random_headers
 from lib.waymapcrawlers.crawler import run_crawler
 from lib.injection.sqli import perform_sqli_scan
 from lib.injection.cmdi import perform_cmdi_scan
@@ -31,38 +31,7 @@ import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 session_dir = 'session'
 
-def save_headers(domain, headers):
-    domain_dir = os.path.join(session_dir, domain)
-    os.makedirs(domain_dir, exist_ok=True)
-    headers_file_path = os.path.join(domain_dir, 'headers.txt')
-
-    if not os.path.exists(headers_file_path):
-        with open(headers_file_path, 'w') as f:
-            for key, value in headers.items():
-                f.write(f"{key}: {value}\n")
-        print(colored(f"[•] Saved headers for {domain}.", 'green'))
-    else:
-        print(colored(f"[•] Headers already exist for {domain}. Skipping header save.", 'yellow'))
-
-def load_headers(domain):
-    headers_file_path = os.path.join(session_dir, domain, 'headers.txt')
-
-    if os.path.exists(headers_file_path):
-        headers = {}
-        with open(headers_file_path, 'r') as f:
-            for line in f:
-                key, value = line.strip().split(": ", 1)
-                headers[key] = value
-        return headers
-    return None
-
-def get_random_user_agent():
-    ua_file_path = os.path.join(data_dir, 'ua.txt')
-    user_agents = load_user_agents(ua_file_path)
-    if user_agents:
-        return random.choice(user_agents)
-    else:
-        return None
+headers = generate_random_headers()
 
 def setup_logger(domain):
 
@@ -114,7 +83,7 @@ def print_banner():
 ░╚██╗████╗██╔╝███████║░╚████╔╝░██╔████╔██║███████║██████╔╝
 ░░████╔═████║░██╔══██║░░╚██╔╝░░██║╚██╔╝██║██╔══██║██╔═══╝░
 ░░╚██╔╝░╚██╔╝░██║░░██║░░░██║░░░██║░╚═╝░██║██║░░██║██║░░░░░
-░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v5.6.1
+░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v5.7.1
     """
     print(colored(banner, 'cyan'))
     print(colored(f"Waymap Version: {WAYMAP_VERSION}", 'yellow'))
@@ -153,18 +122,9 @@ def load_crawled_urls(domain):
             return [url.strip() for url in f.readlines()]
     return []
 
-def load_user_agents(file_path):
-    try:
-        with open(file_path, 'r') as f:
-            return [line.strip() for line in f.readlines()]
-    except FileNotFoundError:
-        log_error(f"User-agent file {file_path} not found.")
-        handle_error(f"User-agent file {file_path} not found.")
-        return []
-
 def handle_redirection(target_url):
     try:
-        response = requests.get(target_url, allow_redirects=True, timeout=10, verify=False)
+        response = requests.get(target_url, allow_redirects=True, headers=headers, timeout=10, verify=False)
         final_url = response.url
         parsed_final_url = urlparse(final_url)
         parsed_target_url = urlparse(target_url)
@@ -188,19 +148,8 @@ def has_query_parameters(url):
 def is_within_domain(url, base_domain):
     return urlparse(url).netloc == base_domain
 
-def crawl(target, crawl_depth, random_agent=False, thread_count=1, no_prompt=False):
+def crawl(target, crawl_depth, thread_count=1, no_prompt=False):
     domain = target.split("//")[-1].split("/")[0]
-    headers = load_headers(domain)
-
-    if headers is None:
-        headers = {
-            'User-Agent': get_random_user_agent() if random_agent else 'Mozilla/5.0',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Connection': 'keep-alive',
-            'Accept-Encoding': 'gzip, deflate',
-            'Accept-Language': 'en-US,en;q=0.5'
-        }
-        save_headers(domain, headers)
 
     try:
         response = requests.get(target, headers=headers, timeout=10, verify=False)
@@ -235,7 +184,6 @@ def scan(target, scan_type, crawled_urls=None, provided_urls=None, thread_count=
 
     sql_payloads = load_payloads(os.path.join(data_dir, 'sqlipayload.txt'))
     cmdi_payloads = load_payloads(os.path.join(data_dir, 'cmdipayload.txt'))
-    user_agents = load_user_agents(os.path.join(data_dir, 'ua.txt'))
 
     urls_to_scan = provided_urls if provided_urls else crawled_urls
 
@@ -247,7 +195,7 @@ def scan(target, scan_type, crawled_urls=None, provided_urls=None, thread_count=
         if scan_type == 'sql':
             print("\n")
             print(colored(f"[•] Performing SQL Injection scan on {target}", 'yellow'))
-            perform_sqli_scan(urls_to_scan, sql_payloads, user_agents, thread_count=thread_count, no_prompt=no_prompt)
+            perform_sqli_scan(urls_to_scan, sql_payloads, thread_count=thread_count, no_prompt=no_prompt)
 
         elif scan_type == 'sqli':
             print("\n")
@@ -258,42 +206,42 @@ def scan(target, scan_type, crawled_urls=None, provided_urls=None, thread_count=
         elif scan_type == 'cmdi':
             print("\n")
             print(colored(f"[•] Performing Command Injection scan on {target}", 'yellow'))
-            perform_cmdi_scan(urls_to_scan, cmdi_payloads, user_agents, thread_count=thread_count, no_prompt=no_prompt)
+            perform_cmdi_scan(urls_to_scan, cmdi_payloads, thread_count=thread_count, no_prompt=no_prompt)
 
         elif scan_type == 'ssti':
             print("\n")
             print(colored(f"[•] Performing Server Side Template Injection scan on {target}", 'yellow'))
-            perform_ssti_scan(urls_to_scan, user_agents, thread_count=thread_count, no_prompt=no_prompt, verbose=True)
+            perform_ssti_scan(urls_to_scan, thread_count=thread_count, no_prompt=no_prompt, verbose=True)
 
         elif scan_type == 'xss':
             print("\n")
             print(colored(f"[•] Performing Cross Site Scripting scan on {target}", 'yellow'))
-            perform_xss_scan(urls_to_scan, user_agents, thread_count=thread_count, no_prompt=no_prompt, verbose=True)
+            perform_xss_scan(urls_to_scan, thread_count=thread_count, no_prompt=no_prompt, verbose=True)
 
         elif scan_type == 'lfi':
             print("\n")
             print(colored(f"[•] Performing Local File Inclusion scan on {target}", 'yellow'))
-            perform_lfi_scan(urls_to_scan, user_agents, thread_count=thread_count, no_prompt=no_prompt, verbose=True)
+            perform_lfi_scan(urls_to_scan, thread_count=thread_count, no_prompt=no_prompt, verbose=True)
 
         elif scan_type == 'open-redirect':
             print("\n")
             print(colored(f"[•] Performing Open Redirect scan on {target}", 'yellow'))
-            perform_redirect_scan(urls_to_scan, user_agents, thread_count=thread_count, no_prompt=no_prompt, verbose=True)
+            perform_redirect_scan(urls_to_scan, thread_count=thread_count, no_prompt=no_prompt, verbose=True)
 
         elif scan_type == 'crlf':
             print("\n")
             print(colored(f"[•] Performing Carriage Return and Line Feed scan on {target}", 'yellow'))
-            perform_crlf_scan(urls_to_scan, user_agents, thread_count=thread_count, no_prompt=no_prompt, verbose=True)
+            perform_crlf_scan(urls_to_scan, thread_count=thread_count, no_prompt=no_prompt, verbose=True)
 
         elif scan_type == 'cors':
             print("\n")
             print(colored(f"[•] Performing Cross-origin resource sharing scan on {target}", 'yellow'))
-            perform_cors_scan(urls_to_scan, user_agents, thread_count=thread_count, no_prompt=no_prompt, verbose=True)
+            perform_cors_scan(urls_to_scan, thread_count=thread_count, no_prompt=no_prompt, verbose=True)
 
         elif scan_type == 'all':
             print("\n[•] Performing all scans on target...\n")
             print(colored("[•] Performing SQL Injection scan...", 'cyan'))
-            perform_sqli_scan(urls_to_scan, sql_payloads, user_agents, thread_count=thread_count, no_prompt=no_prompt)
+            perform_sqli_scan(urls_to_scan, sql_payloads, thread_count=thread_count, no_prompt=no_prompt)
 
             print("\n")
             print(colored(f"[•] Performing SQL Injection scan on {target}", 'yellow'))
@@ -302,36 +250,36 @@ def scan(target, scan_type, crawled_urls=None, provided_urls=None, thread_count=
                 run_sql_tests(urls)
             print("\n")
             print(colored("[•] Performing Command Injection (CMDi) scan...", 'cyan'))
-            perform_cmdi_scan(urls_to_scan, cmdi_payloads, user_agents, thread_count=thread_count, no_prompt=no_prompt)
+            perform_cmdi_scan(urls_to_scan, cmdi_payloads, thread_count=thread_count, no_prompt=no_prompt)
 
             print("\n")
             print(colored("[•] Performing Server-Side Template Injection (SSTI) scan...", 'cyan'))
-            perform_ssti_scan(urls_to_scan, user_agents, thread_count=thread_count, no_prompt=no_prompt, verbose=True)
+            perform_ssti_scan(urls_to_scan, thread_count=thread_count, no_prompt=no_prompt, verbose=True)
 
             print("\n")
             print(colored("[•] Performing Cross Site Scripting scan...", 'cyan'))
-            perform_xss_scan(urls_to_scan, user_agents, thread_count=thread_count, no_prompt=no_prompt, verbose=True)
+            perform_xss_scan(urls_to_scan, thread_count=thread_count, no_prompt=no_prompt, verbose=True)
 
             print("\n")
             print(colored("[•] Performing Local File Inclusion scan...", 'cyan'))
-            perform_lfi_scan(urls_to_scan, user_agents, thread_count=thread_count, no_prompt=no_prompt, verbose=True)
+            perform_lfi_scan(urls_to_scan, thread_count=thread_count, no_prompt=no_prompt, verbose=True)
 
             print("\n")
             print(colored("[•] Performing Open Redirect scan...", 'cyan'))
-            perform_redirect_scan(urls_to_scan, user_agents, thread_count=thread_count, no_prompt=no_prompt, verbose=True)
+            perform_redirect_scan(urls_to_scan, thread_count=thread_count, no_prompt=no_prompt, verbose=True)
 
             print("\n")
             print(colored(f"[•] Performing Carriage Return and Line Feed scan on {target}", 'yellow'))
-            perform_crlf_scan(urls_to_scan, user_agents, thread_count=thread_count, no_prompt=no_prompt, verbose=True)
+            perform_crlf_scan(urls_to_scan, thread_count=thread_count, no_prompt=no_prompt, verbose=True)
 
             print("\n")
             print(colored(f"[•] Performing Cross-origin resource sharing scan on {target}", 'yellow'))
-            perform_cors_scan(urls_to_scan, user_agents, thread_count=thread_count, no_prompt=no_prompt, verbose=True)
+            perform_cors_scan(urls_to_scan, thread_count=thread_count, no_prompt=no_prompt, verbose=True)
 
     finally:
         log_scan_end(target, scan_type)
 
-def crawl_and_scan(target, crawl_depth, scan_type, random_agent=False, url=None, multi_url=None, thread_count=1, no_prompt=False):
+def crawl_and_scan(target, crawl_depth, scan_type, url=None, multi_url=None, thread_count=1, no_prompt=False):
     provided_urls = []
 
     if url:
@@ -348,7 +296,7 @@ def crawl_and_scan(target, crawl_depth, scan_type, random_agent=False, url=None,
         print(colored(f"[•] Using provided URLs for scanning.", 'green'))
         scan(target, scan_type, provided_urls=provided_urls, thread_count=thread_count, no_prompt=no_prompt)
     else:
-        crawled_urls = crawl(target, crawl_depth, random_agent=random_agent, thread_count=thread_count, no_prompt=no_prompt)
+        crawled_urls = crawl(target, crawl_depth, thread_count=thread_count, no_prompt=no_prompt)
         if crawled_urls:
             scan(target, scan_type, crawled_urls=crawled_urls, thread_count=thread_count, no_prompt=no_prompt)
 
@@ -373,6 +321,7 @@ def perform_profile_scan(profile_url, profile_type):
 def main():
     print_banner()
 
+
     if not check_internet_connection():
         handle_error("No internet connection. Please check your network and try again.")
 
@@ -393,7 +342,6 @@ def main():
     parser.add_argument('--scan', '-s', type=str, choices=['sql', 'sqli', 'cmdi', 'ssti', 'xss', 'lfi', 'open-redirect', 'crlf', 'cors', 'all', 'high-risk', 'critical-risk'], help='Type of scan to perform')
     parser.add_argument('--url', '-u', type=str, help='Single URL for direct scanning without crawling, example: https://example.com/index.php?id=1')
     parser.add_argument('--multi-url', '-mu', type=str, help='File with multiple URLs for direct scanning without crawling')
-    parser.add_argument('--random-agent', '-ra', action='store_true', help='Use random user-agent for requests')
     parser.add_argument('--threads', '-T', type=int, default=DEFAULT_THREADS, help='Number of threads to use for scanning (default: 1)')
     parser.add_argument('--no-prompt', '-np', action='store_true', help='Automatically use default input for prompts')
     parser.add_argument('--profileurl', '-pu', type=str, help='Target URL for scanning , example: https://example.com/')
@@ -434,13 +382,13 @@ def main():
             return
         for target in targets:
             print(colored(f"[•] Crawling and scanning on {target}", 'cyan'))
-            crawl_and_scan(target, args.crawl, args.scan, args.random_agent, thread_count=thread_count, no_prompt=no_prompt) 
+            crawl_and_scan(target, args.crawl, args.scan, thread_count=thread_count, no_prompt=no_prompt) 
             cleanup_crawl_file(target)
         return
 
     if target:
         print(colored(f"[•] Crawling and scanning on {target}", 'cyan'))
-        crawl_and_scan(target, args.crawl, args.scan, args.random_agent, thread_count=thread_count, no_prompt=no_prompt) 
+        crawl_and_scan(target, args.crawl, args.scan, thread_count=thread_count, no_prompt=no_prompt) 
         cleanup_crawl_file(target)
 
     if profile_url:

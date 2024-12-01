@@ -1,13 +1,13 @@
 # Copyright (c) 2024 waymap developers 
 # See the file 'LICENSE' for copying permission.
 
-import random
 import requests
 import os
 from datetime import datetime
 from termcolor import colored
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
+from lib.parse.random_headers import generate_random_headers
 from lib.core.settings import DEFAULT_THREADS
 from lib.core.settings import MAX_THREADS
 from lib.core.settings import DEFAULT_INPUT 
@@ -32,12 +32,12 @@ def load_open_redirect_payloads(file_path):
         print(colored(f"[×] Payload file not found at: {file_path}", 'red'))
     return payloads
 
-def test_open_redirect_payload(url, parameter, payload, user_agent):
+def test_open_redirect_payload(url, parameter, payload):
     """Test the open redirect payload on the given URL."""
     if stop_scan.is_set():
         return {'vulnerable': False}
 
-    headers = {'User-Agent': user_agent}
+    headers =  generate_random_headers()
     full_url = f"{url.split('?')[0]}?{parameter}={payload}"
     
     try:
@@ -52,7 +52,7 @@ def test_open_redirect_payload(url, parameter, payload, user_agent):
 
     return {'vulnerable': False}
 
-def perform_redirect_scan(crawled_urls, user_agents, thread_count, no_prompt, verbose=False):
+def perform_redirect_scan(crawled_urls, thread_count, no_prompt, verbose=False):
     """Perform open redirect scanning on the given crawled URLs."""
     if thread_count is None:
         thread_count = DEFAULT_THREADS  
@@ -88,8 +88,7 @@ def perform_redirect_scan(crawled_urls, user_agents, thread_count, no_prompt, ve
                         if verbose:
                             print(f"[{colored(timestamp, 'blue')}] [Info]: Testing {name} on parameter {param_key}")
 
-                        user_agent = random.choice(user_agents)
-                        future = executor.submit(test_open_redirect_payload, url, param_key, payload, user_agent)
+                        future = executor.submit(test_open_redirect_payload, url, param_key, payload)
                         future_to_payload[future] = (url, name)
 
                 for future in as_completed(future_to_payload):

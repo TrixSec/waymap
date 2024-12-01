@@ -1,7 +1,6 @@
 # Copyright (c) 2024 waymap developers
 # See the file 'LICENSE' for copying permission.
 
-import random
 import requests
 import os
 from datetime import datetime
@@ -10,6 +9,7 @@ import multiprocessing
 import threading
 from termcolor import colored
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from lib.parse.random_headers import generate_random_headers
 from lib.core.settings import DEFAULT_THREADS
 from lib.core.settings import MAX_THREADS
 from lib.core.settings import DEFAULT_INPUT 
@@ -44,12 +44,12 @@ def load_lfi_payloads(file_path):
         print(colored(f"[×] Payload file not found at: {file_path}", 'red'))
     return payloads
 
-def test_lfi_payload(url, parameter, payload, expected_response, user_agent):
+def test_lfi_payload(url, parameter, payload, expected_response):
     """Test an LFI payload on the given URL."""
     if stop_scan.is_set():
         return {'vulnerable': False}
 
-    headers = {'User-Agent': user_agent}
+    headers = generate_random_headers()
     try:
         response = requests.get(url, params={parameter: payload}, headers=headers, timeout=10, verify=False)
         if expected_response in response.text:
@@ -61,7 +61,7 @@ def test_lfi_payload(url, parameter, payload, expected_response, user_agent):
 
     return {'vulnerable': False}
 
-def perform_lfi_scan(crawled_urls, user_agents, thread_count, no_prompt, verbose=False):
+def perform_lfi_scan(crawled_urls, thread_count, no_prompt, verbose=False):
     """Perform LFI scanning on the given crawled URLs with the specified number of threads."""
     if thread_count is None:
         thread_count = DEFAULT_THREADS  
@@ -105,8 +105,6 @@ def perform_lfi_scan(crawled_urls, user_agents, thread_count, no_prompt, verbose
                         if stop_scan.is_set():
                             break
 
-                        user_agent = random.choice(user_agents)
-
                         if verbose:
                             timestamp = datetime.now().strftime("%H:%M:%S")
                             print(f"[{colored(timestamp, 'blue')}] [Info]: Testing {name} on parameter {param_key}")
@@ -117,7 +115,7 @@ def perform_lfi_scan(crawled_urls, user_agents, thread_count, no_prompt, verbose
                         modified_params = '&'.join([f"{k}={v}" for k, v in test_params.items()])
                         full_url = f"{base_url}?{modified_params}"
 
-                        future = executor.submit(test_lfi_payload, full_url, param_key, payload, expected_response, user_agent)
+                        future = executor.submit(test_lfi_payload, full_url, param_key, payload, expected_response)
                         future_to_payload[future] = (full_url, param_key)
 
                 for future in as_completed(future_to_payload):

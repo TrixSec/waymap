@@ -1,8 +1,8 @@
 # Copyright (c) 2024 waymap developers
 # See the file 'LICENSE' for copying permission.
 
-import random
 import requests
+import random
 import re
 import os
 import logging
@@ -10,6 +10,7 @@ import multiprocessing
 from termcolor import colored
 from xml.etree import ElementTree as ET
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from lib.parse.random_headers import generate_random_headers
 from lib.core.settings import DEFAULT_THREADS
 from lib.core.settings import MAX_THREADS
 from lib.core.settings import DEFAULT_INPUT  
@@ -49,8 +50,8 @@ def detect_web_tech(headers):
         return headers['server']
     return 'Unknown'
 
-def test_payload(url, payload, user_agent, dbms_errors):
-    headers = {'User-Agent': user_agent}
+def test_payload(url, payload, dbms_errors):
+    headers = generate_random_headers()
     for attempt in range(3):  
         try:
             response = requests.get(url, headers=headers, timeout=10, verify=False)
@@ -68,7 +69,7 @@ def test_payload(url, payload, user_agent, dbms_errors):
 
     return {'vulnerable': False}
 
-def perform_sqli_scan(crawled_urls, sql_payloads, user_agents, thread_count, no_prompt):
+def perform_sqli_scan(crawled_urls, sql_payloads, thread_count, no_prompt):
     if thread_count is None:
         thread_count = DEFAULT_THREADS  
 
@@ -100,7 +101,7 @@ def perform_sqli_scan(crawled_urls, sql_payloads, user_agents, thread_count, no_
                         modified_params = '&'.join([f"{k}={v}" for k, v in test_params.items()])
                         full_url = f"{base_url}?{modified_params}"
 
-                        futures[executor.submit(test_payload, full_url, payload, random.choice(user_agents), dbms_errors)] = (full_url, payload)
+                        futures[executor.submit(test_payload, full_url, payload, dbms_errors)] = (full_url, payload)
 
                 for future in as_completed(futures):
                     result = future.result()

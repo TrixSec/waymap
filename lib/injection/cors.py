@@ -1,7 +1,6 @@
 # Copyright (c) 2024 waymap developers
 # See the file 'LICENSE' for copying permission.
 
-import random
 import requests
 import os
 import logging
@@ -10,6 +9,7 @@ import threading
 from datetime import datetime
 from termcolor import colored
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from lib.parse.random_headers import generate_random_headers
 from lib.core.settings import DEFAULT_THREADS
 from lib.core.settings import MAX_THREADS
 from lib.core.settings import DEFAULT_INPUT  # Add this to get default input behavior
@@ -43,11 +43,13 @@ def load_cors_payloads(file_path):
         print(colored(f"[×] Payload file not found at: {file_path}", 'red'))
     return payloads
 
-def test_cors_vulnerability(url, payload, expected_response, user_agent):
+def test_cors_vulnerability(url, payload, expected_response):
     if stop_scan.is_set():
         return {'vulnerable': False}
 
-    headers = {'Origin': payload, 'User-Agent': user_agent}
+    headers['Origin'] = payload
+    headers = generate_random_headers()
+
     
     try:
         response = requests.options(url, headers=headers, timeout=10, verify=False)
@@ -61,7 +63,7 @@ def test_cors_vulnerability(url, payload, expected_response, user_agent):
 
     return {'vulnerable': False}
 
-def perform_cors_scan(crawled_urls, user_agents, thread_count, no_prompt, verbose=False):
+def perform_cors_scan(crawled_urls, thread_count, no_prompt, verbose=False):
     if thread_count is None:
         thread_count = DEFAULT_THREADS  
 
@@ -89,13 +91,11 @@ def perform_cors_scan(crawled_urls, user_agents, thread_count, no_prompt, verbos
                     payload = payload_entry['payload']
                     expected_response = payload_entry['response']
 
-                    user_agent = random.choice(user_agents)
-
                     if verbose:
                         timestamp = datetime.now().strftime("%H:%M:%S")
                         print(f"[{colored(timestamp, 'blue')}] [Info]: Testing {name} with payload: {payload}")
 
-                    future = executor.submit(test_cors_vulnerability, url, payload, expected_response, user_agent)
+                    future = executor.submit(test_cors_vulnerability, url, payload, expected_response)
                     future_to_payload[future] = (url, payload)
 
                 for future in as_completed(future_to_payload):

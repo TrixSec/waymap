@@ -1,6 +1,6 @@
 # Waymap - Web Vulnerability Scanner.
 
-**Current Version**: 5.6.1
+**Current Version**: 5.7.1
 **Author**: Trix Cyrus  
 **Copyright**: © 2024 Trixsec Org  
 **Maintained**: Yes
@@ -8,43 +8,10 @@
 ## What is Waymap?
 **Waymap** is a fast and optimized web vulnerability scanner designed to identify security flaws in web applications. With support for multiple scan types and customizable configurations, it is a versatile tool for ethical hackers, penetration testers, and security enthusiasts. And Is Able To Scan For **75+ Web Vulnerabilities**
 
-### Demo Video
-Check out this video to see Waymap in action:
-
-![Waymap Demo](https://github.com/TrixSec/waymap/blob/main/demo/lv_0_20240921113323.mp4?raw=true)
-
-### Vulnerability Examples
-- **SQL Injection**  
-  ![SQL Injection](https://github.com/TrixSec/waymap/blob/main/demo/sqli-demo.png?raw=true)
-
-- **Command Injection**  
-  ![Command Injection](https://github.com/TrixSec/waymap/blob/main/demo/cmdi-demo.png?raw=true)
-
-- **Server Side Template Injection**  
-  ![Command Injection](https://github.com/TrixSec/waymap/blob/main/demo/ssti-demo.png?raw=true)
-
-  **Can't add more screenshot it'll increase the size of readme.md**
-
-
-
 ## Features Overview
 ---
 
 ### Latest Update
-#### v5.2.1
-
-- New Sql Injection Scanning Module
-- High Accuracy And Less False Positive 
-- Access it using:  --scan sqli
-
-#### v5.3.1
-- Added Boolean Based Sqli Testing (OWN LOGIC)
-- High Accuracy, Can Give False Positive Sometimes
-- Access it using:  --scan sqli
-
-#### v5.4.1
-- Updated CVE Testing Logic in Profile-Critical CMS-Wordpress
-- Added a More Better Logic 
 
 #### v5.5.1 
 - Added 45 CVEs Vulnerability Detections Logics
@@ -56,6 +23,11 @@ Check out this video to see Waymap in action:
 - 8 Critical-Risk CVEs And 11 High-Risk CVEs
 - For CVEs Info Read The CVEVULN.md File 
 
+#### v5.7.1
+- Removed arg --random-agent, now waymap will by default use different headers for every requests
+- Added IP Spoofing for more anonymity
+- Updated Wp Plugin Checking Logic In Both High Profile And Critical Profile
+- some minor bug fix
 ---
 
 ## 🚀 **Features**

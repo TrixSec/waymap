@@ -5,8 +5,11 @@ import requests
 from urllib.parse import urljoin
 import urllib3
 from colorama import Fore, Style  
-
+from lib.parse.random_headers import generate_random_headers
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+
+headers = generate_random_headers()
 
 def get_plugin_version_urls(plugin_name):
     """
@@ -31,7 +34,8 @@ def detect_plugin_version(target_url, plugin_name):
         for url_path in urls_to_check:
             full_url = urljoin(target_url, url_path)
             try:
-                response = requests.get(full_url, timeout=10, verify=False)
+                
+                response = requests.get(full_url, headers=headers, timeout=10, verify=False)
                 
                 if response.status_code == 200:
                     if "Version:" in response.text:
