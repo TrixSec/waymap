@@ -1,6 +1,6 @@
 # CVE Vulnerabilities Tested By WAYMAP 
 
-#### **Current Total Count: 67**
+#### **Current Total Count: 141**
 
 This document lists WordPress/Drupal vulnerabilities categorized by their severity.
 Which Are Being Tested By Waymap 
@@ -9,7 +9,7 @@ Which Are Being Tested By Waymap
 ---
 
 ### Summary:
-- **Critical Risk CVEs**: 19 vulnerabilities
+- **Critical Risk CVEs**: 93 vulnerabilities
 - **High Risk CVEs**: 48 vulnerabilities
 
 ---
@@ -29,6 +29,32 @@ Which Are Being Tested By Waymap
 | CVE-2023-28121   | woocommerce-payments                            | < 5.6.2                |
 | CVE-2024-7854    | woo-inquiry                                     | < 0.2                  |
 | CVE-2024-3673    | web-directory-free                              | < 1.7.3                |
+| CVE-2021-24867      | accesspress-anonymous-post                       | <2.8.1                 |
+| CVE-2017-16949      | accesspress-anonymous-post-pro                   | <3.2.0                 |
+| CVE-2021-24867      | accesspress-custom-css                           | <2.0.2                 |
+| CVE-2021-24867      | accesspress-custom-post-type                     | <1.0.9                 |
+| CVE-2021-24867      | accesspress-facebook-auto-post                   | <2.1.4                 |
+| CVE-2021-24867      | accesspress-instagram-feed                       | <4.0.4                 |
+| CVE-2021-24867      | accesspress-pinterest                            | <3.3.4                 |
+| CVE-2021-24867      | accesspress-social-counter                       | <1.9.2                 |
+| CVE-2021-24867      | accesspress-social-icons                         | <1.8.3                 |
+| CVE-2021-24867      | accesspress-social-login-lite                    | <3.4.8                 |
+| CVE-2021-24867      | accesspress-social-share                         | <4.5.6                 |
+| CVE-2021-24867      | accesspress-twitter-auto-post                    | <1.4.6                 |
+| CVE-2021-24867      | accesspress-twitter-feed                         | <1.6.8                 |
+| CVE-2022-33198      | accordions-or-faqs                               | <2.0.3                 |
+| CVE-2015-9479       | acf-frontend-display                             | <=2.0.6                |
+| CVE-2023-51411      | acf-frontend-form-element                        | <3.18.4                |
+| CVE-2024-3729       | acf-frontend-form-element                        | <3.19.5                |
+| CVE-2024-48035      | acf-images-search-and-insert                     | <=1.1.4                |
+| CVE-2024-50486      | acnoo-flutter-api                                | <=1.0.5                |
+| CVE-2024-32809      | activedemand                                     | <0.2.42                |
+| CVE-2024-49681      | activitytime                                    | <1.1.0                 |
+| CVE-2024-6297       | ad-invalid-click-protector                       | <1.2.11                |
+| CVE-2024-50420      | adirectory                                       | <1.3.1                 |
+| CVE-2024-33566      | admin-and-client-message-after-order-for-woocommerce | <12.5          |
+| CVE-2022-1390       | admin-word-count-column                          | <=2.2                  |
+| CVE-2023-5843       | ads-by-datafeedrcom                              | <1.2.0                 |
 
 ---
 

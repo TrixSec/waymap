@@ -1,6 +1,6 @@
 # Waymap - Web Vulnerability Scanner.
 
-**Current Version**: 5.7.2
+**Current Version**: 5.8.2
 **Author**: Trix Cyrus  
 **Copyright**: © 2024 Trixsec Org  
 **Maintained**: Yes
@@ -13,10 +13,7 @@
 
 ### Latest Update
 
-#### v5.5.1 
-- Added 45 CVEs Vulnerability Detections Logics
-- 11 Critical-Risk CVEs And 34 High-Risk CVEs
-- For CVEs Info Read The CVEVULN.md File 
+
 
 #### v5.6.1 
 - Added New 19 CVEs Vulnerability Detections Logics
@@ -32,6 +29,14 @@
 #### v5.7.2 
 - Added New Logic To Update Waymap
 ---
+
+#### v5.8.2
+- Removed --profileurl/-pu arg now to use profile high or critical give the target with --target arg and use --profile arg
+- Removed --url and --multi-url/-mu arg now to directly scan the target without crawling url should have a GET parameter for more info look below for Basic Commands
+- added 74 Critical severity Cves data
+- For CVEs Info Read The CVEVULN.md File 
+
+--- New Crazy Updates Soon
 
 ## 🚀 **Features**
 
@@ -75,14 +80,11 @@
 ### 5. **Threaded Scanning**
    - Speed up scans with multithreading (`--threads`).
 
-### 6. **User-Agent Randomization**
-   - Randomize requests using different user agents (`--random-agent`).
-
-### 7. **Automation Features**
+### 6. **Automation Features**
    - Skip prompts using the `--no-prompt` option.
    - Automatically handle missing directories, files, and session data.
 
-### 8. **Update Checker**
+### 7. **Update Checker**
    - Easily check for the latest updates (`--check-updates`).
 
 ---
@@ -98,13 +100,18 @@
    ```bash
    python waymap.py --crawl 3 --multi-target targets.txt --scan {scan_type}
    ```
-3. **Directly scan a single URL:**
+3. **Directly scan a single Target Without Crawling:**
    ```bash
-   python waymap.py --url https://example.com/page?id=1 --scan {scan_type}
+   python waymap.py --target https://example.com/page?id=1 --scan {scan_type}
+
+2. **Directly Scan multiple targets from a file:**
+   ```bash
+   python waymap.py  --multi-target targets.txt --scan {scan_type}(example url type: https://example.com/page?id=1 )
+
    ```
 4. **Profile-based scanning:**
    ```bash
-   python waymap.py --profileurl https://example.com --profile high-risk/critical-risk
+   python waymap.py --target https://example.com --profile high-risk/critical-risk
    ```
 
 ### Thread Configuration

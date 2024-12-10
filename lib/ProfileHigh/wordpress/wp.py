@@ -3,7 +3,7 @@
 # wp.py high-risk
 
 import requests
-import re
+from bs4 import BeautifulSoup
 from packaging.version import parse as parse_version, InvalidVersion
 from packaging.specifiers import SpecifierSet
 from datetime import datetime
@@ -12,7 +12,8 @@ from lib.ProfileCritical.plugin_version import detect_plugin_version
 from lib.core.settings import CVE_DB_URL
 from data.cveinfo import wphighcves
 from lib.parse.random_headers import generate_random_headers
-
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def determine_severity(cvss_score):
     """Determine severity based on CVSS v3.x score."""
@@ -37,18 +38,28 @@ def fetch_cve_details(cve_id):
 
 
 def fetch_plugins(target_url):
-    """Fetch all plugins used on the WordPress site by parsing the HTML response."""
+    """Fetch all plugins used on the WordPress site by parsing HTML for plugin paths."""
     headers = generate_random_headers()
-    response = requests.get(target_url, headers=headers)
-    if response.status_code != 200:
-        print(f"Failed to fetch the page: {target_url}")
+    try:
+        response = requests.get(target_url, headers=headers, verify=False)
+        if response.status_code != 200:
+            print(f"Failed to fetch the page: {target_url}")
+            return []
+
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        plugin_paths = set()
+        for tag in soup.find_all(['link', 'script'], {'href': True, 'src': True}):
+            attr_value = tag.get('href') or tag.get('src')
+            if '/wp-content/plugins/' in attr_value:
+                plugin_name = attr_value.split('/wp-content/plugins/')[1].split('/')[0]
+                plugin_paths.add(plugin_name)
+
+        return list(plugin_paths)
+
+    except Exception as e:
+        print(f"Error fetching plugins")
         return []
-
-    plugin_pattern = r'wp-content/plugins/([a-zA-Z0-9_-]+)'
-    plugins = re.findall(plugin_pattern, response.text)
-    plugins = list(set(plugins))
-
-    return plugins
 
 def check_plugin_vulnerability(target_url, plugin_name, vulnerable_version):
     """Check if a plugin is vulnerable based on version and version constraints."""
@@ -107,27 +118,37 @@ def handle_user_interrupt():
 
 
 def check_vulnerabilities(target_url):
-    """Function to check all CVEs."""
+    """Function to check CVEs for matching plugins."""
     print(f"{Style.BRIGHT}{Fore.WHITE}[Testing: Target: {target_url}]{Style.RESET_ALL}")
 
     found_vulns = False
 
     try:
-        plugins = fetch_plugins(target_url)  
-        print(f"{Style.BRIGHT}{Fore.CYAN}Plugins found: {', '.join(plugins)}{Style.RESET_ALL}")
+        plugins = fetch_plugins(target_url)
+        print(f"{Style.BRIGHT}{Fore.CYAN}Plugins found on site: {', '.join(plugins)}{Style.RESET_ALL}")
         
-        for cve in wphighcves:
-            current_time = datetime.now().strftime("%H:%M:%S")
-            print(f"[{Fore.BLUE}{current_time}{Style.RESET_ALL}]::{Fore.GREEN}[Checking]{Style.RESET_ALL}~ {cve['cve_id']}")
+        matched_plugins = [cve for cve in wphighcves if cve["plugin_name"] in plugins]
 
-            if cve['plugin_name'] in plugins:
-                try:
-                    handle_cve(target_url, cve["cve_id"], cve["plugin_name"], cve["vulnerable_version"])
-                    plugin_check_result = check_plugin_vulnerability(target_url, cve["plugin_name"], cve["vulnerable_version"])
-                    if plugin_check_result and plugin_check_result["is_vulnerable"]:
-                        found_vulns = True
-                except Exception as e:
-                    continue
+        if not matched_plugins:
+            print(f"{Style.BRIGHT}{Fore.YELLOW}No matching plugins found in CVE database.{Style.RESET_ALL}")
+            return
+
+        print(f"{Style.BRIGHT}{Fore.GREEN}Plugins matching CVE database:{Style.RESET_ALL}")
+        for plugin in matched_plugins:
+            print(f"- {plugin['plugin_name']}")
+
+        for cve in matched_plugins:
+            current_time = datetime.now().strftime("%H:%M:%S")
+            print(f"[{Fore.BLUE}{current_time}{Style.RESET_ALL}]::{Fore.GREEN}[Checking]{Style.RESET_ALL}~ {cve['cve_id']} for plugin {cve['plugin_name']}")
+
+            try:
+                handle_cve(target_url, cve["cve_id"], cve["plugin_name"], cve["vulnerable_version"])
+                plugin_check_result = check_plugin_vulnerability(target_url, cve["plugin_name"], cve["vulnerable_version"])
+                if plugin_check_result and plugin_check_result["is_vulnerable"]:
+                    found_vulns = True
+            except Exception as e:
+                print(f"{Style.BRIGHT}{Fore.RED}Error while checking {cve['cve_id']}: {str(e)}{Style.RESET_ALL}")
+                continue
 
     except KeyboardInterrupt:
         handle_user_interrupt()

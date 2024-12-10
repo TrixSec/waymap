@@ -105,7 +105,7 @@ def print_banner():
 ░╚██╗████╗██╔╝███████║░╚████╔╝░██╔████╔██║███████║██████╔╝
 ░░████╔═████║░██╔══██║░░╚██╔╝░░██║╚██╔╝██║██╔══██║██╔═══╝░
 ░░╚██╔╝░╚██╔╝░██║░░██║░░░██║░░░██║░╚═╝░██║██║░░██║██║░░░░░
-░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v5.7.2
+░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v5.8.2
     """
     print(colored(banner, 'cyan'))
     print(colored(f"Waymap Version: {WAYMAP_VERSION}", 'yellow'))
@@ -201,7 +201,6 @@ def crawl(target, crawl_depth, thread_count=1, no_prompt=False):
     return crawled_urls
 
 def scan(target, scan_type, crawled_urls=None, provided_urls=None, thread_count=1, no_prompt=False):
-    domain = target.split("//")[-1].split("/")[0]
     log_scan_start(target, scan_type)
 
     sql_payloads = load_payloads(os.path.join(data_dir, 'sqlipayload.txt'))
@@ -343,11 +342,14 @@ def perform_profile_scan(profile_url, profile_type):
 def main():
     print_banner()
 
-
     if not check_internet_connection():
         handle_error("No internet connection. Please check your network and try again.")
 
-    required_files = ['sqlipayload.txt', 'cmdipayload.txt', 'basicxsspayload.txt', 'filtersbypassxss.txt', 'lfipayload.txt', 'openredirectpayloads.txt', 'crlfpayload.txt', 'corspayload.txt', 'sstipayload.txt', 'ua.txt', 'errors.xml', 'cmdi.xml']
+    required_files = [
+        'sqlipayload.txt', 'cmdipayload.txt', 'basicxsspayload.txt', 'filtersbypassxss.txt',
+        'lfipayload.txt', 'openredirectpayloads.txt', 'crlfpayload.txt', 'corspayload.txt',
+        'sstipayload.txt', 'ua.txt', 'errors.xml', 'cmdi.xml', 'error_based_xml', 'cveinfo.py', 'headers.json'
+    ]
     missing_files = check_required_files(data_dir, session_dir, required_files)
     if missing_files:
         handle_error(f"Missing required files: {', '.join(missing_files)}")
@@ -358,15 +360,12 @@ def main():
         handle_error(f"Missing required directories: {', '.join(missing_dirs)}")
 
     parser = argparse.ArgumentParser(description="Waymap - Fast and Optimized Web Vulnerability Scanner")
-    parser.add_argument('--target', '-t', type=str, help='Target URL for crawling and scanning , example: https://example.com/')
+    parser.add_argument('--target', '-t', type=str, help='Target URL for crawling and scanning, example: https://example.com/')
     parser.add_argument('--multi-target', '-mt', type=str, help='File with multiple target URLs for crawling and scanning')
     parser.add_argument('--crawl', '-c', type=int, help='Crawl depth')
     parser.add_argument('--scan', '-s', type=str, choices=['sql', 'sqli', 'cmdi', 'ssti', 'xss', 'lfi', 'open-redirect', 'crlf', 'cors', 'all', 'high-risk', 'critical-risk'], help='Type of scan to perform')
-    parser.add_argument('--url', '-u', type=str, help='Single URL for direct scanning without crawling, example: https://example.com/index.php?id=1')
-    parser.add_argument('--multi-url', '-mu', type=str, help='File with multiple URLs for direct scanning without crawling')
     parser.add_argument('--threads', '-T', type=int, default=DEFAULT_THREADS, help='Number of threads to use for scanning (default: 1)')
     parser.add_argument('--no-prompt', '-np', action='store_true', help='Automatically use default input for prompts')
-    parser.add_argument('--profileurl', '-pu', type=str, help='Target URL for scanning , example: https://example.com/')
     parser.add_argument('--profile', '-p', choices=['high-risk', 'critical-risk'], help="Specify the profile: 'high-risk' or 'critical-risk'. This skips crawling.")
     parser.add_argument('--check-updates', action='store_true', help='Check for Latest Waymap updates.')
 
@@ -374,55 +373,52 @@ def main():
 
     target = args.target
     multi_target_file = args.multi_target
-    direct_url = args.url
-    multi_url_file = args.multi_url
     thread_count = args.threads
     no_prompt = args.no_prompt
-    profile_url = args.profileurl
     profile_type = args.profile
 
     if args.check_updates:
         check_for_updates()
-
-    if multi_url_file:
-        targets = load_targets_from_file(multi_url_file)
-        if not targets:
-            return
-        for target in targets:
-            print(colored(f"[•] Direct scanning without crawling on {target}", 'cyan'))
-            scan(target, args.scan, [target], thread_count=thread_count, no_prompt=no_prompt) 
-        return
-
-    if direct_url:
-        print(colored(f"[•] Direct scanning without crawling on {direct_url}", 'cyan'))
-        scan(direct_url, args.scan, [direct_url], thread_count=thread_count, no_prompt=no_prompt) 
-        return
 
     if multi_target_file:
         targets = load_targets_from_file(multi_target_file)
         if not targets:
             return
         for target in targets:
-            print(colored(f"[•] Crawling and scanning on {target}", 'cyan'))
-            crawl_and_scan(target, args.crawl, args.scan, thread_count=thread_count, no_prompt=no_prompt) 
-            cleanup_crawl_file(target)
+            process_target(target, args.crawl, args.scan, thread_count, no_prompt, profile_type)
         return
 
     if target:
-        print(colored(f"[•] Crawling and scanning on {target}", 'cyan'))
-        crawl_and_scan(target, args.crawl, args.scan, thread_count=thread_count, no_prompt=no_prompt) 
-        cleanup_crawl_file(target)
+        process_target(target, args.crawl, args.scan, thread_count, no_prompt, profile_type)
 
-    if profile_url:
-        print(colored(f"[•] Scanning on {profile_url}", 'cyan'))
-        perform_profile_scan(profile_url, profile_type) 
-    
+
+def process_target(target, crawl_depth, scan_type, thread_count, no_prompt, profile_type):
+    """Process a single target, determining whether to crawl or scan directly."""
+    if "?" in target and "=" in target:
+        print(colored(f"[•] GET parameter found in URL {target}. Skipping crawling and starting scan directly.", 'yellow'))
+        scan(target, scan_type, [target], thread_count=thread_count, no_prompt=no_prompt)
+        return
+
+    if profile_type:
+        print(colored(f"[•] Running profile scan on {target} with profile {profile_type}", 'cyan'))
+        perform_profile_scan(target, profile_type)
+    elif crawl_depth:
+        print(colored(f"[•] Crawling and scanning on {target}", 'cyan'))
+        crawl_and_scan(target, crawl_depth, scan_type, thread_count=thread_count, no_prompt=no_prompt)
+        cleanup_crawl_file(target)
+    else:
+        print(colored(f"[•] Direct scanning on {target}", 'cyan'))
+        scan(target, scan_type, [target], thread_count=thread_count, no_prompt=no_prompt)
+
+
 def cleanup_crawl_file(target):
+    """Remove crawl.txt file associated with the target domain."""
     domain = target.split("//")[-1].split("/")[0]
     crawl_file = os.path.join(session_dir, domain, 'crawl.txt')
     if os.path.exists(crawl_file):
         os.remove(crawl_file)
         print(colored(f"[•] Removed crawl file for {domain}.", 'green'))
+
 
 if __name__ == "__main__":
     main()
