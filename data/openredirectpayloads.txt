@@ -1,30 +1,9 @@
-Basic Open Redirect::https://google.com
-Open redirect bypass using '//':://google.com/
-'%09' Open redirect::%09.google.com
-Whitelisted domain using '%252e'::%252e.google.com
-Whitelisted domain injection open redirect::.google.com
-Open redirect bypass using 'https:'::https:google.com
-Open redirect bypass '//'::\/\\/google.com/
-Open redirect bypass '//'::/\/google.com/
-Open redirect bypass Using '%E3%80%82' to bypass '.':://google%E3%80%82com
-Open redirect bypass using null byte:://google%00.com
-Whitelisted domain open redirect bypass using '@'::@google.com/
-Whitelisted domain open redirect using special chars::https://ⓖⓞⓞⓖⓛⓔ.ⓒⓞⓜ
-Whitelisted domain open redirect with special chars and '%01'::%01https://ⓖⓞⓞⓖⓛⓔ.ⓒⓞⓜ
-Open redirect bypass using '%01'::%01https://google.com
-Open redirect bypass using special chars and '////%09'::////%09/ⓖⓞⓞⓖⓛⓔ.ⓒⓞⓜ
-Open redirect bypass using '//%09':://%09/google.com
-Whitelisted domain open redirect using %2f:://%2f%2fgoogle.com
-Whitelisted domain open redirect using '%2f' and '$2f'::$2f%2fgoogle.com%2f%2f
-Whitelisted domain open redirect using %2f::%2fgoogle.com%2f%2f
-Whitelisted domain open redirect using '/%5c'::/%5cgoogle.com
-Whitelisted domain open redirect using '%5c' and '@' for redirection::////%5cwhitelisted.com@google.com
-Whitelisted domain open redirect using null byte injection:://google%00.com
-Open redirect bypass using '%252e'::google%252ecom
-Open redirect bypass using '<>//'::<>//google.com
-Open redirect bypass using '/<>//'::/<>//google.com
-Whitelisted domain open redirect using '//;@':://;@google.com
-Whitelisted domain open redirect using '/.'::/.google.com
-Whitelisted domain open redirect using '/〱'::/〱google.com
-Whitelisted domain open redirect using '../'::../google.com
-Whitelisted domain open redirect using '%2e%2e':://google.com/%2e%2e
+https://google.com/
+https://example.com
+https://example.com/
+https://www.example.com
+http://example.com
+http://example.com/
+http://www.example.com
+https://google.com
+https://evil.com

@@ -1,124 +1,106 @@
 # Copyright (c) 2024 waymap developers 
 # See the file 'LICENSE' for copying permission.
 
-import requests
 import os
+import subprocess
 from datetime import datetime
 from termcolor import colored
+from urllib.parse import urlparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
 from lib.parse.random_headers import generate_random_headers
-from lib.core.settings import DEFAULT_THREADS
-from lib.core.settings import MAX_THREADS
-from lib.core.settings import DEFAULT_INPUT 
+from lib.core.settings import DEFAULT_THREADS, MAX_THREADS
 
 data_dir = os.path.join(os.getcwd(), 'data')
-
 stop_scan = threading.Event()
 
-def load_open_redirect_payloads(file_path):
-    """Load open redirect payloads from the given file."""
-    payloads = []
+def load_file_lines(file_path):
+    """Load lines from a given file."""
     try:
         with open(file_path, 'r') as file:
-            for line in file:
-                if line.strip():
-                    try:
-                        name, payload = line.strip().split('::')
-                        payloads.append({'name': name, 'payload': payload})
-                    except ValueError:
-                        print(colored(f"[×] Malformed payload in the file: {line.strip()}", 'red'))
+            return [line.strip() for line in file if line.strip()]
     except FileNotFoundError:
-        print(colored(f"[×] Payload file not found at: {file_path}", 'red'))
-    return payloads
+        print(colored(f"[×] File not found: {file_path}", 'red'))
+    return []
 
-def test_open_redirect_payload(url, parameter, payload):
-    """Test the open redirect payload on the given URL."""
+def replace_last_parameter(url, parameter, payload):
+    """Replace the last parameter in the URL with the given parameter and payload."""
+    parsed_url = urlparse(url)
+    query = parsed_url.query.split('&')
+    query = [param.replace("{payload}", payload) for param in query]
+    if query:
+        query[-1] = f"{parameter}={payload}"
+    new_query = '&'.join(query)
+    return f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}?{new_query}"
+
+def test_open_redirect_payload(url, parameter, payload, verbose):
+    """Test the open redirect payload on the given URL using curl."""
     if stop_scan.is_set():
         return {'vulnerable': False}
-
-    headers =  generate_random_headers()
-    full_url = f"{url.split('?')[0]}?{parameter}={payload}"
     
+    test_url = replace_last_parameter(url, parameter, payload)
     try:
-        response = requests.get(full_url, headers=headers, allow_redirects=True, timeout=10, verify=False)
-        if response.status_code in [200, 301, 302, 303, 307, 308]:
-            redirected_url = response.url
-            if redirected_url != full_url:
-                return {'vulnerable': True, 'redirected_url': redirected_url}
-    except requests.RequestException as e:
-        if not stop_scan.is_set():
-            print(colored(f"[×] Error testing payload on {full_url}: {e}", 'red'))
-
+        curl_command = ["curl", "-L", "-s", "-I", test_url]
+        result = subprocess.run(curl_command, capture_output=True, text=True, timeout=10)
+        
+        if result.returncode == 0 and "Location" in result.stdout:
+            location = next((line.split(":", 1)[1].strip() for line in result.stdout.splitlines() if "Location" in line), None)
+            if location:
+                if verbose:
+                    print(colored(f"[>>>] Vulnerability Details:", 'cyan'))
+                    print(colored(f"  [-] Vulnerable URL: {test_url}", 'green'))
+                    print(colored(f"  [-] Redirect URL: {location}", 'yellow'))
+                    print(colored(f"  [-] Payload: {payload}", 'yellow'))
+                    print(colored(f"  [-] Parameter: {parameter}", 'yellow'))
+                    print(colored(f"  [•] Redirected to: {location}", 'blue'))
+                return {'vulnerable': True, 'url': test_url, 'payload': payload, 'parameter': parameter}
+    except subprocess.TimeoutExpired:
+        print(colored(f"[×] Timeout while testing URL: {test_url}", 'red'))
+    except subprocess.CalledProcessError as e:
+        print(colored(f"[×] Error executing curl: {e}", 'red'))
+    
     return {'vulnerable': False}
 
-def perform_redirect_scan(crawled_urls, thread_count, no_prompt, verbose=False):
+def perform_redirect_scan(crawled_urls, thread_count=None, no_prompt=False, verbose=False):
     """Perform open redirect scanning on the given crawled URLs."""
-    if thread_count is None:
-        thread_count = DEFAULT_THREADS  
-
-    payloads = load_open_redirect_payloads(os.path.join(data_dir, 'openredirectpayloads.txt'))
-    detected_tech = None
-
+    thread_count = thread_count or DEFAULT_THREADS
     thread_count = max(1, min(thread_count, MAX_THREADS))
+    parameters = load_file_lines(os.path.join(data_dir, 'openredirectparameters.txt'))
+    payloads = load_file_lines(os.path.join(data_dir, 'openredirectpayloads.txt'))
 
     try:
         for url in crawled_urls:
             if stop_scan.is_set():
                 break
-
             print(colored(f"\n[•] Testing URL: {url}", 'yellow'))
 
-            with ThreadPoolExecutor(max_workers=thread_count) as executor:
-                future_to_payload = {}
-                for payload_entry in payloads:
-                    if stop_scan.is_set():
-                        break
+            for parameter in parameters:
+                if stop_scan.is_set():
+                    break
 
-                    name = payload_entry['name']
-                    payload = payload_entry['payload']
+                print(colored(f"[{datetime.now().strftime('%H:%M:%S')}]", 'blue') +
+                      colored(" [INFO] ") + f"Testing Parameter: {parameter}", flush=True)
 
-                    for param_key in url.split('?')[1].split('&'):
+                with ThreadPoolExecutor(max_workers=thread_count) as executor:
+                    future_to_payload = {
+                        executor.submit(test_open_redirect_payload, url, parameter, payload, verbose): (parameter, payload)
+                        for payload in payloads
+                    }
+
+                    for future in as_completed(future_to_payload):
                         if stop_scan.is_set():
                             break
 
-                        param_key = param_key.split('=')[0]
-                        timestamp = datetime.now().strftime("%H:%M:%S")
+                        result = future.result()
 
-                        if verbose:
-                            print(f"[{colored(timestamp, 'blue')}] [Info]: Testing {name} on parameter {param_key}")
-
-                        future = executor.submit(test_open_redirect_payload, url, param_key, payload)
-                        future_to_payload[future] = (url, name)
-
-                for future in as_completed(future_to_payload):
-                    if stop_scan.is_set():
-                        break
-
-                    result = future.result()
-                    full_url, name = future_to_payload[future]
-
-                    if result['vulnerable']:
-                        if detected_tech is None:
-                            detected_tech = result['redirected_url'] 
-                            print(colored(f"[•] Detected Technology: {detected_tech or 'Unknown'}", 'magenta'))
-
-                        print(colored(f"[★] Vulnerable URL found: {full_url}", 'white', attrs=['bold']))
-                        print(colored(f"[•] Redirected URL: {result['redirected_url']}", 'blue'))
-
-                        if no_prompt:  
-                            user_input = DEFAULT_INPUT
-                        else:
-                            while True:
-                                user_input = input(colored("\n[?] Vulnerable URL found. Do you want to continue testing other URLs? (y/n): ", 'yellow')).strip().lower()
-                                if user_input in ['y', 'n']:
-                                    break
-                                print(colored("[×] Invalid input. Please enter 'y' or 'n'.", 'red'))
-
-                        if user_input == 'n':
-                            print(colored("[•] Stopping further scans as per user's decision.", 'red'))
+                        if result['vulnerable']:
+                            print(colored(f"\n[★] Vulnerability Found! Parameter: {parameter}, Payload: {result['payload']}", 'green', attrs=['bold']))
                             stop_scan.set()
+                            print(colored(f"[•] Stopping further scans for this URL as vulnerability is found.", 'red'))
                             break
+
+            if stop_scan.is_set():
+                break
 
     except KeyboardInterrupt:
         print(colored("\n[!] Scan interrupted by user. Exiting cleanly...", 'red'))

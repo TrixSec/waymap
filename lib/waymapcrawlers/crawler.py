@@ -59,6 +59,15 @@ def remove_crawl_file(base_domain):
         os.remove(crawl_file)
         print(f"\n{GREEN}[•] Removed {crawl_file} as user is re-crawling a previously crawled URL.{RESET}")
 
+def is_language_related(url):
+    language_related_keywords = ['ln=', 'lang=', 'locale=', 'nl=']
+    parsed_url = urlparse(url)
+    query_params = parsed_url.query
+    for keyword in language_related_keywords:
+        if keyword in query_params:
+            return True
+    return False
+
 def crawl_url(url, base_domain, next_urls_to_crawl):
     global total_urls, valid_url_count
 
@@ -69,6 +78,9 @@ def crawl_url(url, base_domain, next_urls_to_crawl):
 
         parsed_final_url = urlparse(final_url)
         if parsed_final_url.netloc != base_domain or should_skip_url(final_url):
+            return
+
+        if is_language_related(final_url):
             return
 
         soup = BeautifulSoup(response.text, 'html.parser')
@@ -82,22 +94,34 @@ def crawl_url(url, base_domain, next_urls_to_crawl):
                 if full_url not in visited_urls and not should_skip_url(full_url):
                     with lock:
                         visited_urls.add(full_url)
-                        all_urls.append(full_url)  
+                        all_urls.append(full_url)
                         total_urls += 1
+
+                    if is_language_related(full_url):
+                        continue
 
                     if is_valid_url(full_url) and is_within_domain(full_url, base_domain) and has_query_parameters(full_url):
                         with lock:
                             valid_urls.append(full_url)
                             valid_url_count += 1
+                            save_valid_url(base_domain, full_url)  
 
                     with lock:
                         sys.stdout.write(f"\r{BOLD}{YELLOW}[•] Total URLs crawled: {total_urls} | Valid URLs: {valid_url_count}{RESET}")
                         sys.stdout.flush()
 
-                    next_urls_to_crawl.append(full_url)  
+                    next_urls_to_crawl.append(full_url)
 
     except requests.RequestException:
-        pass 
+        pass
+
+def save_valid_url(base_domain, url):
+    if is_language_related(url):
+        return
+    
+    crawl_file = get_crawl_file_path(base_domain)
+    with open(crawl_file, 'a') as file:
+        file.write(f"{url}\n")
 
 def should_skip_url(url):
     return any(url.lower().endswith(ext) for ext in CRAWLING_EXCLUDE_EXTENSIONS)
@@ -162,18 +186,20 @@ def run_crawler(start_url, max_depth, thread_count, no_prompt):
         remove_crawl_file(base_domain)
 
     if no_prompt:
-        use_threads = DEFAULT_INPUT.lower() == 'y'  
+        use_threads = DEFAULT_INPUT.lower() == 'y'
     else:
         use_threads = input(f"{BOLD}{CYAN}Do you want to enable multi-threading? (y/n): {RESET}").strip().lower() == 'y'
 
     if use_threads and thread_count is not None:
         num_threads = min(thread_count, MAX_THREADS)
     else:
-        num_threads = 1  
+        num_threads = 1
 
     try:
         crawl([start_url], 1, max_depth, base_domain, num_threads)
-        crawl_done.set()  
+        crawl_done.set()
+    except KeyboardInterrupt:
+        print(f"\n{RED}[!] Crawling interrupted by user.{RESET}")
     finally:
         save_crawled_urls(base_domain, valid_urls)
         print(f"\n{GREEN}[•] Crawling stopped. Total URLs found: {total_urls}, Valid URLs saved: {len(valid_urls)}.{RESET}")

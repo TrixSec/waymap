@@ -5,7 +5,6 @@ import os
 import argparse
 import requests
 import logging
-import shutil
 from termcolor import colored
 from lib.parse.random_headers import generate_random_headers
 from lib.waymapcrawlers.crawler import run_crawler
@@ -84,16 +83,12 @@ def print_banner():
 ░╚██╗████╗██╔╝███████║░╚████╔╝░██╔████╔██║███████║██████╔╝
 ░░████╔═████║░██╔══██║░░╚██╔╝░░██║╚██╔╝██║██╔══██║██╔═══╝░
 ░░╚██╔╝░╚██╔╝░██║░░██║░░░██║░░░██║░╚═╝░██║██║░░██║██║░░░░░
-░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v5.8.4
+░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v5.9.4
     """
     print(colored(banner, 'cyan'))
     print(colored(f"Waymap Version: {WAYMAP_VERSION}", 'yellow'))
     print(colored(f"Made by {AUTHOR}", 'yellow'))
     print(colored(COPYRIGHT, 'yellow'))
-    print(colored(f"New Beta  Version Of Sql Injection Scanning Is Added, ain't removing the old one", 'green'))
-    print(colored(f"It Have High Accuracy Than Previous One, Less Chance of False Positive", 'green'))
-    print("Access It Using Scan Type (--scan sqli)")
-
 
 def load_payloads(file_path):
 
@@ -192,12 +187,7 @@ def scan(target, scan_type, crawled_urls=None, provided_urls=None, thread_count=
         return
 
     try:
-        if scan_type == 'sql':
-            print("\n")
-            print(colored(f"[•] Performing SQL Injection scan on {target}", 'yellow'))
-            perform_sqli_scan(urls_to_scan, sql_payloads, thread_count=thread_count, no_prompt=no_prompt)
-
-        elif scan_type == 'sqli':
+        if scan_type == 'sqli':
             print("\n")
             print(colored(f"[•] Performing SQL Injection scan on {target}", 'yellow'))
             urls = crawled_urls if crawled_urls else provided_urls
@@ -239,10 +229,6 @@ def scan(target, scan_type, crawled_urls=None, provided_urls=None, thread_count=
             perform_cors_scan(urls_to_scan, thread_count=thread_count, no_prompt=no_prompt, verbose=True)
 
         elif scan_type == 'all':
-            print("\n[•] Performing all scans on target...\n")
-            print(colored("[•] Performing SQL Injection scan...", 'cyan'))
-            perform_sqli_scan(urls_to_scan, sql_payloads, thread_count=thread_count, no_prompt=no_prompt)
-
             print("\n")
             print(colored(f"[•] Performing SQL Injection scan on {target}", 'yellow'))
             urls = crawled_urls if crawled_urls else provided_urls
@@ -325,9 +311,9 @@ def main():
         handle_error("No internet connection. Please check your network and try again.")
 
     required_files = [
-        'sqlipayload.txt', 'cmdipayload.txt', 'basicxsspayload.txt', 'filtersbypassxss.txt',
-        'lfipayload.txt', 'openredirectpayloads.txt', 'crlfpayload.txt', 'corspayload.txt',
-        'sstipayload.txt', 'ua.txt', 'errors.xml', 'cmdi.xml', 'error_based.xml', 'cveinfo.py', 'headers.json'
+        'cmdipayload.txt', 'basicxsspayload.txt', 'filtersbypassxss.txt',
+        'lfipayload.txt', 'openredirectpayloads.txt', 'openredirectparameters.txt', 'crlfpayload.txt', 'corspayload.txt',
+        'sstipayload.txt', 'ua.txt', 'cmdi.xml', 'error_based.xml', 'cveinfo.py', 'headers.json'
     ]
     missing_files = check_required_files(data_dir, session_dir, required_files)
     if missing_files:
@@ -342,7 +328,7 @@ def main():
     parser.add_argument('--target', '-t', type=str, help='Target URL for crawling and scanning, example: https://example.com/')
     parser.add_argument('--multi-target', '-mt', type=str, help='File with multiple target URLs for crawling and scanning')
     parser.add_argument('--crawl', '-c', type=int, help='Crawl depth')
-    parser.add_argument('--scan', '-s', type=str, choices=['sql', 'sqli', 'cmdi', 'ssti', 'xss', 'lfi', 'open-redirect', 'crlf', 'cors', 'all', 'high-risk', 'critical-risk'], help='Type of scan to perform')
+    parser.add_argument('--scan', '-s', type=str, choices=['sqli', 'cmdi', 'ssti', 'xss', 'lfi', 'open-redirect', 'crlf', 'cors', 'all', 'high-risk', 'critical-risk'], help='Type of scan to perform')
     parser.add_argument('--threads', '-T', type=int, default=DEFAULT_THREADS, help='Number of threads to use for scanning (default: 1)')
     parser.add_argument('--no-prompt', '-np', action='store_true', help='Automatically use default input for prompts')
     parser.add_argument('--profile', '-p', choices=['high-risk', 'critical-risk'], help="Specify the profile: 'high-risk' or 'critical-risk'. This skips crawling.")

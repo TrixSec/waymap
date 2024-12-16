@@ -1,6 +1,6 @@
 # Waymap - Web Vulnerability Scanner.
 
-**Current Version**: 5.8.4
+**Current Version**: 5.9.4
 **Author**: Trix Cyrus  
 **Copyright**: © 2024 Trixsec Org  
 **Maintained**: Yes
@@ -36,15 +36,20 @@
 - added 74 Critical severity Cves data
 - For CVEs Info Read The CVEVULN.md File 
 
+#### v5.9.4
+- Removed Old Error Based Sql Method Use the new one by --scan sqli
+- Updated The Open Redirect Vuln Testing In Waymap
+- Updated The Crawler To v4
+- Added 249 High Risk Cves Data In Waymap
+- Total Count: 390
+
 --- New Crazy Updates Soon
 
 ## 🚀 **Features**
 
 ### 1. **Flexible Scanning Options**
    - **Target-based scanning:** 
-     Scan single or multiple targets using `--target` or `--multi-target` options (Requires Crawling).
-   - **Direct URL scanning:** 
-     Use `--url` or `--multi-url` to scan specific URLs without crawling.
+     Scan single or multiple targets using `--target` or `--multi-target` options 
    - **Profile-based scanning:** 
      Supports high-risk and critical-risk scan profiles for targeted assessments.
 
