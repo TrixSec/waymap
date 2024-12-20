@@ -59,7 +59,6 @@ def extract_target_domain(url):
         print(f"{Fore.RED}[!] Error extracting domain from URL: {url}\n{e}{Style.RESET_ALL}")
         return None
 
-
 def find_backup_files(target_domain, threads=20):
     """
     Scan for backup files using URLs from crawl2.txt.

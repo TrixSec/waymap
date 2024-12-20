@@ -55,9 +55,9 @@ def fetch_directory(url):
 def save_results(target_url, results):
     """Save results to a JSON file with the target domain and timestamp."""
     domain = urlparse(target_url).netloc
-    output_file = f"sessions/{domain}/deepscan_dirfuzz_results.json"
-    
-    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    folder = os.path.join("sessions", domain)
+    os.makedirs(folder, exist_ok=True)
+    output_file = os.path.join(folder, "deepscan_dirfuzz_results.json")
 
     scan_data = {
         "scan_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),

@@ -16,7 +16,7 @@ from lib.core.settings import DEFAULT_INPUT
 
 data_dir = os.path.join(os.getcwd(), 'data')
 
-logging.basicConfig(filename='ssti_scan.log', level=logging.INFO,
+logging.basicConfig(filename='logs.txt', level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 stop_scan = threading.Event()

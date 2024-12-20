@@ -18,7 +18,7 @@ from lib.core.settings import DEFAULT_INPUT
 
 data_dir = os.path.join(os.getcwd(), 'data')
 
-logging.basicConfig(filename='cmdi_scan.log', level=logging.INFO,
+logging.basicConfig(filename='logs.txt', level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 def load_cmdi_errors(xml_file):
