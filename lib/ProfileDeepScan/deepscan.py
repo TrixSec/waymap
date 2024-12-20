@@ -4,7 +4,7 @@
 
 from lib.ProfileDeepScan.headerdeepscan import headersdeepscan
 from lib.ProfileDeepScan.waymap_dirfuzz import dirfuzz
-from lib.ProfileDeepScan.waymap_backupfilerfinder import backupfiles
+from lib.ProfileDeepScan.waymap_backupfilefinder import backupfiles
 
 def deepscan(profile_url):
     for url in profile_url:
