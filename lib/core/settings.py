@@ -19,7 +19,7 @@ COPYRIGHT = "Copyright © 2024 Trixsec Org"
 
 CVE_DB_URL = "https://cvedb.shodan.io/cve/{cve_id}"
 
-FUZZ_THREADS = 30
+FUZZER_THREADS = 30
 
 FUZZER_TIMEOUT = 15
 
