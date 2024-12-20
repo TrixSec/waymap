@@ -1,6 +1,6 @@
 # Waymap - Web Vulnerability Scanner.
 
-**Current Version**: 6.0.4
+**Current Version**: 6.0.5
 **Author**: Trix Cyrus  
 **Copyright**: © 2024 Trixsec Org  
 **Maintained**: Yes
@@ -31,6 +31,9 @@
 - Features in Deepscan: Scan for 25+ Types of Headers Vuln , Do Massive Directory Fuzzing, Find Backup Files On The Server
 - Fixed Scan Type 'cors' Error
 - minor bug fixed
+
+#### v6.0.5 
+- fixed issue regaring waymap updates
 
 --- New Crazy Updates Soon
 

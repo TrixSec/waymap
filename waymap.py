@@ -64,10 +64,16 @@ def check_for_updates():
 
         if WAYMAP_VERSION != latest_version:
             print(colored(f"[•] New version available: {latest_version}. Updating...", 'yellow'))
+            
+            os.system('git stash push -u')
             os.system('git reset --hard HEAD')
             os.system('git pull')
+
             with open('VERSION', 'w') as version_file:
                 version_file.write(latest_version)
+
+            os.system('git stash pop')
+
             print(colored("[•] Update completed. Please rerun Waymap.", 'green'))
             exit()
 
@@ -82,7 +88,7 @@ def print_banner():
 ░╚██╗████╗██╔╝███████║░╚████╔╝░██╔████╔██║███████║██████╔╝
 ░░████╔═████║░██╔══██║░░╚██╔╝░░██║╚██╔╝██║██╔══██║██╔═══╝░
 ░░╚██╔╝░╚██╔╝░██║░░██║░░░██║░░░██║░╚═╝░██║██║░░██║██║░░░░░
-░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v6.0.4
+░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v6.0.5
     """
     print(colored(banner, 'cyan'))
     print(colored(f"Waymap Version: {WAYMAP_VERSION}", 'yellow'))
