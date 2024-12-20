@@ -7,9 +7,12 @@ from lib.ProfileDeepScan.waymap_dirfuzz import dirfuzz
 from lib.ProfileDeepScan.waymap_backupfilefinder import backupfiles
 
 def deepscan(profile_url):
+    if isinstance(profile_url, str):  
+        profile_url = [profile_url]
+    
     for url in profile_url:
         try:
-            headersdeepscan(url) 
+            headersdeepscan(url)
         except Exception as e:
             print(f"[ERROR] Headers Analysis failed for {url}: {e}\n")
 
