@@ -1,6 +1,3 @@
-# Copyright (c) 2024 waymap developers
-# See the file 'LICENSE' for copying permission.
-
 import requests
 import os
 import json
@@ -58,25 +55,25 @@ def fetch_directory(url):
 def save_results(target_url, results):
     """Save results to a JSON file with the target domain and timestamp."""
     domain = urlparse(target_url).netloc
-    folder = os.path.join("sessions", domain)
-    os.makedirs(folder, exist_ok=True)
-
-    file_path = os.path.join(folder, "waymap_dirfuzz_results.json")
+    output_file = f"sessions/{domain}/deepscan_dirfuzz_results.json"
+    
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
     scan_data = {
         "scan_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "results": results
     }
 
-    if os.path.exists(file_path):
-        with open(file_path, "r") as file:
+    if os.path.exists(output_file):
+        with open(output_file, "r") as file:
             existing_data = json.load(file)
         existing_data.append(scan_data)
-        with open(file_path, "w") as file:
+        with open(output_file, "w") as file:
             json.dump(existing_data, file, indent=4)
     else:
-        with open(file_path, "w") as file:
+        with open(output_file, "w") as file:
             json.dump([scan_data], file, indent=4)
+
 
 def signal_handler(sig, frame):
     """Handle the signal interrupt to terminate all threads immediately."""
