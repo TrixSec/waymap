@@ -11,10 +11,24 @@ MAX_THREADS = 10
 
 DEFAULT_INPUT = 'n'
 
-WAYMAP_VERSION = "5.9.4"
+WAYMAP_VERSION = "6.0.4"
 
 AUTHOR = "Trix Cyrus"
 
 COPYRIGHT = "Copyright © 2024 Trixsec Org"
 
 CVE_DB_URL = "https://cvedb.shodan.io/cve/{cve_id}"
+
+FUZZ_THREADS = 30
+
+FUZZER_TIMEOUT = 15
+
+BACKUP_TIMEOUT = 15
+
+HEADERS_TIMEOUT = 15
+
+BACKUP_CRAWLER_THREADS = 200
+
+DISSALLOWED_EXT = (".js", ".css", ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".svg", ".pdf", ".xls", ".xlsx", ".doc", ".ico")
+
+VALID_EXT = (".php", ".asp", ".aspx", ".html", "/")

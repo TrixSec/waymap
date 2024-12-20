@@ -1,6 +1,6 @@
 # Waymap - Web Vulnerability Scanner.
 
-**Current Version**: 5.9.4
+**Current Version**: 6.0.4
 **Author**: Trix Cyrus  
 **Copyright**: © 2024 Trixsec Org  
 **Maintained**: Yes
@@ -12,23 +12,6 @@
 ---
 
 ### Latest Update
-
-
-
-#### v5.6.1 
-- Added New 19 CVEs Vulnerability Detections Logics
-- 8 Critical-Risk CVEs And 11 High-Risk CVEs
-- For CVEs Info Read The CVEVULN.md File 
-
-#### v5.7.1
-- Removed arg --random-agent, now waymap will by default use different headers for every requests
-- Added IP Spoofing for more anonymity
-- Updated Wp Plugin Checking Logic In Both High Profile And Critical Profile
-- some minor bug fix
-
-#### v5.7.2 
-- Added New Logic To Update Waymap
----
 
 #### v5.8.2
 - Removed --profileurl/-pu arg now to use profile high or critical give the target with --target arg and use --profile arg
@@ -43,6 +26,12 @@
 - Added 249 High Risk Cves Data In Waymap
 - Total Count: 390
 
+#### v6.0.4 
+- Added New Scan Profile 'deepscan' use using --profile deepscan
+- Features in Deepscan: Scan for 25+ Types of Headers Vuln , Do Massive Directory Fuzzing, Find Backup Files On The Server
+- Fixed Scan Type 'cors' Error
+- minor bug fixed
+
 --- New Crazy Updates Soon
 
 ## 🚀 **Features**
@@ -51,7 +40,7 @@
    - **Target-based scanning:** 
      Scan single or multiple targets using `--target` or `--multi-target` options 
    - **Profile-based scanning:** 
-     Supports high-risk and critical-risk scan profiles for targeted assessments.
+     Supports high-risk, critical-risk and deepscan scan profiles for targeted assessments.
 
 ### 2. **Supported Scan Types**
    - **SQL Injection (SQLi):**  
@@ -76,6 +65,7 @@
 ### 3. **Profile-based Scanning**
    - **High-Risk Profile:**  
    - **Critical-Risk Profile:**  
+   - **deepscan Profile:**
      Focuses on severe vulnerabilities, such as CVE-based attacks.
 
 ### 4. **Crawling Capabilities**
@@ -116,7 +106,7 @@
    ```
 4. **Profile-based scanning:**
    ```bash
-   python waymap.py --target https://example.com --profile high-risk/critical-risk
+   python waymap.py --target https://example.com --profile high-risk/critical-risk/deepscan
    ```
 
 ### Thread Configuration

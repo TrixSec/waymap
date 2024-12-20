@@ -8,13 +8,13 @@ import logging
 from termcolor import colored
 from lib.parse.random_headers import generate_random_headers
 from lib.waymapcrawlers.crawler import run_crawler
-from lib.injection.sqli import perform_sqli_scan
 from lib.injection.cmdi import perform_cmdi_scan
 from lib.injection.ssti import perform_ssti_scan
 from lib.injection.xss import perform_xss_scan
 from lib.injection.lfi import perform_lfi_scan
 from lib.injection.openredirect import perform_redirect_scan
 from lib.ProfileCritical.profile_critical import critical_risk_scan
+from lib.ProfileDeepScan.deepscan import deepscan
 from lib.ProfileHigh.profile_high import high_risk_scan
 from lib.injection.crlf import perform_crlf_scan
 from lib.injection.cors import perform_cors_scan
@@ -23,13 +23,12 @@ from lib.core.settings import DEFAULT_THREADS
 from lib.core.settings import AUTHOR
 from lib.core.settings import WAYMAP_VERSION
 from lib.core.settings import COPYRIGHT
-
-
 from extras.error_handler import check_internet_connection, check_required_files, check_required_directories, handle_error
 from urllib.parse import urlparse
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-session_dir = 'session'
+
+session_dir = 'sessions'
 
 headers = generate_random_headers()
 
@@ -55,7 +54,7 @@ def log_error(message):
     logging.error(message)
 
 data_dir = os.path.join(os.getcwd(), 'data')
-session_dir = os.path.join(os.getcwd(), 'session')
+session_dir = os.path.join(os.getcwd(), 'sessions')
 
 def check_for_updates():
     try:
@@ -83,7 +82,7 @@ def print_banner():
 ░╚██╗████╗██╔╝███████║░╚████╔╝░██╔████╔██║███████║██████╔╝
 ░░████╔═████║░██╔══██║░░╚██╔╝░░██║╚██╔╝██║██╔══██║██╔═══╝░
 ░░╚██╔╝░╚██╔╝░██║░░██║░░░██║░░░██║░╚═╝░██║██║░░██║██║░░░░░
-░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v5.9.4
+░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v6.0.4
     """
     print(colored(banner, 'cyan'))
     print(colored(f"Waymap Version: {WAYMAP_VERSION}", 'yellow'))
@@ -177,7 +176,6 @@ def crawl(target, crawl_depth, thread_count=1, no_prompt=False):
 def scan(target, scan_type, crawled_urls=None, provided_urls=None, thread_count=1, no_prompt=False):
     log_scan_start(target, scan_type)
 
-    sql_payloads = load_payloads(os.path.join(data_dir, 'sqlipayload.txt'))
     cmdi_payloads = load_payloads(os.path.join(data_dir, 'cmdipayload.txt'))
 
     urls_to_scan = provided_urls if provided_urls else crawled_urls
@@ -301,6 +299,8 @@ def perform_profile_scan(profile_url, profile_type):
         high_risk_scan(profile_url)
     elif profile_type == 'critical-risk':
         critical_risk_scan(profile_url)
+    elif profile_type == 'deepscan':
+        deepscan(profile_url)
     else:
         print(f"Error: Unknown scan type '{profile_type}'.")
 
@@ -312,7 +312,7 @@ def main():
 
     required_files = [
         'cmdipayload.txt', 'basicxsspayload.txt', 'filtersbypassxss.txt',
-        'lfipayload.txt', 'openredirectpayloads.txt', 'openredirectparameters.txt', 'crlfpayload.txt', 'corspayload.txt',
+        'lfipayload.txt', 'openredirectpayloads.txt', 'waymap_dirfuzzlist.txt', 'waymap_dirfuzzlist2.txt', 'openredirectparameters.txt', 'crlfpayload.txt', 'corspayload.txt',
         'sstipayload.txt', 'ua.txt', 'cmdi.xml', 'error_based.xml', 'cveinfo.py', 'headers.json'
     ]
     missing_files = check_required_files(data_dir, session_dir, required_files)
@@ -331,7 +331,7 @@ def main():
     parser.add_argument('--scan', '-s', type=str, choices=['sqli', 'cmdi', 'ssti', 'xss', 'lfi', 'open-redirect', 'crlf', 'cors', 'all', 'high-risk', 'critical-risk'], help='Type of scan to perform')
     parser.add_argument('--threads', '-T', type=int, default=DEFAULT_THREADS, help='Number of threads to use for scanning (default: 1)')
     parser.add_argument('--no-prompt', '-np', action='store_true', help='Automatically use default input for prompts')
-    parser.add_argument('--profile', '-p', choices=['high-risk', 'critical-risk'], help="Specify the profile: 'high-risk' or 'critical-risk'. This skips crawling.")
+    parser.add_argument('--profile', '-p', choices=['high-risk', 'deepscan', 'critical-risk'], help="Specify the profile: 'high-risk', 'deepscan' or 'critical-risk'. This skips crawling.")
     parser.add_argument('--check-updates', action='store_true', help='Check for Latest Waymap updates.')
 
     args = parser.parse_args()

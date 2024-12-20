@@ -6,3 +6,4 @@ packaging
 bs4 
 urllib3
 logging
+tqdm

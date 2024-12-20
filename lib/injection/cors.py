@@ -12,7 +12,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from lib.parse.random_headers import generate_random_headers
 from lib.core.settings import DEFAULT_THREADS
 from lib.core.settings import MAX_THREADS
-from lib.core.settings import DEFAULT_INPUT  # Add this to get default input behavior
+from lib.core.settings import DEFAULT_INPUT
 
 data_dir = os.path.join(os.getcwd(), 'data')
 
@@ -47,9 +47,8 @@ def test_cors_vulnerability(url, payload, expected_response):
     if stop_scan.is_set():
         return {'vulnerable': False}
 
-    headers['Origin'] = payload
     headers = generate_random_headers()
-
+    headers['Origin'] = payload
     
     try:
         response = requests.options(url, headers=headers, timeout=10, verify=False)
