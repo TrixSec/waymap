@@ -1,6 +1,6 @@
 # Waymap - Web Vulnerability Scanner.
 
-**Current Version**: 6.0.5
+**Current Version**: 6.0.6
 **Author**: Trix Cyrus  
 **Copyright**: © 2024 Trixsec Org  
 **Maintained**: Yes

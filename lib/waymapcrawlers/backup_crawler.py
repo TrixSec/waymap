@@ -170,7 +170,6 @@ def handle_exit(signal_received, frame):
     global stop_threads
     stop_threads = True
     print(f"\n{Fore.RED}{Style.BRIGHT}Program terminated! Saving progress...{Style.RESET_ALL}")
-    sys.exit(0)
 
 def start_crawl(start_url):
     signal.signal(signal.SIGINT, handle_exit)
@@ -185,7 +184,8 @@ def start_crawl(start_url):
 
     if not start_url.startswith(("http://", "https://")):
         print(f"{Fore.RED}Invalid URL. Please include http:// or https://{Style.RESET_ALL}")
-        sys.exit(1)
+
+        return  
 
     print(f"{Fore.YELLOW}Crawling started...{Style.RESET_ALL}")
 
