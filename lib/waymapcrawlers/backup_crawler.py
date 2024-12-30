@@ -14,7 +14,7 @@ import signal
 import sys
 from lib.core.settings import BACKUP_CRAWLER_THREADS
 from lib.core.settings import DISSALLOWED_EXT
-from lib.core.settings import VALID_EXT
+from lib.core.settings import VALID_EXTENSIONS
 from lib.parse.random_headers import generate_random_headers
 
 import urllib3
@@ -39,7 +39,7 @@ def is_valid_url_to_crawl(url, base_domain):
     parsed_url = urlparse(url)
     path = parsed_url.path
 
-    valid_extensions = VALID_EXT
+    valid_extensions = VALID_EXTENSIONS
     if not path.endswith(valid_extensions):
         return False
 
