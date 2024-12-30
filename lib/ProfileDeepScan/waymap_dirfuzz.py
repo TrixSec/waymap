@@ -1,3 +1,6 @@
+# Copyright (c) 2024 waymap developers
+# See the file 'LICENSE' for copying permission.
+
 import requests
 import os
 import json
@@ -14,7 +17,6 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 from lib.core.settings import FUZZER_THREADS
 from lib.core.settings import FUZZER_TIMEOUT
 from lib.parse.random_headers import generate_random_headers
-
 
 init(autoreset=True)
 

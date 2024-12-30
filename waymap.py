@@ -19,6 +19,7 @@ from lib.ProfileHigh.profile_high import high_risk_scan
 from lib.injection.crlf import perform_crlf_scan
 from lib.injection.cors import perform_cors_scan
 from lib.injection.sqlin.sql import run_sql_tests
+from lib.core.wafdetector import check_wafs
 from lib.core.settings import DEFAULT_THREADS
 from lib.core.settings import AUTHOR
 from lib.core.settings import WAYMAP_VERSION
@@ -88,7 +89,7 @@ def print_banner():
 ░╚██╗████╗██╔╝███████║░╚████╔╝░██╔████╔██║███████║██████╔╝
 ░░████╔═████║░██╔══██║░░╚██╔╝░░██║╚██╔╝██║██╔══██║██╔═══╝░
 ░░╚██╔╝░╚██╔╝░██║░░██║░░░██║░░░██║░╚═╝░██║██║░░██║██║░░░░░
-░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v6.0.6
+░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v6.1.6
     """
     print(colored(banner, 'cyan'))
     print(colored(f"Waymap Version: {WAYMAP_VERSION}", 'yellow'))
@@ -310,6 +311,7 @@ def perform_profile_scan(profile_url, profile_type):
     else:
         print(f"Error: Unknown scan type '{profile_type}'.")
 
+
 def main():
     print_banner()
 
@@ -319,7 +321,7 @@ def main():
     required_files = [
         'cmdipayload.txt', 'basicxsspayload.txt', 'filtersbypassxss.txt',
         'lfipayload.txt', 'openredirectpayloads.txt', 'waymap_dirfuzzlist.txt', 'waymap_dirfuzzlist2.txt', 'openredirectparameters.txt', 'crlfpayload.txt', 'corspayload.txt',
-        'sstipayload.txt', 'ua.txt', 'cmdi.xml', 'error_based.xml', 'cveinfo.py', 'headers.json'
+        'sstipayload.txt', 'jsvulnpattern.json', 'wafsig.json', 'ua.txt', 'cmdi.xml', 'error_based.xml', 'cveinfo.py', 'headers.json'
     ]
     missing_files = check_required_files(data_dir, session_dir, required_files)
     if missing_files:
@@ -339,6 +341,7 @@ def main():
     parser.add_argument('--no-prompt', '-np', action='store_true', help='Automatically use default input for prompts')
     parser.add_argument('--profile', '-p', choices=['high-risk', 'deepscan', 'critical-risk'], help="Specify the profile: 'high-risk', 'deepscan' or 'critical-risk'. This skips crawling.")
     parser.add_argument('--check-updates', action='store_true', help='Check for Latest Waymap updates.')
+    parser.add_argument('--check-waf', '--waf', type=str, help='To Detect WAF/IPS Of Any Website')
 
     args = parser.parse_args()
 
@@ -348,8 +351,13 @@ def main():
     no_prompt = args.no_prompt
     profile_type = args.profile
 
+
     if args.check_updates:
         check_for_updates()
+
+    if args.check_waf:
+        waf_url = args.check_waf.strip()
+        check_wafs(waf_url)
 
     if multi_target_file:
         targets = load_targets_from_file(multi_target_file)
@@ -361,7 +369,6 @@ def main():
 
     if target:
         process_target(target, args.crawl, args.scan, thread_count, no_prompt, profile_type)
-
 
 def process_target(target, crawl_depth, scan_type, thread_count, no_prompt, profile_type):
     """Process a single target, determining whether to crawl or scan directly."""
@@ -381,7 +388,6 @@ def process_target(target, crawl_depth, scan_type, thread_count, no_prompt, prof
         print(colored(f"[•] Direct scanning on {target}", 'cyan'))
         scan(target, scan_type, [target], thread_count=thread_count, no_prompt=no_prompt)
 
-
 def cleanup_crawl_file(target):
     """Remove crawl.txt file associated with the target domain."""
     domain = target.split("//")[-1].split("/")[0]
@@ -389,7 +395,6 @@ def cleanup_crawl_file(target):
     if os.path.exists(crawl_file):
         os.remove(crawl_file)
         print(colored(f"[•] Removed crawl file for {domain}.", 'green'))
-
 
 if __name__ == "__main__":
     main()

@@ -5,6 +5,7 @@
 from lib.ProfileDeepScan.headerdeepscan import headersdeepscan
 from lib.ProfileDeepScan.waymap_dirfuzz import dirfuzz
 from lib.ProfileDeepScan.waymap_backupfilefinder import backupfiles
+from lib.ProfileDeepScan.waymap_jsdeepscan import jsscan
 
 def deepscan(profile_url):
     if isinstance(profile_url, str):  
@@ -20,6 +21,11 @@ def deepscan(profile_url):
             backupfiles(url)
         except Exception as e:
             print(f"[ERROR] Backup Finder failed for {url}: {e}\n")
+
+        try:
+            jsscan(url)
+        except Exception as e:
+            print(f"[ERROR] Javascript failed for {url}: {e}\n")
 
         try:
             dirfuzz(url)

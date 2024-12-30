@@ -9,9 +9,11 @@ DEFAULT_THREADS = 1
 
 MAX_THREADS = 10
 
+TIMEOUT = 20
+
 DEFAULT_INPUT = 'n'
 
-WAYMAP_VERSION = "6.0.6"
+WAYMAP_VERSION = "6.1.6"
 
 AUTHOR = "Trix Cyrus"
 
@@ -31,4 +33,14 @@ BACKUP_CRAWLER_THREADS = 200
 
 DISSALLOWED_EXT = (".js", ".css", ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".svg", ".pdf", ".xls", ".xlsx", ".doc", ".ico")
 
-VALID_EXT = (".php", ".asp", ".aspx", ".html", "/")
+VALID_EXTENSIONS = (".php", ".asp", ".aspx", ".htm", ".html", "/")
+
+WAFPAYLOADS = {
+    "xss": r'<script>alert("XSS");</script>',
+    "sqli": r'UNION SELECT ALL FROM information_schema AND " or SLEEP(5) or "',
+    "lfi": r'../../etc/passwd',
+    "rce": r'/bin/cat /etc/passwd; ping 127.0.0.1; curl google.com',
+    "xxe": r'<!ENTITY xxe SYSTEM "file:///etc/shadow">]><pwn>&hack;</pwn>'
+}
+
+JS_VERSION_PATTERN = r"(?i)([a-zA-Z0-9\s\-.:@]+?)(?:\s*[-:]?\s*v?)(\d+\.\d+\.\d+(?:-\w+)?)"

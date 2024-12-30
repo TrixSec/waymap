@@ -1,6 +1,6 @@
 # Waymap - Web Vulnerability Scanner.
 
-**Current Version**: 6.0.6
+**Current Version**: 6.1.6
 **Author**: Trix Cyrus  
 **Copyright**: © 2024 Trixsec Org  
 **Maintained**: Yes
@@ -12,12 +12,6 @@
 ---
 
 ### Latest Update
-
-#### v5.8.2
-- Removed --profileurl/-pu arg now to use profile high or critical give the target with --target arg and use --profile arg
-- Removed --url and --multi-url/-mu arg now to directly scan the target without crawling url should have a GET parameter for more info look below for Basic Commands
-- added 74 Critical severity Cves data
-- For CVEs Info Read The CVEVULN.md File 
 
 #### v5.9.4
 - Removed Old Error Based Sql Method Use the new one by --scan sqli
@@ -34,6 +28,11 @@
 
 #### v6.0.5 
 - fixed issue regaring waymap updates
+
+#### v6.1.6
+- Added New Module In Deepscan Profile : Vulnerable Javascript Library And Files Scanner
+- Added WAF/IPS Detector In Waymap Can Detect More Than 160 Types of Waf
+- Usage: --check-waf/--waf https://example.com
 
 --- New Crazy Updates Soon
 
