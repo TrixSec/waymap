@@ -131,8 +131,7 @@ python waymap.py -h
 
 ---
 
-**Repository Views** ![Views](https://profile-counter.glitch.me/waymap/count.svg)
-
+**Repository Views** ![Views](https://profile-counter.glitch.me/waymap/count.svg) (After 05-01-2025)
 ### Waymap makes web vulnerability scanning efficient and accessible. Start securing your applications today! 🎯
 
 
