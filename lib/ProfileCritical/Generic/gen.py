@@ -47,7 +47,6 @@ def scan_cve_2023_24774(profile_url):
 
     try:
         sqli_request = requests.get(profile_url, cookies=cookies, headers=headers, verify=False)
-        print(sqli_request.text)
 
         if 'message' in sqli_request.text:
             print('**POC CVE-2023-24774: SQLi works** :)')
@@ -79,7 +78,6 @@ def scan_cve_2023_24775(profile_url):
 
     try:
         sqli_request = requests.get(profile_url, cookies=cookies, headers=headers, verify=False)
-        print(sqli_request.text)
 
         if 'message' in sqli_request.text:
             print('**POC CVE-2023-24775: SQLi works** :)')
