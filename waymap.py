@@ -385,7 +385,7 @@ def process_target(target, crawl_depth, scan_type, thread_count, no_prompt, prof
         crawl_and_scan(target, crawl_depth, scan_type, thread_count=thread_count, no_prompt=no_prompt)
         cleanup_crawl_file(target)
     else:
-        print(colored(f"[•] Given {target} Doesn't Have Any 'GET' Parameter Please Consider Using '--crawl' Argument", 'cyan'))
+        print(colored(f"[•] Given Target '{target}' Doesn't Have Any 'GET' Parameter Please Consider Using '--crawl' Argument", 'cyan'))
 
 def cleanup_crawl_file(target):
     """Remove crawl.txt file associated with the target domain."""
