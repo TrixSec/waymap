@@ -1,6 +1,6 @@
 # Waymap - Web Vulnerability Scanner.
 
-**Current Version**: 6.1.6   
+**Current Version**: 6.1.7   
 **Author**: Trix Cyrus  
 **Copyright**: © 2024 Trixsec Org   
 **Maintained**: Yes   
@@ -34,7 +34,11 @@
 - Added WAF/IPS Detector In Waymap Can Detect More Than 160 Types of Waf
 - Usage: --check-waf/--waf https://example.com
 
---- New Crazy Updates Soon
+#### v6.1.7
+- XSS payload file missing error fix
+- some minor bugs fix
+
+--- New Big Updates Soon
 
 ## 🚀 **Features**
 

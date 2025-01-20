@@ -74,5 +74,3 @@ def detect_cms(profile_url):
     except requests.RequestException as e:
         print(f"[!] Error connecting to {profile_url}: {str(e)}")
         return "Unknown/Other"
-
-

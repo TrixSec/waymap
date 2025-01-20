@@ -89,7 +89,7 @@ def print_banner():
 ░╚██╗████╗██╔╝███████║░╚████╔╝░██╔████╔██║███████║██████╔╝
 ░░████╔═████║░██╔══██║░░╚██╔╝░░██║╚██╔╝██║██╔══██║██╔═══╝░
 ░░╚██╔╝░╚██╔╝░██║░░██║░░░██║░░░██║░╚═╝░██║██║░░██║██║░░░░░
-░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v6.1.6
+░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  Fastest And Optimised Web Vulnerability Scanner  v6.1.7
     """
     print(colored(banner, 'cyan'))
     print(colored(f"Waymap Version: {WAYMAP_VERSION}", 'yellow'))
@@ -385,8 +385,7 @@ def process_target(target, crawl_depth, scan_type, thread_count, no_prompt, prof
         crawl_and_scan(target, crawl_depth, scan_type, thread_count=thread_count, no_prompt=no_prompt)
         cleanup_crawl_file(target)
     else:
-        print(colored(f"[•] Direct scanning on {target}", 'cyan'))
-        scan(target, scan_type, [target], thread_count=thread_count, no_prompt=no_prompt)
+        print(colored(f"[•] Given {target} Doesn't Have Any 'GET' Parameter Please Consider Using '--crawl' Argument", 'cyan'))
 
 def cleanup_crawl_file(target):
     """Remove crawl.txt file associated with the target domain."""

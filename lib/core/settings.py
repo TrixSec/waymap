@@ -13,7 +13,7 @@ TIMEOUT = 20
 
 DEFAULT_INPUT = 'n'
 
-WAYMAP_VERSION = "6.1.6"
+WAYMAP_VERSION = "6.1.7"
 
 AUTHOR = "Trix Cyrus"
 
