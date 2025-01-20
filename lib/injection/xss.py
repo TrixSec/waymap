@@ -190,7 +190,7 @@ def perform_xss_scan(crawled_urls, thread_count, no_prompt, verbose=False,):
             advanced_scan_choice = input(colored("[?] Do you want to Test XSS Filters Bypass Payload (y/n)(recommended): ", 'yellow')).strip().lower()
         
         if advanced_scan_choice == 'y':
-            advanced_file_path = os.path.join(data_dir, 'filterbypassxss.txt')
+            advanced_file_path = os.path.join(data_dir, 'filtersbypassxss.txt')
             advanced_payloads = load_advanced_xss_payloads(advanced_file_path, choose_scan_level(no_prompt))
 
             with ThreadPoolExecutor(max_workers=thread_count) as executor:
