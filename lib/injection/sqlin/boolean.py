@@ -9,6 +9,7 @@ import time
 from colorama import Fore, Style, init
 import warnings
 from lib.parse.random_headers import generate_random_headers
+from lib.injection.sqlin.sql import abort_all_tests
 
 
 init(autoreset=True)
@@ -81,29 +82,28 @@ def is_vulnerable(url):
     return False
 
 def process_urls(urls):
-    start_time = time.time()
+    global abort_all_tests
     for url in urls:
+        if abort_all_tests:
+            break
+        
         try:
             if is_vulnerable(url):
                 print(f"\n{Style.BRIGHT}[{Fore.YELLOW}Vulnerable URL Found{Style.RESET_ALL}] {url}")
-                break 
+                break
         except KeyboardInterrupt:
             print(f"\n{Style.BRIGHT}{Fore.YELLOW}Process interrupted by user.{Style.RESET_ALL}")
             while True:
-                user_input = input(f"{Style.BRIGHT}{Fore.CYAN}Enter 'n' for next URL or 'e' to exit: {Style.RESET_ALL}")
+                user_input = input(f"{Style.BRIGHT}{Fore.CYAN}Enter 'n' for next URL or 'e' to exit all tests: {Style.RESET_ALL}")
                 if user_input.lower() == 'n':
                     print(f"{Style.BRIGHT}{Fore.GREEN}Continuing with next URL...{Style.RESET_ALL}")
                     break
                 elif user_input.lower() == 'e':
-                    print(f"{Style.BRIGHT}{Fore.RED}Exiting...{Style.RESET_ALL}")
+                    abort_all_tests = True  
+                    print(f"{Style.BRIGHT}{Fore.RED}Exiting all SQL Injection tests...{Style.RESET_ALL}")
                     return
-
-                elif user_input == '': 
+                elif user_input == '':
                     print(f"{Style.BRIGHT}{Fore.GREEN}Resuming scan...{Style.RESET_ALL}")
                     break  
                 else:
                     print(f"{Style.BRIGHT}{Fore.YELLOW}Invalid input, please try again.{Style.RESET_ALL}")
-
-    end_time = time.time()
-    elapsed_time = (end_time - start_time) / 60
-    print(f"\n{Style.BRIGHT}[{Fore.YELLOW}Summary{Style.RESET_ALL}] Total time taken: {elapsed_time:.2f} minutes")

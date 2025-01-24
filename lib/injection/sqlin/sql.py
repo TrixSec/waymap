@@ -2,16 +2,20 @@
 # See the file 'LICENSE' for copying permission.
 # sql.py (new logic)
 
+abort_all_tests = False
+
 from lib.injection.sqlin.boolean import process_urls as process_boolean_urls
 from lib.injection.sqlin.error import process_urls as process_error_urls
 
 def run_sql_tests(urls):
+    global abort_all_tests
     for url in urls:
+        if abort_all_tests:
+            break
 
-        print(f"Starting Boolean-based SQL Injection tests for URL: {url}")
-        process_boolean_urls([url]) 
-        print(f"Boolean-based SQL Injection tests completed for URL: {url}\n")
+        process_boolean_urls([url])
 
-        print(f"Starting Error-based SQL Injection tests for URL: {url}")
-        process_error_urls([url])  
-        print(f"Error-based SQL Injection tests completed for URL: {url}\n")
+        if abort_all_tests:
+            break
+
+        process_error_urls([url])

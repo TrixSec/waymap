@@ -11,7 +11,7 @@ from urllib.parse import urlparse, parse_qs
 from colorama import Fore, Style, init
 import urllib3
 from lib.parse.random_headers import generate_random_headers
-
+from lib.injection.sqlin.sql import abort_all_tests
 
 init(autoreset=True)
 
@@ -141,22 +141,25 @@ def run_error_based_tests(target_url):
     print(f"{Fore.CYAN}Total Time Taken: {Fore.WHITE}{total_time:.2f} minutes")
 
 def process_urls(urls):
-    """Process a list of URLs and perform error-based SQLi testing on each."""
+    global abort_all_tests
     for url in urls:
+        if abort_all_tests:
+            break
+        
         try:
             run_error_based_tests(url)
         except KeyboardInterrupt:
             print(f"\n{Style.BRIGHT}{Fore.YELLOW}Process interrupted by user.{Style.RESET_ALL}")
             while True:
-                user_input = input(f"{Style.BRIGHT}{Fore.CYAN}Enter 'n' for next URL or 'e' to exit: {Style.RESET_ALL}")
+                user_input = input(f"{Style.BRIGHT}{Fore.CYAN}Enter 'n' for next URL or 'e' to exit all tests: {Style.RESET_ALL}")
                 if user_input.lower() == 'n':
                     print(f"{Style.BRIGHT}{Fore.GREEN}Continuing with next URL...{Style.RESET_ALL}")
                     break
                 elif user_input.lower() == 'e':
-                    print(f"{Style.BRIGHT}{Fore.RED}Exiting...{Style.RESET_ALL}")
+                    abort_all_tests = True  
+                    print(f"{Style.BRIGHT}{Fore.RED}Exiting all SQL Injection tests...{Style.RESET_ALL}")
                     return
-                
-                elif user_input == '': 
+                elif user_input == '':
                     print(f"{Style.BRIGHT}{Fore.GREEN}Resuming scan...{Style.RESET_ALL}")
                     break  
                 else:

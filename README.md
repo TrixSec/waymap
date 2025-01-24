@@ -1,6 +1,6 @@
 # Waymap - Web Vulnerability Scanner.
 
-**Current Version**: 6.1.7   
+**Current Version**: 6.1.8   
 **Author**: Trix Cyrus  
 **Copyright**: © 2024 Trixsec Org   
 **Maintained**: Yes   
@@ -37,6 +37,10 @@
 #### v6.1.7
 - XSS payload file missing error fix
 - some minor bugs fix
+
+#### v6.1.8
+- updated the SQL Injection Exiting logic
+- minor bug fixes
 
 --- New Big Updates Soon
 
