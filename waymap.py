@@ -64,21 +64,7 @@ def check_for_updates():
         latest_version = response.text.strip()
 
         if WAYMAP_VERSION != latest_version:
-            print(colored(f"[•] New version available: {latest_version}. Updating...", 'yellow'))
-            
-            os.system('git stash push -u')
-            os.system('git reset --hard HEAD')
-            os.system('git pull')
-
-            with open('VERSION', 'w') as version_file:
-                version_file.write(latest_version)
-
-            os.system('git stash pop')
-
-            print(colored("[•] Update completed. Please rerun Waymap.", 'green'))
-            exit()
-
-        print(colored(f"[•] You are using the latest version: {latest_version}.", 'green'))
+            print(colored(f"[•] New version available: {latest_version}..", 'yellow'))
     except requests.RequestException as e:
         print(colored(f"[×] Error fetching the latest version: {e}. Please check your internet connection.", 'red'))
 
@@ -314,6 +300,7 @@ def perform_profile_scan(profile_url, profile_type):
 
 def main():
     print_banner()
+    check_for_updates()
 
     if not check_internet_connection():
         handle_error("No internet connection. Please check your network and try again.")
@@ -340,7 +327,6 @@ def main():
     parser.add_argument('--threads', '-T', type=int, default=DEFAULT_THREADS, help='Number of threads to use for scanning (default: 1)')
     parser.add_argument('--no-prompt', '-np', action='store_true', help='Automatically use default input for prompts')
     parser.add_argument('--profile', '-p', choices=['high-risk', 'deepscan', 'critical-risk'], help="Specify the profile: 'high-risk', 'deepscan' or 'critical-risk'. This skips crawling.")
-    parser.add_argument('--check-updates', action='store_true', help='Check for Latest Waymap updates.')
     parser.add_argument('--check-waf', '--waf', type=str, help='To Detect WAF/IPS Of Any Website')
 
     args = parser.parse_args()
@@ -350,10 +336,6 @@ def main():
     thread_count = args.threads
     no_prompt = args.no_prompt
     profile_type = args.profile
-
-
-    if args.check_updates:
-        check_for_updates()
 
     if args.check_waf:
         waf_url = args.check_waf.strip()
