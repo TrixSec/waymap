@@ -5,3 +5,4 @@ include data/*
 include doc/*
 include extras/*
 include lib/*
+include sessions/*
