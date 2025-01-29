@@ -25,13 +25,11 @@ setup(
         'Topic :: Security',
     ],
     python_requires='>=3.6',
-
     entry_points={
         'console_scripts': [
             'waymap = waymap:main',
         ],
     },
-
     author="Trix Cyrus",
     author_email="trixcyrus666@example.com",
     description="A powerful web security tool for automated scanning.",
@@ -43,6 +41,6 @@ setup(
         "Bug Tracker": "https://github.com/TrixSec/waymap/issues",
     },
     keywords=["security", "pentesting", "vulnerability-scanning", "cybersecurity"],
-
-    license="GPL-3.0",
+    license="GPL-3.0",  
+    license_files=('LICENSE',), 
 )
