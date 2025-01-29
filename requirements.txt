@@ -7,5 +7,4 @@ bs4
 urllib3
 logging
 tqdm
-logging
 argparse
