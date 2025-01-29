@@ -1,3 +1,12 @@
 include LICENSE
+include MANIFEST.in
 include README.md
-recursive-include waymap *
+include VERSION
+include pyproject.toml
+recursive-include data *
+recursive-include doc *
+recursive-include extras *
+recursive-include lib *
+recursive-include sessions *
+include waymap.py
+include setup.py
