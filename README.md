@@ -5,7 +5,7 @@
 **Copyright**: © 2024 Trixsec Org   
 **Maintained**: Yes   
 
-[![Waymap Logo](https://waymapscanner.github.io/images/waymap.jpg)]
+![Waymap Logo](https://waymapscanner.github.io/images/waymap.jpg)
 
 ## What is Waymap?
 **Waymap** is a fast and optimized web vulnerability scanner designed to identify security flaws in web applications. With support for multiple scan types and customizable configurations, it is a versatile tool for ethical hackers, penetration testers, and security enthusiasts. And Is Able To Scan For **75+ Web Vulnerabilities**
