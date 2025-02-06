@@ -18,43 +18,91 @@ Which Are Being Tested By Waymap
 
 | **CVE ID**       | **Plugin Name**                                  | **Vulnerable Version** |
 |-------------------|--------------------------------------------------|-------------------------|
-| CVE-2023-2732    | mstore-api                                       | < 3.9.3                |
-| CVE-2022-1386    | fusion-builder                                   | < 3.6.2                |
-| CVE-2022-0739    | bookingpress-appointment-booking                | < 1.0.11               |
-| CVE-2022-0441    | masterstudy-lms-learning-management-system      | < 2.7.6                |
-| CVE-2021-34656   | webcam-2way-videochat                           | < 5.2.8                |
-| CVE-2021-25003   | wpcargo                                         | < 6.9.0                |
-| CVE-2021-24884   | formidable                                      | < 4.09.05              |
-| CVE-2021-24507   | astra-addon                                     | < 3.5.2                |
-| CVE-2023-28121   | woocommerce-payments                            | < 5.6.2                |
-| CVE-2024-7854    | woo-inquiry                                     | < 0.2                  |
-| CVE-2024-3673    | web-directory-free                              | < 1.7.3                |
-| CVE-2021-24867      | accesspress-anonymous-post                       | <2.8.1                 |
-| CVE-2017-16949      | accesspress-anonymous-post-pro                   | <3.2.0                 |
-| CVE-2021-24867      | accesspress-custom-css                           | <2.0.2                 |
-| CVE-2021-24867      | accesspress-custom-post-type                     | <1.0.9                 |
-| CVE-2021-24867      | accesspress-facebook-auto-post                   | <2.1.4                 |
-| CVE-2021-24867      | accesspress-instagram-feed                       | <4.0.4                 |
-| CVE-2021-24867      | accesspress-pinterest                            | <3.3.4                 |
-| CVE-2021-24867      | accesspress-social-counter                       | <1.9.2                 |
-| CVE-2021-24867      | accesspress-social-icons                         | <1.8.3                 |
-| CVE-2021-24867      | accesspress-social-login-lite                    | <3.4.8                 |
-| CVE-2021-24867      | accesspress-social-share                         | <4.5.6                 |
-| CVE-2021-24867      | accesspress-twitter-auto-post                    | <1.4.6                 |
-| CVE-2021-24867      | accesspress-twitter-feed                         | <1.6.8                 |
-| CVE-2022-33198      | accordions-or-faqs                               | <2.0.3                 |
-| CVE-2015-9479       | acf-frontend-display                             | <=2.0.6                |
-| CVE-2023-51411      | acf-frontend-form-element                        | <3.18.4                |
-| CVE-2024-3729       | acf-frontend-form-element                        | <3.19.5                |
-| CVE-2024-48035      | acf-images-search-and-insert                     | <=1.1.4                |
-| CVE-2024-50486      | acnoo-flutter-api                                | <=1.0.5                |
-| CVE-2024-32809      | activedemand                                     | <0.2.42                |
-| CVE-2024-49681      | activitytime                                    | <1.1.0                 |
-| CVE-2024-6297       | ad-invalid-click-protector                       | <1.2.11                |
-| CVE-2024-50420      | adirectory                                       | <1.3.1                 |
-| CVE-2024-33566      | admin-and-client-message-after-order-for-woocommerce | <12.5          |
-| CVE-2022-1390       | admin-word-count-column                          | <=2.2                  |
-| CVE-2023-5843       | ads-by-datafeedrcom                              | <1.2.0                 |
+{"cve_id": | "CVE-2023-2732",  | "plugin_name": | "mstore-api",                                           | "vulnerable_version": | "3.9.3"},   
+{"cve_id": | "CVE-2022-1386",  | "plugin_name": | "fusion-builder",                                       | "vulnerable_version": | "3.6.2"},   
+{"cve_id": | "CVE-2022-0739",  | "plugin_name": | "bookingpress-appointment-booking",                     | "vulnerable_version": | "1.0.11"},  
+{"cve_id": | "CVE-2022-0441",  | "plugin_name": | "masterstudy-lms-learning-management-system",           | "vulnerable_version": | "2.7.6"},   
+{"cve_id": | "CVE-2021-34656", | "plugin_name": | "webcam-2way-videochat",                                | "vulnerable_version": | "5.2.8"},   
+{"cve_id": | "CVE-2021-25003", | "plugin_name": | "wpcargo",                                              | "vulnerable_version": | "6.9.0"},   
+{"cve_id": | "CVE-2021-24884", | "plugin_name": | "formidable",                                           | "vulnerable_version": | "4.09.05"}, 
+{"cve_id": | "CVE-2021-24507", | "plugin_name": | "astra-addon",                                          | "vulnerable_version": | "3.5.2"},   
+{"cve_id": | "CVE-2023-28121", | "plugin_name": | "woocommerce-payments",                                 | "vulnerable_version": | "5.6.2"},   
+{"cve_id": | "CVE-2024-7854",  | "plugin_name": | "woo-inquiry",                                          | "vulnerable_version": | "0.2"},     
+{"cve_id": | "CVE-2024-3673",  | "plugin_name": | "web-directory-free",                                   | "vulnerable_version": | "1.7.3"},   
+{"cve_id": | "CVE-2021-24867", | "plugin_name": | "accesspress-anonymous-post",                           | "vulnerable_version": | "<2.8.1"},  
+{"cve_id": | "CVE-2017-16949", | "plugin_name": | "accesspress-anonymous-post-pro",                       | "vulnerable_version": | "<3.2.0"},  
+{"cve_id": | "CVE-2021-24867", | "plugin_name": | "accesspress-custom-css",                               | "vulnerable_version": | "<2.0.2"},  
+{"cve_id": | "CVE-2021-24867", | "plugin_name": | "accesspress-custom-post-type",                         | "vulnerable_version": | "<1.0.9"},  
+{"cve_id": | "CVE-2021-24867", | "plugin_name": | "accesspress-facebook-auto-post",                       | "vulnerable_version": | "<2.1.4"},  
+{"cve_id": | "CVE-2021-24867", | "plugin_name": | "accesspress-instagram-feed",                           | "vulnerable_version": | "<4.0.4"},  
+{"cve_id": | "CVE-2021-24867", | "plugin_name": | "accesspress-pinterest",                                | "vulnerable_version": | "<3.3.4"},  
+{"cve_id": | "CVE-2021-24867", | "plugin_name": | "accesspress-social-counter",                           | "vulnerable_version": | "<1.9.2"},  
+{"cve_id": | "CVE-2021-24867", | "plugin_name": | "accesspress-social-icons",                             | "vulnerable_version": | "<1.8.3"},  
+{"cve_id": | "CVE-2021-24867", | "plugin_name": | "accesspress-social-login-lite",                        | "vulnerable_version": | "<3.4.8"},  
+{"cve_id": | "CVE-2021-24867", | "plugin_name": | "accesspress-social-share",                             | "vulnerable_version": | "<4.5.6"},  
+{"cve_id": | "CVE-2021-24867", | "plugin_name": | "accesspress-twitter-auto-post",                        | "vulnerable_version": | "<1.4.6"},  
+{"cve_id": | "CVE-2021-24867", | "plugin_name": | "accesspress-twitter-feed",                             | "vulnerable_version": | "<1.6.8"},  
+{"cve_id": | "CVE-2022-33198", | "plugin_name": | "accordions-or-faqs",                                   | "vulnerable_version": | "<2.0.3"},  
+{"cve_id": | "CVE-2015-9479",  | "plugin_name": | "acf-frontend-display",                                 | "vulnerable_version": | "<=2.0.6"}, 
+{"cve_id": | "CVE-2023-51411", | "plugin_name": | "acf-frontend-form-element",                            | "vulnerable_version": | "<3.18.4"}, 
+{"cve_id": | "CVE-2024-3729",  | "plugin_name": | "acf-frontend-form-element",                            | "vulnerable_version": | "<3.19.5"}, 
+{"cve_id": | "CVE-2024-48035", | "plugin_name": | "acf-images-search-and-insert",                         | "vulnerable_version": | "<=1.1.4"}, 
+{"cve_id": | "CVE-2024-50486", | "plugin_name": | "acnoo-flutter-api",                                    | "vulnerable_version": | "<=1.0.5"}, 
+{"cve_id": | "CVE-2024-32809", | "plugin_name": | "activedemand",                                         | "vulnerable_version": | "<0.2.42"}, 
+{"cve_id": | "CVE-2024-49681", | "plugin_name": | "activitytime",                                         | "vulnerable_version": | "<1.1.0"},  
+{"cve_id": | "CVE-2024-6297",  | "plugin_name": | "ad-invalid-click-protector",                           | "vulnerable_version": | "<1.2.11"}, 
+{"cve_id": | "CVE-2024-50420", | "plugin_name": | "adirectory",                                           | "vulnerable_version": | "<1.3.1"},  
+{"cve_id": | "CVE-2024-33566", | "plugin_name": | "admin-and-client-message-after-order-for-woocommerce", | "vulnerable_version": | "<12.5"},   
+{"cve_id": | "CVE-2022-1390",  | "plugin_name": | "admin-word-count-column",                              | "vulnerable_version": | "<=2.2"},   
+{"cve_id": | "CVE-2023-5843",  | "plugin_name": | "ads-by-datafeedrcom",                                  | "vulnerable_version": | "<1.2.0"},  
+{"cve_id": | "CVE-2024-49624", | "plugin_name": | "advanced-advertising-system",                          | "vulnerable_version": | "<=1.3.1"}, 
+{"cve_id": | "CVE-2022-0694",  | "plugin_name": | "advanced-booking-calendar",                            | "vulnerable_version": | "<1.7.0"},  
+{"cve_id": | "CVE-2022-45822", | "plugin_name": | "advanced-booking-calendar",                            | "vulnerable_version": | "<=1.7.1"}, 
+{"cve_id": | "CVE-2019-13571", | "plugin_name": | "advanced-cf7-db",                                      | "vulnerable_version": | "<1.7.1"},  
+{"cve_id": | "CVE-2024-34762", | "plugin_name": | "advanced-custom-fields-pro",                           | "vulnerable_version": | "<6.2.10"}, 
+{"cve_id": | "CVE-2023-45074", | "plugin_name": | "advanced-page-visit-counter",                          | "vulnerable_version": | "<8.0.1"},  
+{"cve_id": | "CVE-2023-5877",  | "plugin_name": | "affiliate-toolkit-starter",                            | "vulnerable_version": | "<3.4.3"},  
+{"cve_id": | "CVE-2024-49326", | "plugin_name": | "affiliator-lite",                                      | "vulnerable_version": | "<=2.1.3"}, 
+{"cve_id": | "CVE-2024-52384", | "plugin_name": | "ai-content-generator",                                 | "vulnerable_version": | "<=2.4.9"}, 
+{"cve_id": | "CVE-2023-51409", | "plugin_name": | "ai-engine",                                            | "vulnerable_version": | "<1.9.99"}, 
+{"cve_id": | "CVE-2024-34440", | "plugin_name": | "ai-engine",                                            | "vulnerable_version": | "<2.2.70"}, 
+{"cve_id": | "CVE-2024-52377", | "plugin_name": | "ai-image",                                             | "vulnerable_version": | "<1.5.3"},  
+{"cve_id": | "CVE-2024-49671", | "plugin_name": | "ai-postpix",                                           | "vulnerable_version": | "<=1.1.8"}, 
+{"cve_id": | "CVE-2024-50473", | "plugin_name": | "ajar-productions-in5-embed",                           | "vulnerable_version": | "<3.1.4"},  
+{"cve_id": | "CVE-2024-49254", | "plugin_name": | "ajax-extend",                                          | "vulnerable_version": | "<=1.0"},   
+{"cve_id": | "CVE-2024-52409", | "plugin_name": | "ajax-random-posts",                                    | "vulnerable_version": | "<=0.3.3"}, 
+{"cve_id": | "CVE-2024-49246", | "plugin_name": | "ajax-rating-with-custom-login",                        | "vulnerable_version": | "<=1.1"},   
+{"cve_id": | "CVE-2015-9310",  | "plugin_name": | "all-in-one-wp-security-and-firewall",                  | "vulnerable_version": | "<=3.9.0"}, 
+{"cve_id": | "CVE-2016-10888", | "plugin_name": | "all-in-one-wp-security-and-firewall",                  | "vulnerable_version": | "<4.0.7"},  
+{"cve_id": | "CVE-2016-10887", | "plugin_name": | "all-in-one-wp-security-and-firewall",                  | "vulnerable_version": | "<4.0.9"},  
+{"cve_id": | "CVE-2023-4994",  | "plugin_name": | "allow-php-in-posts-and-pages",                         | "vulnerable_version": | "<3.0.4"},  
+{"cve_id": | "CVE-2024-50523", | "plugin_name": | "allpost-contactform",                                  | "vulnerable_version": | "<=1.7.8"}, 
+{"cve_id": | "CVE-2012-4874",  | "plugin_name": | "another-wordpress-classifieds-plugin",                 | "vulnerable_version": | "<2.0"},    
+{"cve_id": | "CVE-2022-3254",  | "plugin_name": | "another-wordpress-classifieds-plugin",                 | "vulnerable_version": | "<4.3"},    
+{"cve_id": | "CVE-2022-42698", | "plugin_name": | "api2cart-bridge-connector",                            | "vulnerable_version": | "<1.2.0"},  
+{"cve_id": | "CVE-2022-42497", | "plugin_name": | "api2cart-bridge-connector",                            | "vulnerable_version": | "<1.2.0"},  
+{"cve_id": | "CVE-2016-10916", | "plugin_name": | "appointment-booking-calendar",                         | "vulnerable_version": | "<1.1.24"}, 
+{"cve_id": | "CVE-2024-50496", | "plugin_name": | "ar-for-wordpress",                                     | "vulnerable_version": | "<=7.0"},   
+{"cve_id": | "CVE-2024-4620",  | "plugin_name": | "arforms",                                              | "vulnerable_version": | "<6.6"},    
+{"cve_id": | "CVE-2023-52182", | "plugin_name": | "ari-stream-quiz",                                      | "vulnerable_version": | "<1.3.1"},  
+{"cve_id": | "CVE-2022-42888", | "plugin_name": | "armember",                                             | "vulnerable_version": | "<5.6"},    
+{"cve_id": | "CVE-2022-46808", | "plugin_name": | "armember-membership",                                  | "vulnerable_version": | "<4.0"},    
+{"cve_id": | "CVE-2023-52200", | "plugin_name": | "armember-membership",                                  | "vulnerable_version": | "<4.0.23"}, 
+{"cve_id": | "CVE-2024-30223", | "plugin_name": | "armember-membership",                                  | "vulnerable_version": | "<4.0.27"}, 
+{"cve_id": | "CVE-2024-32948", | "plugin_name": | "armember-membership",                                  | "vulnerable_version": | "<4.0.29"}, 
+{"cve_id": | "CVE-2022-0867",  | "plugin_name": | "arprice-responsive-pricing-table",                     | "vulnerable_version": | "<3.6.1"},  
+{"cve_id": | "CVE-2018-9206",  | "plugin_name": | "art-picture-gallery",                                  | "vulnerable_version": | "<=1.2.9"}, 
+{"cve_id": | "CVE-2023-5640",  | "plugin_name": | "article-analytics",                                    | "vulnerable_version": | "<=1.0"},   
+{"cve_id": | "CVE-2021-24827", | "plugin_name": | "asgaros-forum",                                        | "vulnerable_version": | "<1.15.13"},
+{"cve_id": | "CVE-2023-5604",  | "plugin_name": | "asgaros-forum",                                        | "vulnerable_version": | "<2.7.1"},  
+{"cve_id": | "CVE-2023-49830", | "plugin_name": | "astra-addon",                                          | "vulnerable_version": | "<4.3.2"},  
+{"cve_id": | "CVE-2024-31345", | "plugin_name": | "auto-poster",                                          | "vulnerable_version": | "<=1.2"},   
+{"cve_id": | "CVE-2024-50493", | "plugin_name": | "automatic-translation",                                | "vulnerable_version": | "<=1.0.4"}, 
+{"cve_id": | "CVE-2024-52475", | "plugin_name": | "automation-web-platform",                              | "vulnerable_version": | "<3.0.18"}, 
+{"cve_id": | "CVE-2021-24376", | "plugin_name": | "autoptimize",                                          | "vulnerable_version": | "<2.7.8"},  
+{"cve_id": | "CVE-2015-4455",  | "plugin_name": | "aviary-image-editor-add-on-for-gravity-forms",         | "vulnerable_version": | "<=3.0"},   
+{"cve_id": | "CVE-2024-49257", | "plugin_name": | "azz-anonim-posting",                                   | "vulnerable_version": | "<=0.9"}    
+
 
 ---
 
