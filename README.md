@@ -148,7 +148,7 @@ python waymap.py -h
 #### Credits
 - Thanks SQLMAP For Payloads Xml File
 
-### IF There's Any Issue In Waymay Then Submit The Issues Here: https://github.com/TrixSec/waymap/issues
+### If you face any issues in Waymap, please submit them here: https://github.com/TrixSec/waymap/issues
 
 #### Also Star The Repo And Fork It
 
