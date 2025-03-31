@@ -31,7 +31,7 @@ setup(
         ],
     },
     author="Trix Cyrus",
-    author_email="trixcyrus666@example.com",
+    author_email="trixcyrus666@gmail.com",
     description="A powerful web security tool for automated scanning.",
     long_description=open("README.md", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
