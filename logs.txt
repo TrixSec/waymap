@@ -1,0 +1,2 @@
+2025-08-20 14:11:55,514 - INFO - Starting sqli scan on https://aueqi.in/product.php?id=5
+2025-08-20 14:16:04,006 - INFO - Finished sqli scan on https://aueqi.in/product.php?id=5

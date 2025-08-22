@@ -1,0 +1,20 @@
+{
+    "scans": [
+        {
+            "SQL Injection": {
+                "Technique: Time-Based": [
+                    {
+                        "Vulnerable URL": "https://aueqi.in/product.php?id=5",
+                        "Injected Parameter": "id",
+                        "Payload": "RLIKE SLEEP(3)",
+                        "Payload Title": "MySQL >= 5.0.12 RLIKE time-based blind",
+                        "DBMS Detected": "MySQL",
+                        "Web Technology": "Unknown",
+                        "Server Name": "hcdn",
+                        "Severity": 10
+                    }
+                ]
+            }
+        }
+    ]
+}
