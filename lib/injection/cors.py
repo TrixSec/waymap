@@ -7,7 +7,7 @@ import json
 import multiprocessing
 import threading
 from datetime import datetime
-from termcolor import colored
+from termcolor import colored # type: ignore
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from lib.parse.random_headers import generate_random_headers
 from lib.core.settings import DEFAULT_THREADS

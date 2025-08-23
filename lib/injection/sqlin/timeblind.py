@@ -104,7 +104,7 @@ def save_to_output_file(target, vuln_data):
     print(f"\n{Style.BRIGHT}[{Fore.YELLOW}Vulnerability saved to JSON{Style.RESET_ALL}] {output_file}")
 
 
-def time_based_sqli(url, test):
+def time_based_sqli(url, test, thread_count):
     """Perform time-based SQL injection testing."""
     global successful_requests, failed_requests
 
@@ -171,14 +171,14 @@ def make_request(test_url, sleep_time):
     return False
 
 
-def process_urls(urls):
+def process_urls(urls, thread_count):
     global abort_all_tests
     for url in urls:
         if abort_all_tests:
             break
 
         try:
-            if any(time_based_sqli(url, test) for test in parse_time_blind_tests_from_xml()): 
+            if any(time_based_sqli(url, test, thread_count) for test in parse_time_blind_tests_from_xml()): 
                 break
         except KeyboardInterrupt:
             print(f"\n{Style.BRIGHT}{Fore.YELLOW}Process interrupted by user.{Style.RESET_ALL}")

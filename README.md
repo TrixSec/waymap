@@ -45,6 +45,12 @@
 - updated the SQL Injection Exiting logic
 - minor bug fixes
 
+#### v6.2.8
+- Added Time Based Sqli Scanning Logic
+- Added Scan Results Saving Logic
+- Added Interactive Prompt Based And Arggument Based Scanning Logic
+- Updated The UI 
+
 --- New Big Updates Soon
 
 ## 🚀 **Features**

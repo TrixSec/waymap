@@ -5,7 +5,7 @@ import os
 import subprocess
 from datetime import datetime
 import json
-from termcolor import colored
+from termcolor import colored # type: ignore
 from urllib.parse import urlparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading

@@ -435,12 +435,16 @@ def run_deepscan(urls, selected_modules):
             print_status(f"Unknown deepscan module: {module}. Valid options are: hs, bf, df, js", "error")
 
 def get_config_path():
-    config_dir = os.path.join(os.path.expanduser('~'), '.config', 'waymap')
+    config_dir = os.path.join('config', 'waymap')
     os.makedirs(config_dir, exist_ok=True)
     return os.path.join(config_dir, 'mode.cfg')
 
 def get_input_mode():
     config_path = get_config_path()
+    
+    # Check if this is a first-time setup (no config exists yet)
+    is_first_run = not os.path.exists(config_path)
+    
     # If --resetup is used, force re-setup
     if '--resetup' in sys.argv:
         print_header("Reset Input Mode Setup")
@@ -461,16 +465,31 @@ def get_input_mode():
             except KeyboardInterrupt:
                 print_status("Configuration cancelled. Using default (CLI) mode.", "warning")
                 return 'args'
+    
     # If --no-prompt is used, force args mode
     if '--no-prompt' in sys.argv or '-np' in sys.argv:
         return 'args'
+    
     # If config exists, read it
     if os.path.exists(config_path):
         with open(config_path, 'r') as f:
             line = f.readline().strip()
             if line.startswith('input_mode='):
                 return line.split('=')[1]
-    # First run - enhanced UI
+    
+    # First run - enhanced UI (only show if not called with CLI args)
+    # Check if CLI arguments are present (excluding --resetup which we already handled)
+    cli_args = [arg for arg in sys.argv[1:] if arg != '--resetup']
+    has_cli_args = any(arg.startswith('--') for arg in cli_args)
+    
+    # If CLI args are present on first run, default to args mode
+    if has_cli_args:
+        mode = 'args'
+        with open(config_path, 'w') as f:
+            f.write(f"input_mode={mode}\n")
+        return mode
+    
+    # Otherwise, show first run configuration
     print_header("First Run Configuration")
     print("Select your preferred input mode:")
     print(colored("  [1]", "green") + " Argument-based " + colored("(CLI flags like --target, --scan)", "cyan"))
@@ -660,24 +679,35 @@ def main():
 
     # Get input mode and handle accordingly
     input_mode = get_input_mode()
-    # Detect if user is running with CLI args or not
-    cli_args = [a for a in sys.argv[1:] if not a.startswith('--resetup')]
-    has_cli_args = any(a.startswith('--') for a in cli_args)
-    # Warn if input mode and usage do not match
-    if input_mode == 'prompt' and has_cli_args:
-        print_header("Warning: Input Mode Mismatch", "red")
-        print_status("You chose PROMPT mode in initial setup, but are running with CLI arguments.", "warning")
-        print_status("To use CLI arguments, reconfigure with:", "yellow")
-        print(colored("  python waymap.py --resetup", "cyan"))
-        print_status("Or run without arguments for prompt mode:", "yellow")
-        print(colored("  python waymap.py", "cyan"))
-    elif input_mode == 'args' and not has_cli_args:
-        print_header("Warning: Input Mode Mismatch", "red")
-        print_status("You chose ARGUMENT mode in initial setup, but are running without CLI arguments.", "warning")
-        print_status("To use prompt mode, reconfigure with:", "yellow")
-        print(colored("  python waymap.py --resetup", "cyan"))
-        print_status("Or run with CLI arguments for arg mode:", "yellow")
-        print(colored("  python waymap.py --target <URL> --scan <TYPE>", "cyan"))
+    
+    # Check if this is a first run (we just created the config)
+    config_path = get_config_path()
+    is_first_run_just_completed = not any(arg.startswith('--') for arg in sys.argv[1:] if arg != '--resetup')
+    
+    # Only show mode mismatch warning if it's not the first run setup
+    if not is_first_run_just_completed:
+        # Detect if user is running with CLI args or not
+        cli_args = [a for a in sys.argv[1:] if not a.startswith('--resetup')]
+        has_cli_args = any(a.startswith('--') for a in cli_args)
+        
+        # Warn if input mode and usage do not match
+        if input_mode == 'prompt' and has_cli_args:
+            print_header("Warning: Input Mode Mismatch", "red")
+            print_status("You chose PROMPT mode in initial setup, but are running with CLI arguments.", "warning")
+            print_status("To use CLI arguments, reconfigure with:", "yellow")
+            print(colored("  python waymap.py --resetup", "cyan"))
+            print_status("Or run without arguments for prompt mode:", "yellow")
+            print(colored("  python waymap.py", "cyan"))
+        elif input_mode == 'args' and not has_cli_args:
+            print_header("Warning: Input Mode Mismatch", "red")
+            print_status("You chose ARGUMENT mode in initial setup, but are running without CLI arguments.", "warning")
+            print_status("To use prompt mode, reconfigure with:", "yellow")
+            print(colored("  python waymap.py --resetup", "cyan"))
+            print_status("Or run with CLI arguments for arg mode:", "yellow")
+            print(colored("  python waymap.py --target <URL> --scan <TYPE>", "cyan"))
+    
+    # Initialize result variable
+    result = None
     
     if input_mode == 'args':
         parser = argparse.ArgumentParser(
@@ -701,7 +731,7 @@ Examples:
         parser.add_argument('--no-prompt', '-np', action='store_true', help='Automatically use default input')
         parser.add_argument('--profile', '-p', choices=['high-risk', 'deepscan', 'critical-risk'], help="Scan profile")
         parser.add_argument('--deepscan', '-ds', type=str, help="Run specific deepscan module(s): hs (header scan), bf (backup file), df (dirfuzz), js (javascript) or Combine like: hs,bf")
-        parser.add_argument('--check-waf', '--waf', type=str, help='Detect WAF/IPS for target URL')
+        parser.add_argument('--check-waf', '--waf', action='store_true', help='Detect WAF/IPS for target URL')
 
         args = parser.parse_args()
 
@@ -720,18 +750,14 @@ Use '--help' for complete options and examples.
             """, 'yellow'))
             return
 
-        # WAF detection logic - use target URL if provided
+        # WAF detection logic
         if args.check_waf:
-            waf_target = args.check_waf.strip()
-            print_header("WAF Detection", "red")
-            print_status(f"Checking WAF for: {waf_target}", "info")
-            check_wafs(waf_target)
-            return
-        elif args.target and (args.check_waf is not None or '--waf' in sys.argv):
-            # If --target is provided with --check-waf/--waf (even without value)
-            print_header("WAF Detection", "red")
-            print_status(f"Checking WAF for: {args.target}", "info")
-            check_wafs(args.target)
+            if args.target:
+                print_header("WAF Detection", "red")
+                print_status(f"Checking WAF for: {args.target}", "info")
+                check_wafs(args.target)
+            else:
+                print_status("Target URL is required for WAF detection. Use --target <URL>", "error")
             if not args.scan:  # If only WAF check is requested
                 return
 
@@ -793,51 +819,51 @@ Use '--help' for complete options and examples.
             print_status("Target and scan type are required", "error")
             return
         
-    targets, scan_type, crawl_depth, profile_type, technique_string, deepscan_modules, threads, check_waf = result
+        targets, scan_type, crawl_depth, profile_type, technique_string, deepscan_modules, threads, check_waf = result
 
-    print_separator()
-    print_header("Scan Summary")
-    
-    summary_data = [
-        ["Targets", f"{len(targets)} target(s)"],
-        ["Scan Type", scan_type],
-        ["Profile Type", profile_type if profile_type else "N/A"],
-        ["Crawl Depth", str(crawl_depth)],
-        ["Threads", str(threads)],
-        ["SQLi Techniques", technique_string if technique_string else "BET"],
-        ["Deepscan Modules", ", ".join(deepscan_modules) if deepscan_modules else "N/A"]
-    ]
-    
-    print_table(["Parameter", "Value"], summary_data)
+        print_separator()
+        print_header("Scan Summary")
+        
+        summary_data = [
+            ["Targets", f"{len(targets)} target(s)"],
+            ["Scan Type", scan_type],
+            ["Profile Type", profile_type if profile_type else "N/A"],
+            ["Crawl Depth", str(crawl_depth)],
+            ["Threads", str(threads)],
+            ["SQLi Techniques", technique_string if technique_string else "BET"],
+            ["Deepscan Modules", ", ".join(deepscan_modules) if deepscan_modules else "N/A"]
+        ]
+        
+        print_table(["Parameter", "Value"], summary_data)
 
-    if len(targets) > 1:
-        print_status(f"Multi-target scan with {len(targets)} targets", "info")
-
-    confirm = input(colored("\nStart scan? [Y/n]: ", "yellow")).strip().lower()
-    if confirm not in ('', 'y', 'yes'):
-        print_status("Scan cancelled", "warning")
-        return
-
-    # Process all targets
-    if len(targets) > 1:
-        print_header(f"Multi-Target Scan ({len(targets)} targets)")
-    
-    for i, target in enumerate(targets, 1):
         if len(targets) > 1:
-            print_status(f"Processing target {i}/{len(targets)}: {target}", "info")
-        # Optionally check WAF
-        if check_waf:
-            print_header("WAF Detection", "red")
-            print_status(f"Checking WAF for: {target}", "info")
-            check_wafs(target)
-        # Check if target has parameters and adjust crawl depth
-        actual_crawl_depth = crawl_depth
-        if has_query_parameters(target) and crawl_depth > 0:
-            print_status("Target URL already has parameters. Crawl depth ignored for this target.", "warning")
-            actual_crawl_depth = 0
-        process_target(target, actual_crawl_depth, scan_type, threads, False, profile_type, technique_string, deepscan_modules)
-        if i < len(targets):
-            print_separator("─", "blue", 50)
+            print_status(f"Multi-target scan with {len(targets)} targets", "info")
+
+        confirm = input(colored("\nStart scan? [Y/n]: ", "yellow")).strip().lower()
+        if confirm not in ('', 'y', 'yes'):
+            print_status("Scan cancelled", "warning")
+            return
+
+        # Process all targets
+        if len(targets) > 1:
+            print_header(f"Multi-Target Scan ({len(targets)} targets)")
+        
+        for i, target in enumerate(targets, 1):
+            if len(targets) > 1:
+                print_status(f"Processing target {i}/{len(targets)}: {target}", "info")
+            # Optionally check WAF
+            if check_waf:
+                print_header("WAF Detection", "red")
+                print_status(f"Checking WAF for: {target}", "info")
+                check_wafs(target)
+            # Check if target has parameters and adjust crawl depth
+            actual_crawl_depth = crawl_depth
+            if has_query_parameters(target) and crawl_depth > 0:
+                print_status("Target URL already has parameters. Crawl depth ignored for this target.", "warning")
+                actual_crawl_depth = 0
+            process_target(target, actual_crawl_depth, scan_type, threads, False, profile_type, technique_string, deepscan_modules)
+            if i < len(targets):
+                print_separator("─", "blue", 50)
 
 if __name__ == "__main__":
     main()

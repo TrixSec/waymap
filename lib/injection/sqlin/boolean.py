@@ -107,7 +107,7 @@ def test_payload(url, payload, retries=2):
             response_signatures.append(None)
     return response_signatures
 
-def is_vulnerable(url):
+def is_vulnerable(url, thread_count):
     """Performs boolean-based SQLi tests and saves the results if vulnerable."""
     parameters = extract_parameters(url)
     for parameter in parameters:
@@ -158,7 +158,7 @@ def is_vulnerable(url):
     print(f"{Fore.RED}[!] No Boolean Based SQL Injection detected at: {url}{Style.RESET_ALL}")
     return False
 
-def process_urls(urls):
+def process_urls(urls, thread_count):
     """Processes multiple URLs for Boolean-based SQL Injection tests."""
     global abort_all_tests
     for url in urls:
@@ -166,7 +166,7 @@ def process_urls(urls):
             break
 
         try:
-            if is_vulnerable(url):
+            if is_vulnerable(url, thread_count):
                 break
         except KeyboardInterrupt:
             print(f"\n{Style.BRIGHT}{Fore.YELLOW}Process interrupted by user.{Style.RESET_ALL}")

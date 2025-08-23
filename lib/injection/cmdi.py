@@ -8,7 +8,7 @@ import os
 from urllib.parse import urlparse, parse_qs
 import json
 import multiprocessing
-from termcolor import colored
+from termcolor import colored # type: ignore
 from xml.etree import ElementTree as ET
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from lib.parse.random_headers import generate_random_headers
