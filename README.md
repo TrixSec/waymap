@@ -23,15 +23,6 @@
 - Added 249 High Risk Cves Data In Waymap
 - Total Count: 390
 
-#### v6.0.4 
-- Added New Scan Profile 'deepscan' use using --profile deepscan
-- Features in Deepscan: Scan for 25+ Types of Headers Vuln , Do Massive Directory Fuzzing, Find Backup Files On The Server
-- Fixed Scan Type 'cors' Error
-- minor bug fixed
-
-#### v6.0.5 
-- fixed issue regaring waymap updates
-
 #### v6.1.6
 - Added New Module In Deepscan Profile : Vulnerable Javascript Library And Files Scanner
 - Added WAF/IPS Detector In Waymap Can Detect More Than 160 Types of Waf
@@ -49,7 +40,12 @@
 - Added Time Based Sqli Scanning Logic
 - Added Scan Results Saving Logic
 - Added Interactive Prompt Based And Arggument Based Scanning Logic
-- Updated The UI 
+- Updated The UI
+
+#### v6.2.9
+- Bug Fixed
+- Optimised
+- Reduced Lag
 
 --- New Big Updates Soon
 

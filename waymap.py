@@ -1,42 +1,31 @@
+
 # Copyright (c) 2024 waymap developers
 # See the file 'LICENSE' for copying permission.
 
 import os
-import argparse
-import requests
-import logging
 import sys
 import time
-from termcolor import colored
-from lib.parse.random_headers import generate_random_headers
-from lib.waymapcrawlers.crawler import run_crawler
-from lib.injection.cmdi import perform_cmdi_scan
-from lib.injection.ssti import perform_ssti_scan
-from lib.injection.lfi import perform_lfi_scan
-from lib.injection.xss import perform_xss_scan
-from lib.injection.openredirect import perform_redirect_scan
-from lib.ProfileCritical.profile_critical import critical_risk_scan
-from lib.ProfileDeepScan.deepscan import deepscan
-from lib.ProfileDeepScan.deepscan import run_headers_scan
-from lib.ProfileDeepScan.deepscan import run_backupfile_scan
-from lib.ProfileDeepScan.deepscan import run_dirfuzz_scan
-from lib.ProfileDeepScan.deepscan import run_js_scan
-from lib.ProfileHigh.profile_high import high_risk_scan
-from lib.injection.crlf import perform_crlf_scan
-from lib.injection.cors import perform_cors_scan
-from lib.injection.sqlin.sql import run_sql_tests
-from lib.injection.sqlin.sql import run_boolean_sqli
-from lib.injection.sqlin.sql import run_error_sqli
-from lib.injection.sqlin.sql import run_time_blind_sqli
-from lib.core.wafdetector import check_wafs
-from lib.core.settings import DEFAULT_THREADS
-from lib.core.settings import AUTHOR
-from lib.core.settings import WAYMAP_VERSION
-from lib.core.settings import COPYRIGHT
-from extras.error_handler import check_internet_connection, check_required_files, check_required_directories, handle_error
-from urllib.parse import urlparse
-import urllib3
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+import logging
+
+def colored(text, color):
+    # ANSI escape codes for colors
+    ansi_colors = {
+        "grey": "\033[90m",
+        "red": "\033[91m",
+        "green": "\033[92m",
+        "yellow": "\033[93m",
+        "blue": "\033[94m",
+        "magenta": "\033[95m",
+        "cyan": "\033[96m",
+        "white": "\033[97m"
+    }
+    reset = "\033[0m"
+    color_code = ansi_colors.get(color, "")
+    return f"{color_code}{text}{reset}" if color_code else text
+
+def generate_random_headers():
+    from lib.parse.random_headers import generate_random_headers as _generate_random_headers
+    return _generate_random_headers()
 
 session_dir = 'sessions'
 headers = generate_random_headers()
@@ -149,6 +138,8 @@ session_dir = os.path.join(os.getcwd(), 'sessions')
 def check_for_updates():
     try:
         animate_loading("Checking for updates", 1)
+        import requests
+        from lib.core.settings import WAYMAP_VERSION
         response = requests.get("https://raw.githubusercontent.com/TrixSec/waymap/main/VERSION", timeout=5)
         response.raise_for_status()
         latest_version = response.text.strip()
@@ -157,7 +148,7 @@ def check_for_updates():
             print_status(f"New version available: {latest_version}", "warning")
         else:
             print_status("Waymap is up to date", "success")
-    except requests.RequestException as e:
+    except Exception as e:
         print_status(f"Error fetching updates: {e}", "error")
 
 def print_banner():
@@ -174,6 +165,7 @@ def print_banner():
     """
     print(colored(banner, 'cyan'))
     print_separator("═", "cyan", 70)
+    from lib.core.settings import WAYMAP_VERSION, AUTHOR, COPYRIGHT
     print(colored(f"Version: {WAYMAP_VERSION:>50}", 'yellow'))
     print(colored(f"Author:  {AUTHOR:>50}", 'yellow'))
     print(colored(f"{COPYRIGHT:>70}", 'yellow'))
@@ -209,6 +201,8 @@ def load_crawled_urls(domain):
 
 def handle_redirection(target_url):
     try:
+        import requests
+        from urllib.parse import urlparse
         response = requests.get(target_url, allow_redirects=True, headers=headers, timeout=10, verify=False)
         final_url = response.url
         parsed_final_url = urlparse(final_url)
@@ -218,12 +212,13 @@ def handle_redirection(target_url):
             print_status(f"Target redirected to different domain: {final_url}", "warning")
             return final_url
         return target_url
-    except requests.RequestException as e:
+    except Exception as e:
         log_error(f"Error connecting to {target_url}: {e}")
         print_status(f"Cannot connect to URL: {target_url}", "error")
         return target_url
 
 def is_valid_url(url):
+    from urllib.parse import urlparse
     parsed = urlparse(url)
     return bool(parsed.netloc) and bool(parsed.scheme)
 
@@ -231,15 +226,18 @@ def has_query_parameters(url):
     return any(symbol in url for symbol in ['?', '&', '='])
 
 def is_within_domain(url, base_domain):
+    from urllib.parse import urlparse
     return urlparse(url).netloc == base_domain
 
 def crawl(target, crawl_depth, thread_count=1, no_prompt=False):
     domain = target.split("//")[-1].split("/")[0]
+    import requests
+    from lib.waymapcrawlers.crawler import run_crawler
 
     try:
         response = requests.get(target, headers=headers, timeout=10, verify=False)
         response.raise_for_status()
-    except requests.RequestException as e:
+    except Exception as e:
         log_error(f"Cannot connect to {target}: {e}")
         print_status(f"Crawler cannot connect to URL: {target}", "error")
         return None
@@ -266,6 +264,14 @@ def crawl(target, crawl_depth, thread_count=1, no_prompt=False):
 
 def scan(target, scan_type, crawled_urls=None, provided_urls=None, thread_count=1, no_prompt=False, technique_string=None):
     log_scan_start(target, scan_type)
+    from lib.injection.cmdi import perform_cmdi_scan
+    from lib.injection.ssti import perform_ssti_scan
+    from lib.injection.lfi import perform_lfi_scan
+    from lib.injection.xss import perform_xss_scan
+    from lib.injection.openredirect import perform_redirect_scan
+    from lib.injection.crlf import perform_crlf_scan
+    from lib.injection.cors import perform_cors_scan
+    from lib.injection.sqlin.sql import run_sql_tests
 
     cmdi_payloads = load_payloads(os.path.join(data_dir, 'cmdipayload.txt'))
 
@@ -386,10 +392,13 @@ def perform_profile_scan(profile_url, profile_type, deepscan_modules=None):
     print_separator()
     
     if profile_type == 'high-risk':
+        from lib.ProfileHigh.profile_high import high_risk_scan
         high_risk_scan(profile_url)
     elif profile_type == 'critical-risk':
+        from lib.ProfileCritical.profile_critical import critical_risk_scan
         critical_risk_scan(profile_url)
     elif profile_type == 'deepscan':
+        from lib.ProfileDeepScan.deepscan import deepscan
         if deepscan_modules:
             run_deepscan([profile_url], deepscan_modules)
         else:
@@ -398,6 +407,7 @@ def perform_profile_scan(profile_url, profile_type, deepscan_modules=None):
         print_status(f"Unknown scan type '{profile_type}'", "error")
 
 def run_selected_sql_techniques(urls, technique_string):
+    from lib.injection.sqlin.sql import run_sql_tests, run_boolean_sqli, run_error_sqli, run_time_blind_sqli
     if not technique_string:
         run_sql_tests(urls)
         return
@@ -418,6 +428,7 @@ def run_selected_sql_techniques(urls, technique_string):
 
 def run_deepscan(urls, selected_modules):
     print_header("Starting Deep Scan Modules", "magenta")
+    from lib.ProfileDeepScan.deepscan import run_headers_scan, run_backupfile_scan, run_dirfuzz_scan, run_js_scan
     for module in selected_modules:
         if module == "hs":
             print_status("Running Header Deep Scan", "info")
@@ -588,6 +599,7 @@ def prompt_for_input():
     else:
         print_status("All targets have parameters. Skipping crawl depth selection.", "info")
 
+    from lib.core.settings import DEFAULT_THREADS
     # Ask for threads count
     threads = input(colored("🔧 Threads count [default: %d]: " % DEFAULT_THREADS, "cyan")).strip()
     try:
@@ -648,6 +660,11 @@ def cleanup_crawl_file(target):
         print_status(f"Removed crawl file for {domain}", "success")
 
 def main():
+    from extras.error_handler import check_internet_connection, check_required_files, check_required_directories, handle_error
+    from lib.core.settings import DEFAULT_THREADS
+    from lib.core.wafdetector import check_wafs
+    import argparse
+
     print_banner()
     check_for_updates()
 

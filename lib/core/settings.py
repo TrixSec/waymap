@@ -18,7 +18,7 @@ TIMEOUT = 30
 DEFAULT_INPUT = 'n'
 
 # current waymap version downloaded
-WAYMAP_VERSION = "6.2.8"
+WAYMAP_VERSION = "6.2.9"
 
 # waymap scanner owner
 AUTHOR = "Trix Cyrus (Vicky)"

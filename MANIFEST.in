@@ -1,0 +1,11 @@
+include LICENSE
+include README.md
+include VERSION
+include pyproject.toml
+recursive-include data *
+recursive-include doc *
+recursive-include extras *
+recursive-include lib *
+recursive-include sessions *
+include waymap.py
+include setup.py
