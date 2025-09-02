@@ -1,6 +1,6 @@
 # CVE Vulnerabilities Tested By WAYMAP 
 
-#### **Current Total Count: 390**
+#### **Current Total Count: 618**
 
 This document lists WordPress/Drupal vulnerabilities categorized by their severity.
 Which Are Being Tested By Waymap 
@@ -9,8 +9,8 @@ Which Are Being Tested By Waymap
 ---
 
 ### Summary:
-- **Critical Risk CVEs**: 93 vulnerabilities
-- **High Risk CVEs**: 297 vulnerabilities
+- **Critical Risk CVEs**: 126 vulnerabilities
+- **High Risk CVEs**: 492 vulnerabilities
 
 ---
 
