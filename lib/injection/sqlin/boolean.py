@@ -160,14 +160,17 @@ def is_vulnerable(url, thread_count):
 
 def process_urls(urls, thread_count):
     """Processes multiple URLs for Boolean-based SQL Injection tests."""
+    from concurrent.futures import ThreadPoolExecutor, as_completed
     global abort_all_tests
-    for url in urls:
-        if abort_all_tests:
-            break
-
-        try:
-            if is_vulnerable(url, thread_count):
+    with ThreadPoolExecutor(max_workers=thread_count) as executor:
+        futures = {executor.submit(is_vulnerable, url, thread_count): url for url in urls}
+        for future in as_completed(futures):
+            if abort_all_tests:
                 break
-        except KeyboardInterrupt:
-            print(f"\n{Style.BRIGHT}{Fore.YELLOW}Process interrupted by user.{Style.RESET_ALL}")
-            break
+            try:
+                result = future.result()
+                if result:
+                    break
+            except KeyboardInterrupt:
+                print(f"\n{Style.BRIGHT}{Fore.YELLOW}Process interrupted by user.{Style.RESET_ALL}")
+                break

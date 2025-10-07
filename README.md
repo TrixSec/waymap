@@ -1,6 +1,6 @@
 # Waymap - Web Vulnerability Scanner.
 
-**Current Version**: 6.2.9  
+**Current Version**: 6.2.10  
 **Author**: Trix Cyrus(Vicky)
 **Copyright**: © 2024-25 Trixsec Org   
 **Maintained**: Yes   
@@ -45,6 +45,9 @@
 - Bug Fixed
 - Optimised
 - Reduced Lag
+
+#### v6.2.10
+- Multi-threading in SQLi
 
 --- New Big Updates Soon
 

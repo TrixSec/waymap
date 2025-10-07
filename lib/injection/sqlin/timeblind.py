@@ -172,27 +172,19 @@ def make_request(test_url, sleep_time):
 
 
 def process_urls(urls, thread_count):
+    from concurrent.futures import ThreadPoolExecutor, as_completed
     global abort_all_tests
-    for url in urls:
-        if abort_all_tests:
-            break
-
-        try:
-            if any(time_based_sqli(url, test, thread_count) for test in parse_time_blind_tests_from_xml()): 
+    def check_url(url):
+        return any(time_based_sqli(url, test, thread_count) for test in parse_time_blind_tests_from_xml())
+    with ThreadPoolExecutor(max_workers=thread_count) as executor:
+        futures = {executor.submit(check_url, url): url for url in urls}
+        for future in as_completed(futures):
+            if abort_all_tests:
                 break
-        except KeyboardInterrupt:
-            print(f"\n{Style.BRIGHT}{Fore.YELLOW}Process interrupted by user.{Style.RESET_ALL}")
-            while True:
-                user_input = input(f"{Style.BRIGHT}{Fore.CYAN}Enter 'n' for next URL or 'e' to exit all tests: {Style.RESET_ALL}")
-                if user_input.lower() == 'n':
-                    print(f"{Style.BRIGHT}{Fore.GREEN}Continuing with next URL...{Style.RESET_ALL}")
+            try:
+                result = future.result()
+                if result:
                     break
-                elif user_input.lower() == 'e':
-                    abort_all_tests = True  
-                    print(f"{Style.BRIGHT}{Fore.RED}Exiting all SQL Injection tests...{Style.RESET_ALL}")
-                    return
-                elif user_input == '':
-                    print(f"{Style.BRIGHT}{Fore.GREEN}Resuming scan...{Style.RESET_ALL}")
-                    break  
-                else:
-                    print(f"{Style.BRIGHT}{Fore.YELLOW}Invalid input, please try again.{Style.RESET_ALL}")
+            except KeyboardInterrupt:
+                print(f"\n{Style.BRIGHT}{Fore.YELLOW}Process interrupted by user.{Style.RESET_ALL}")
+                break
