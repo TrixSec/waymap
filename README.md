@@ -1,6 +1,6 @@
 # Waymap - Web Vulnerability Scanner.
 
-**Current Version**: 6.2.10  
+**Current Version**: 6.2.11
 **Author**: Trix Cyrus(Vicky)
 **Copyright**: © 2024-25 Trixsec Org   
 **Maintained**: Yes   
@@ -48,6 +48,10 @@
 
 #### v6.2.10
 - Multi-threading in SQLi
+
+#### v6.2.11
+- Install Waymap using ```pip install waymap```
+
 
 --- New Big Updates Soon
 

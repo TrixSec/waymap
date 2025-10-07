@@ -659,7 +659,8 @@ def cleanup_crawl_file(target):
         os.remove(crawl_file)
         print_status(f"Removed crawl file for {domain}", "success")
 
-def main():
+def mainfun():
+    
     from extras.error_handler import check_internet_connection, check_required_files, check_required_directories, handle_error
     from lib.core.settings import DEFAULT_THREADS
     from lib.core.wafdetector import check_wafs
@@ -881,6 +882,10 @@ Use '--help' for complete options and examples.
             process_target(target, actual_crawl_depth, scan_type, threads, False, profile_type, technique_string, deepscan_modules)
             if i < len(targets):
                 print_separator("─", "blue", 50)
+
+def main():
+ 
+    mainfun()
 
 if __name__ == "__main__":
     main()

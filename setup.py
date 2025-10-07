@@ -1,9 +1,26 @@
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages # type: ignore
 
 setup(
     name='waymap',
-    version='6.1.8',
-    packages=find_packages(),
+    version='6.2.11',  # Updated version
+    packages=[
+        'extras',
+        'lib',
+        'lib.core',
+        'lib.injection',
+        'lib.injection.sqlin',
+        'lib.parse',
+        'lib.ProfileCritical',
+        'lib.ProfileCritical.drupal',
+        'lib.ProfileCritical.Generic',
+        'lib.ProfileCritical.wordpress',
+        'lib.ProfileDeepScan',
+        'lib.ProfileHigh',
+        'lib.ProfileHigh.drupal',
+        'lib.ProfileHigh.wordpress',
+        'lib.waymapcrawlers',
+    ],
+    py_modules=['waymap'],  # Include standalone waymap.py module
     install_requires=[
         'requests',
         'beautifulsoup4',
@@ -16,6 +33,9 @@ setup(
         'argparse',
     ],
     include_package_data=True,
+    package_data={
+        '': ['data/*', 'doc/*', 'extras/*', 'sessions/*'],
+    },
     classifiers=[
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
