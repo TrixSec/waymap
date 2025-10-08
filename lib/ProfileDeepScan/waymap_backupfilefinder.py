@@ -19,7 +19,6 @@ from lib.core.settings import BACKUP_TIMEOUT
 from lib.parse.random_headers import generate_random_headers
 
 init(autoreset=True)
-# Global variables
 lock = Lock()
 stop_threads = False
 total_checked = 0
