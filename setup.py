@@ -46,6 +46,7 @@ setup(
         "urllib3>=2.0.0",
         "tqdm>=4.66.0",
         "packaging>=23.0",
+        "fpdf>=1.7.2",
     ],
     entry_points={
         "console_scripts": [

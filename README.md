@@ -1,6 +1,6 @@
 # Waymap - Web Vulnerability Scanner
 
-**Current Version**: 7.0.0  
+**Current Version**: 7.1.0  
 **Author**: Trix Cyrus (Vicky)  
 **Copyright**: © 2024-25 Trixsec Org   
 **Maintained**: Yes   
@@ -14,24 +14,48 @@
 
 ## 🆕 Latest Updates
 
-### v7.0.0 - Major UI/UX Overhaul & Stability Release 🎉
+### v7.1.0 - API Security, Auth & Reporting 🚀
+**Release Date**: December 2024
+
+**Fast, Optimized, and Comprehensive Web Vulnerability Scanner**
+
+Waymap v7.1.0 introduces powerful new capabilities for API security testing, advanced authentication, and professional reporting.
+
+#### 🌟 What's New?
+
+##### 🔌 API Security Testing
+- **REST API Scanning**: Test endpoints for missing auth, IDOR, and rate limiting.
+- **GraphQL Support**: Detect introspection, query depth issues, and schema exposure.
+- **Method Testing**: Automated testing of GET, POST, PUT, DELETE, PATCH methods.
+
+##### 🔐 Advanced Authentication
+- **Multi-Protocol Support**: Form-based, HTTP Basic, Digest, Bearer Token, and API Key.
+- **Session Management**: Maintain authenticated sessions across scans.
+- **Custom Headers**: Inject custom authentication headers.
+
+##### 📊 Professional Reporting
+- **HTML Reports**: Interactive dashboards with charts and detailed findings.
+- **CSV Exports**: Spreadsheet-compatible data for analysis.
+- **Markdown**: Documentation-ready reports.
+- **PDF Reports**: Professional PDF summaries.
+
+---
+
+### Previous Updates
+
+#### v7.0.0 - Major UI/UX Overhaul & Stability Release 🎉
 **Release Date**: December 2024
 
 This is a **major release** focused on consistency, stability, and professional user experience.
 
-#### 🎨 Complete UI/UX Standardization
+##### 🎨 Complete UI/UX Standardization
 - ✅ **Unified Interface**: All 15 scan modules now have consistent output formatting
 - ✅ **Professional Headers**: Every scan starts with a cyan-colored header banner
 - ✅ **Standardized Messages**: Consistent icons and colors across all modules
-  - `[•]` Cyan - Information messages
-  - `[✓]` Green - Vulnerabilities found
-  - `[⚠]` Yellow - Warnings and prompts
-  - `[✗]` Red - Errors
-  - `[⚙]` Blue - Debug/verbose output
 - ✅ **Uniform Prompts**: Consistent user interaction across all scan types
 - ✅ **Completion Messages**: Every scan properly indicates completion status
 
-#### 🔧 Core Improvements
+##### 🔧 Core Improvements
 - ✅ **Fixed Critical Bugs**: Resolved JSON structure inconsistencies causing crashes
 - ✅ **Circular Import Resolution**: Fixed module dependency issues
 - ✅ **Enhanced Threading**: Consistent thread management across all modules
@@ -39,107 +63,29 @@ This is a **major release** focused on consistency, stability, and professional 
 - ✅ **Verbose Mode**: Standardized debug output with `--verbose` flag
 - ✅ **Result Saving**: Fixed and standardized result saving across all scan types
 
-#### 📦 Modules Standardized (15/15)
-**Injection Scans (7)**
-- LFI (Local File Inclusion)
-- CMDi (Command Injection)
-- SSTI (Server-Side Template Injection)
-- CRLF (CRLF Injection)
-- CORS (CORS Misconfiguration)
-- Open Redirect
-- XSS (Cross-Site Scripting)
+##### 📦 Modules Standardized (15/15)
+- **Injection Scans**: LFI, CMDi, SSTI, CRLF, CORS, Open Redirect, XSS
+- **SQL Injection**: Boolean, Error, Time-based
+- **Profile Scans**: High-Risk, Critical-Risk, Deep Scan
+- **Orchestrators**: SQLi, XSS
 
-**SQL Injection (3)**
-- Boolean-based SQLi
-- Error-based SQLi
-- Time-based SQLi
+##### 🐛 Bug Fixes
+- Fixed `TypeError` in result saving
+- Fixed missing `verbose` parameters
+- Fixed circular imports
+- Fixed missing dependencies
+- Fixed inconsistent JSON structures
 
-**Profile Scans (3)**
-- High-Risk Profile (CMS-specific scans)
-- Critical-Risk Profile (Critical CVE scans)
-- Deep Scan Profile (Headers, Backups, JS, Directory Fuzzing)
-
-**Orchestrators (2)**
-- SQL Injection Orchestrator
-- XSS Scanner
-
-#### 🐛 Bug Fixes
-- Fixed `TypeError: list indices must be integers` in result saving
-- Fixed missing `verbose` parameter in LFI and CMDi scans
-- Fixed circular import issues with `stop_scan` event
-- Fixed missing dependencies and module exports
-- Fixed inconsistent JSON structure across scan types
-- Added missing `datetime` import in error-based SQLi
-
-#### 📚 Documentation
-- Created comprehensive standardization documentation
-- Added UI/UX guidelines for future development
-- Updated command reference with all options
-- Created testing reports and progress tracking
-
----
-
-### Previous Updates
-
-#### v6.2.11
-- Install Waymap using `pip install waymap`
-
-#### v6.2.10
-- Multi-threading in SQLi
-
-#### v6.2.9
-- Bug Fixed
-- Optimised
-- Reduced Lag
-
-#### v6.2.8
-- Added Time Based SQLi Scanning Logic
-- Added Scan Results Saving Logic
-- Added Interactive Prompt Based And Argument Based Scanning Logic
-- Updated The UI
-
-#### v6.1.8
-- Updated the SQL Injection Exiting logic
-- Minor bug fixes
-
-#### v6.1.7
-- XSS payload file missing error fix
-- Some minor bugs fix
-
-#### v6.1.6
-- Added New Module In Deepscan Profile: Vulnerable Javascript Library And Files Scanner
-- Added WAF/IPS Detector In Waymap Can Detect More Than 160 Types of WAF
-- Usage: `--check-waf` / `--waf https://example.com`
-
-#### v5.9.4
-- Removed Old Error Based SQL Method Use the new one by `--scan sqli`
-- Updated The Open Redirect Vuln Testing In Waymap
-- Updated The Crawler To v4
-- Added 249 High Risk CVEs Data In Waymap
-- Total Count: 390
+##### 📚 Documentation
+- Comprehensive standardization documentation
+- UI/UX guidelines
+- Updated command reference
+- Testing reports
 
 ---
 
 ## 🚀 Features
 
-### 1. **Flexible Scanning Options**
-   - **Target-based scanning:** Scan single or multiple targets using `--target` or `--multi-target` options
-   - **Profile-based scanning:** Supports high-risk, critical-risk and deepscan scan profiles for targeted assessments
-   - **No-prompt mode:** Automated scanning with `--no-prompt` flag
-   - **Verbose mode:** Detailed debug output with `--verbose` flag
-
-### 2. **Supported Scan Types**
-   - **SQL Injection (SQLi):** Detect vulnerabilities related to SQL injection (Boolean, Error-based, Time-based)
-   - **Command Injection (CMDi):** Identify potential command execution vulnerabilities
-   - **Server-Side Template Injection (SSTI):** Scan for template injection risks in server-side frameworks
-   - **Cross-Site Scripting (XSS):** Check for reflective XSS vulnerabilities
-   - **Local File Inclusion (LFI):** Locate file inclusion vulnerabilities
-   - **Open Redirect:** Identify redirect-related issues
-   - **Carriage Return and Line Feed (CRLF):** Scan for CRLF injection flaws
-   - **Cross-Origin Resource Sharing (CORS):** Check for misconfigurations in CORS policies
-   - **All-in-one scanning:** Perform all available scans in a single command
-
-### 3. **Profile-based Scanning**
    - **High-Risk Profile:** CMS-specific high-risk vulnerability scanning (WordPress, Drupal)
    - **Critical-Risk Profile:** Critical CVE-based vulnerability scanning
    - **DeepScan Profile:** Comprehensive deep scanning (Headers, Backup Files, JS Analysis, Directory Fuzzing)
@@ -192,14 +138,54 @@ This is a **major release** focused on consistency, stability, and professional 
    ```
    *(Example URL type: https://example.com/page?id=1)*
 
-5. **Profile-based scanning:**
+### 4. **New v7.1.0 Arguments**
+
+#### **API Scanning**
+- `--scan api`: Enable API scanning mode
+- `--api-type`: Specify API type (`rest` or `graphql`)
+- `--api-endpoints`: Comma-separated list of endpoints (e.g., `/api/v1/users,/api/v1/login`)
+
+#### **Authentication**
+- `--auth-type`: Authentication type (`form`, `basic`, `digest`, `bearer`, `api_key`)
+- `--auth-url`: Login URL (for form auth)
+- `--username` / `-u`: Username
+- `--password` / `-pw`: Password
+- `--token`: Bearer token or API key
+- `--auth-header`: Custom header name for API key (default: `X-API-Key`)
+
+#### **Reporting**
+- `--report-format`: Output formats (`html`, `csv`, `markdown`, `pdf`)
+- `--output-dir`: Directory to save reports (default: `reports/`)
+
+### 5. **Example Usage**
+
+**Standard Scan:**
+```bash
+python waymap.py --target http://testphp.vulnweb.com --scan xss
+```
+
+**API Scan (REST):**
+```bash
+python waymap.py --target http://api.example.com --scan api --api-type rest --token "eyJhbG..."
+```
+
+**Authenticated Scan:**
+```bash
+python waymap.py --target http://example.com --auth-type form -u admin -pw secret --scan all
+```
+
+**Generate Reports:**
+```bash
+python waymap.py --target http://example.com --scan all --report-format html,pdf
+```
+### 6. **Profile-based scanning**
    ```bash
    python waymap.py --target https://example.com --profile high-risk
    python waymap.py --target https://example.com --profile critical-risk
    python waymap.py --target https://example.com --profile deepscan
    ```
 
-6. **Verbose mode for detailed output:**
+### 7. **Verbose mode for detailed output**
    ```bash
    python waymap.py --target https://example.com --scan xss --verbose
    ```
