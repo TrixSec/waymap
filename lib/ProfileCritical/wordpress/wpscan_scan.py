@@ -1,0 +1,145 @@
+#!/usr/bin/env python3
+
+import os
+import re
+from typing import List, Optional, Set, Tuple
+from urllib.parse import urljoin
+
+import requests
+
+from lib.api.wpscan_client import WPScanClient, build_wordpress_version_path, count_vulnerabilities_in_response
+from lib.core.config import get_config
+from lib.core.logger import get_logger
+from lib.parse.random_headers import generate_random_headers
+from lib.ui import print_header, print_status, print_separator
+
+logger = get_logger(__name__)
+config = get_config()
+
+
+def _extract_wordpress_version(html: str) -> Optional[str]:
+    if not html:
+        return None
+
+    # Common patterns: WordPress 6.4.2, content="WordPress 6.4.2"
+    m = re.search(r"WordPress\s*(\d+(?:\.\d+){1,3})", html, flags=re.IGNORECASE)
+    if m:
+        return m.group(1)
+
+    return None
+
+
+def _extract_slugs(html: str) -> Tuple[Set[str], Set[str]]:
+    plugins: Set[str] = set()
+    themes: Set[str] = set()
+
+    if not html:
+        return plugins, themes
+
+    for m in re.finditer(r"/wp-content/plugins/([^/]+)/", html, flags=re.IGNORECASE):
+        slug = m.group(1).strip()
+        if slug:
+            plugins.add(slug)
+
+    for m in re.finditer(r"/wp-content/themes/([^/]+)/", html, flags=re.IGNORECASE):
+        slug = m.group(1).strip()
+        if slug:
+            themes.add(slug)
+
+    return plugins, themes
+
+
+def run_wpscan_batch_lookup(
+    target_url: str,
+    wp_version: Optional[str],
+    plugins: Set[str],
+    themes: Set[str],
+    token: str,
+) -> None:
+    client = WPScanClient(api_token=token)
+
+    request_paths: List[str] = []
+
+    wp_path = build_wordpress_version_path(wp_version or "")
+    if wp_path:
+        request_paths.append(wp_path)
+
+    for slug in sorted(plugins):
+        request_paths.append(f"plugins/{slug}")
+
+    for slug in sorted(themes):
+        request_paths.append(f"themes/{slug}")
+
+    if not request_paths:
+        print_status("No WordPress version/plugins/themes detected to query WPScan", "warning")
+        return
+
+    print_status(f"Sending WPScan batch request with {len(request_paths)} request(s)", "info")
+
+    try:
+        batch = client.batch(request_paths)
+    except requests.HTTPError as e:
+        status = getattr(e.response, "status_code", None)
+        if status == 401 or status == 403:
+            print_status("WPScan API authentication failed (check token)", "error")
+            return
+        if status == 429:
+            print_status("WPScan API rate limit reached (HTTP 429)", "error")
+            return
+        raise
+
+    total = 0
+    wp_total = 0
+    plugin_total = 0
+    theme_total = 0
+
+    for req_path, resp in batch.iter_pairs():
+        c = count_vulnerabilities_in_response(resp)
+        total += c
+
+        if req_path.startswith("wordpresses/"):
+            wp_total += c
+        elif req_path.startswith("plugins/"):
+            plugin_total += c
+        elif req_path.startswith("themes/"):
+            theme_total += c
+
+        if c > 0:
+            print_status(f"{req_path}: {c} vulnerability(ies)", "success")
+
+    print_separator()
+    print_status(f"WPScan results: total={total}, wordpress={wp_total}, plugins={plugin_total}, themes={theme_total}", "info")
+
+
+def wpscan_wordpress_vulnerabilities(target_url: str) -> None:
+    print_header("WordPress Vulnerability Check (WPScan API)", color="cyan")
+
+    token = os.environ.get("WPSCAN_API_TOKEN")
+    if not token:
+        print_status("WPScan token missing. Provide --wpscan-token or set env WPSCAN_API_TOKEN", "warning")
+        return
+
+    headers = generate_random_headers()
+
+    try:
+        resp = requests.get(target_url, headers=headers, verify=False, timeout=config.REQUEST_TIMEOUT)
+        html = resp.text if resp is not None else ""
+    except Exception as e:
+        logger.error(f"Failed to fetch target for WPScan discovery: {e}")
+        print_status(f"Failed to fetch target: {e}", "error")
+        return
+
+    wp_version = _extract_wordpress_version(html)
+    plugins, themes = _extract_slugs(html)
+
+    print_status(f"Detected WordPress version: {wp_version or 'unknown'}", "info")
+    print_status(f"Detected plugins: {len(plugins)}", "info")
+    print_status(f"Detected themes: {len(themes)}", "info")
+
+    run_wpscan_batch_lookup(
+        target_url=target_url,
+        wp_version=wp_version,
+        plugins=plugins,
+        themes=themes,
+        token=token,
+    )

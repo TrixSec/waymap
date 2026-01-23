@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+
+# Copyright (c) 2024 waymap developers
+# See the file 'LICENSE' for copying permission.
+
+-->
+
+<errors>
+    <dbms value="Command Injection">
+        <error regexp="sh: command not found"/>
+        <error regexp="No such file or directory"/>
+        <error regexp="internal error: cannot execute"/>
+        <error regexp="Unrecognized option: --"/>
+        <error regexp="bash: syntax error near unexpected token"/>
+        <error regexp="bash: .*: command substitution: line [0-9]+: syntax error"/>
+        <error regexp="system error: exec failed"/>
+        <error regexp="Illegal option --"/>
+        <error regexp="Unexpected end of input"/>
+        <error regexp="cannot find the file specified"/>
+        <error regexp="is not recognized as an internal or external command"/>
+        <error regexp="command substitution: line [0-9]+: syntax error"/>
+        <error regexp="sh: 1: Syntax error: Bad substitution"/>
+        <error regexp="command substitution: line [0-9]+: unexpected EOF while looking for matching"/>
+        <error regexp="bash: .*: ambiguous redirect"/>
+        <error regexp="sh: 1: cannot create"/>
+        <error regexp="bash: .*: Permission denied"/>
+        <error regexp="bash: .*: No such file or directory"/>
+        <error regexp="sh: Syntax error: Unterminated quoted string"/>
+        <error regexp="bash: line [0-9]+: unexpected EOF while looking for matching quote"/>
+        <error regexp=".* is not recognized as an internal or external command, operable program or batch file"/>
+        <error regexp="cmd.exe: .*: not found"/>
+        <error regexp=".* command not found or is not recognized"/>
+        <error regexp="zsh: no such file or directory: .*"/>
+        <error regexp="ash: .*: not found"/>
+        <error regexp="tcsh: .*: Command not found"/>
+        <error regexp="ksh: .*: not found"/>
+        <error regexp="rbash: .*: restricted: cannot specify /' in command names"/>
+        <error regexp="rbash: .*: restricted: cannot specify relative paths in command names"/>
+        <error regexp="powershell : The term '.*' is not recognized as the name of a cmdlet"/>
+        <error regexp="powershell : .* is not recognized as an internal or external command"/>
+        <error regexp="Cannot execute binary file"/>
+        <error regexp="zsh: .*: permission denied"/>
+        <error regexp="bash: .*: numeric argument required"/>
+        <error regexp="fatal error: unable to fork"/>
+        <error regexp="bash: unexpected argument list"/>
+        <error regexp="sh: 1: unknown operand"/>
+        <error regexp="bash: line [0-9]+: unexpected token &amp;&amp;'"/>
+    </dbms>
+</errors>
