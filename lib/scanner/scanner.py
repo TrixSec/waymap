@@ -75,7 +75,7 @@ class WaymapScanner:
         
         # Run profile scan if specified
         if profile_type:
-            self._run_profile_scan(target, profile_type, deepscan_modules)
+            self._run_profile_scan(target, profile_type)
             return
         
         # Run regular scan
@@ -139,6 +139,7 @@ class WaymapScanner:
         scan_configs = {
             'sqli': ('SQL Injection', 'yellow'),
             'cmdi': ('Command Injection', 'red'),
+            'rce': ('RCE (Command Injection)', 'red'),
             'ssti': ('Server Side Template Injection', 'magenta'),
             'xss': ('Cross Site Scripting', 'cyan'),
             'lfi': ('Local File Inclusion', 'blue'),
@@ -194,6 +195,10 @@ class WaymapScanner:
                 from lib.injection.cmdi import perform_cmdi_scan
                 payloads = self._load_payloads('cmdipayload.txt')
                 perform_cmdi_scan(urls, payloads, self.thread_count, self.no_prompt)
+
+            elif scan_type == 'rce':
+                from lib.injection.rce import perform_rce_scan
+                perform_rce_scan(urls, self.thread_count, self.no_prompt, verbose=True)
                 
             elif scan_type == 'ssti':
                 from lib.injection.ssti import perform_ssti_scan
@@ -243,56 +248,15 @@ class WaymapScanner:
             print_header(f"{profile_type.upper()} Profile Scan", "green")
             print_status(f"Target: {target}", "info")
             
-            if profile_type == 'high-risk':
-                from lib.ProfileHigh.profile_high import high_risk_scan
-                high_risk_scan(target)
-                
-            elif profile_type == 'critical-risk':
-                from lib.ProfileCritical.profile_critical import critical_risk_scan
-                critical_risk_scan(target)
-                
-            elif profile_type == 'deepscan':
-                from lib.ProfileDeepScan.deepscan import deepscan
-                if deepscan_modules:
-                    self._run_deepscan_modules([target], deepscan_modules)
-                else:
-                    deepscan(target)
+            if profile_type == 'wordpress':
+                from lib.ProfileWordpress.profile_wordpress import wordpress_vuln_scan
+                wordpress_vuln_scan(target)
             
             self.logger.info(f"Completed {profile_type} profile scan")
             
         except Exception as e:
             self.logger.error(f"Profile scan failed: {e}", exc_info=True)
             print_status(f"Profile scan failed: {e}", "error")
-    
-    def _run_deepscan_modules(self, urls: List[str], modules: List[str]) -> None:
-        """
-        Run specific deepscan modules.
-        
-        Args:
-            urls: URLs to scan
-            modules: Modules to run
-        """
-        from lib.ProfileDeepScan.deepscan import (
-            run_headers_scan,
-            run_backupfile_scan,
-            run_dirfuzz_scan,
-            run_js_scan
-        )
-        
-        module_map = {
-            'hs': ('Header Deep Scan', run_headers_scan),
-            'bf': ('Backup File Scan', run_backupfile_scan),
-            'df': ('DirFuzz Scan', run_dirfuzz_scan),
-            'js': ('JavaScript Deep Scan', run_js_scan)
-        }
-        
-        for module in modules:
-            if module in module_map:
-                name, func = module_map[module]
-                print_status(f"Running {name}", "info")
-                func(urls)
-            else:
-                print_status(f"Unknown module: {module}", "warning")
     
     def _load_payloads(self, filename: str) -> List[str]:
         """

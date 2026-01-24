@@ -63,10 +63,10 @@ This is a **major release** focused on consistency, stability, and professional 
 - ✅ **Verbose Mode**: Standardized debug output with `--verbose` flag
 - ✅ **Result Saving**: Fixed and standardized result saving across all scan types
 
-##### 📦 Modules Standardized (15/15)
+##### 📦 Modules Standardized
 - **Injection Scans**: LFI, CMDi, SSTI, CRLF, CORS, Open Redirect, XSS
 - **SQL Injection**: Boolean, Error, Time-based
-- **Profile Scans**: High-Risk, Critical-Risk, Deep Scan
+- **Profile Scans**: WordPress Vulnerability Scan (WPScan API)
 - **Orchestrators**: SQLi, XSS
 
 ##### 🐛 Bug Fixes
@@ -86,9 +86,7 @@ This is a **major release** focused on consistency, stability, and professional 
 
 ## 🚀 Features
 
-   - **High-Risk Profile:** CMS-specific high-risk vulnerability scanning (WordPress, Drupal)
-   - **Critical-Risk Profile:** Critical CVE-based vulnerability scanning
-   - **DeepScan Profile:** Comprehensive deep scanning (Headers, Backup Files, JS Analysis, Directory Fuzzing)
+   - **WordPress Vulnerability Profile:** WPScan API-based WordPress core/plugin/theme vulnerability lookup
 
 ### 4. **Crawling Capabilities**
    - Crawl target websites with customizable depth (`--crawl`)
@@ -180,9 +178,7 @@ python waymap.py --target http://example.com --scan all --report-format html,pdf
 ```
 ### 6. **Profile-based scanning**
    ```bash
-   python waymap.py --target https://example.com --profile high-risk
-   python waymap.py --target https://example.com --profile critical-risk
-   python waymap.py --target https://example.com --profile deepscan
+   python waymap.py --target https://example.com --profile wordpress
    ```
 
 ### 7. **Verbose mode for detailed output**

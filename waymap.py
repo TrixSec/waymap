@@ -13,8 +13,11 @@ import sys
 import os
 import json
 import importlib.util
+import warnings
 from typing import List, Optional, Dict, Any
 from urllib.parse import urlparse
+
+warnings.filterwarnings('ignore', category=UserWarning, message=r'.*Unverified HTTPS request.*')
 
 def check_dependencies():
     """Check if required dependencies are installed."""
@@ -53,6 +56,14 @@ from lib.core.reporting import generate_all_reports
 from lib.core.auth import setup_authentication
 from lib.api.api_scanner import perform_api_scan
 from lib.discovery.searchapi_dork import discover_google_dork, save_discovered_urls
+from lib.core.secrets import get_secret
+
+try:
+    from urllib3.exceptions import InsecureRequestWarning
+
+    warnings.simplefilter('ignore', InsecureRequestWarning)
+except Exception:
+    pass
 
 logger = get_logger(__name__)
 config = get_config()
@@ -112,15 +123,13 @@ Examples:
     scan_group = parser.add_argument_group('Scan Configuration')
     scan_group.add_argument('--crawl', '-c', type=int, help='Crawl depth (0-10)')
     scan_group.add_argument('--scan', '-s', type=str, 
-                        choices=['sqli', 'cmdi', 'ssti', 'xss', 'lfi', 'open-redirect', 'crlf', 'cors', 'api', 'all'],
+                        choices=['sqli', 'cmdi', 'rce', 'ssti', 'xss', 'lfi', 'open-redirect', 'crlf', 'cors', 'api', 'all'],
                         help='Type of scan to perform')
     scan_group.add_argument('--technique', '-k', type=str, 
                         help='SQL injection technique [B (boolean), E (error), T (time)]. Combine like BET')
     scan_group.add_argument('--profile', '-p', type=str,
-                        choices=['high-risk', 'critical-risk', 'deepscan'],
+                        choices=['wordpress'],
                         help='Scan profile to use')
-    scan_group.add_argument('--deepscan', '-ds', type=str, 
-                        help="Run specific deepscan module(s): hs,bf,df,js")
     scan_group.add_argument('--threads', type=int, default=1, help='Number of threads (default: 1)')
     scan_group.add_argument('--no-prompt', action='store_true', help='Disable user prompts')
     scan_group.add_argument('--verbose', '-v', action='store_true', help='Enable verbose output')
@@ -264,7 +273,7 @@ def interactive_wizard() -> argparse.Namespace:
     print(colored("\n[?] Select Scan Mode:", "yellow"))
     print("    1. Standard Scan (SQLi, XSS, etc.)")
     print("    2. API Scan (REST/GraphQL)")
-    print("    3. Profile Scan (High-Risk, DeepScan)")
+    print("    3. Profile Scan (WordPress Vulnerabilities)")
     
     mode = input(colored("    Choice [1]: ", "yellow")).strip() or "1"
     
@@ -283,17 +292,9 @@ def interactive_wizard() -> argparse.Namespace:
             
     elif mode == "3":
         print(colored("\n[?] Select Profile:", "yellow"))
-        print("    1. High-Risk (CMS)")
-        print("    2. Critical-Risk (CVEs)")
-        print("    3. DeepScan")
-        prof_choice = input(colored("    Choice [1]: ", "yellow")).strip()
-        
-        if prof_choice == "2":
-            args.profile = 'critical-risk'
-        elif prof_choice == "3":
-            args.profile = 'deepscan'
-        else:
-            args.profile = 'high-risk'
+        print("    1. WordPress Vulnerability Scan (WPScan API)")
+        _ = input(colored("    Choice [1]: ", "yellow")).strip()
+        args.profile = 'wordpress'
             
     else:
         print(colored("\n[?] Select Scan Type:", "yellow"))
@@ -359,6 +360,9 @@ def main():
         check_for_updates()
         return
 
+    if getattr(args, 'no_prompt', False) and not os.environ.get('WAYMAP_NO_PROMPT'):
+        os.environ['WAYMAP_NO_PROMPT'] = '1'
+
     # Export WPScan token for modules that read from environment
     if getattr(args, 'wpscan_token', None) and not os.environ.get('WPSCAN_API_TOKEN'):
         os.environ['WPSCAN_API_TOKEN'] = args.wpscan_token
@@ -366,6 +370,15 @@ def main():
     # Handle Google dork discovery (SearchAPI)
     if getattr(args, 'dork', None):
         api_key = args.dork_api_key or os.environ.get('SEARCHAPI_API_KEY')
+        if not api_key:
+            api_key = get_secret('searchapi_api_key', env_var='SEARCHAPI_API_KEY')
+        if not api_key and not getattr(args, 'no_prompt', False):
+            try:
+                api_key = input("[?] Enter SearchAPI API Key: ").strip()
+            except KeyboardInterrupt:
+                return
+        if api_key:
+            os.environ['SEARCHAPI_API_KEY'] = api_key
 
         output_file = args.dork_output
         if not output_file:
@@ -469,6 +482,10 @@ def main():
                  if args.scan == 'xss':
                      from lib.injection.xss import perform_xss_scan
                      perform_xss_scan([args.target] if args.target else [], args.threads, args.no_prompt, args.verbose)
+
+                 elif args.scan == 'rce':
+                     from lib.injection.rce import perform_rce_scan
+                     perform_rce_scan([args.target] if args.target else [], args.threads, args.no_prompt, args.verbose)
                      
                  elif args.scan == 'sqli':
                      # Placeholder for SQLi integration
@@ -478,21 +495,10 @@ def main():
             
             if args.profile:
                  print_status(f"Starting {args.profile} profile scan", "info")
-                 
-                 if args.profile == 'high-risk':
-                     from lib.ProfileHigh.profile_high import high_risk_scan
+                 if args.profile == 'wordpress':
+                     from lib.ProfileWordpress.profile_wordpress import wordpress_vuln_scan
                      if args.target:
-                         high_risk_scan(args.target)
-                         
-                 elif args.profile == 'critical-risk':
-                     from lib.ProfileCritical.profile_critical import critical_risk_scan
-                     if args.target:
-                         critical_risk_scan(args.target)
-                         
-                 elif args.profile == 'deepscan':
-                     from lib.ProfileDeepScan.deepscan import deep_scan
-                     if args.target:
-                         deep_scan(args.target)
+                         wordpress_vuln_scan(args.target)
             
             # Load results from standard scans if target is provided
             if args.target:

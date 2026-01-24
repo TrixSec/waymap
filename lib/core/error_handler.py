@@ -131,10 +131,8 @@ def validate_environment() -> bool:
     # Check required files
     required_files = [
         'cmdipayload.txt', 'basicxsspayload.txt', 'filtersbypassxss.txt',
-        'lfipayload.txt', 'openredirectpayloads.txt', 'waymap_dirfuzzlist.txt', 
-        'waymap_dirfuzzlist2.txt', 'openredirectparameters.txt', 'crlfpayload.txt', 
-        'corspayload.txt', 'sstipayload.txt', 'jsvulnpattern.json', 'wafsig.json', 
-        'ua.txt', 'cmdi.xml', 'error_based.xml', 'cveinfo.py', 'headers.json'
+        'lfipayload.txt', 'openredirectpayloads.txt', 'openredirectparameters.txt', 'crlfpayload.txt',
+        'corspayload.txt', 'sstipayload.txt', 'wafsig.json', 'ua.txt', 'cmdi.xml', 'error_based.xml', 'headers.json'
     ]
     
     missing_files = check_required_files(config.DATA_DIR, required_files)

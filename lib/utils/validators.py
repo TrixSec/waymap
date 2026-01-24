@@ -119,7 +119,7 @@ def validate_profile_type(profile_type: Optional[str]) -> Tuple[bool, Optional[s
     if profile_type is None:
         return True, None
     
-    valid_profiles = ['high-risk', 'critical-risk', 'deepscan']
+    valid_profiles = ['wordpress']
     
     if profile_type not in valid_profiles:
         return False, f"Invalid profile type. Must be one of: {', '.join(valid_profiles)}"

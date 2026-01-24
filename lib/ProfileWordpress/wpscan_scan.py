@@ -3,11 +3,11 @@
 import os
 import re
 from typing import List, Optional, Set, Tuple
-from urllib.parse import urljoin
 
 import requests
 
 from lib.api.wpscan_client import WPScanClient, build_wordpress_version_path, count_vulnerabilities_in_response
+from lib.core.secrets import get_secret
 from lib.core.config import get_config
 from lib.core.logger import get_logger
 from lib.parse.random_headers import generate_random_headers
@@ -21,7 +21,6 @@ def _extract_wordpress_version(html: str) -> Optional[str]:
     if not html:
         return None
 
-    # Common patterns: WordPress 6.4.2, content="WordPress 6.4.2"
     m = re.search(r"WordPress\s*(\d+(?:\.\d+){1,3})", html, flags=re.IGNORECASE)
     if m:
         return m.group(1)
@@ -74,7 +73,7 @@ def run_wpscan_batch_lookup(
         print_status("No WordPress version/plugins/themes detected to query WPScan", "warning")
         return
 
-    print_status(f"Sending WPScan batch request with {len(request_paths)} request(s)", "info")
+    print_status(f"Sending WPScan batch request with {len(request_paths)} item(s)", "info")
 
     try:
         batch = client.batch(request_paths)
@@ -115,6 +114,8 @@ def wpscan_wordpress_vulnerabilities(target_url: str) -> None:
     print_header("WordPress Vulnerability Check (WPScan API)", color="cyan")
 
     token = os.environ.get("WPSCAN_API_TOKEN")
+    if not token:
+        token = get_secret("wpscan_api_token", env_var="WPSCAN_API_TOKEN")
     if not token:
         print_status("WPScan token missing. Provide --wpscan-token or set env WPSCAN_API_TOKEN", "warning")
         return
