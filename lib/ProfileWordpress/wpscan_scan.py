@@ -1,12 +1,20 @@
 #!/usr/bin/env python3
 
+import json
 import os
 import re
-from typing import List, Optional, Set, Tuple
+from datetime import datetime
+from typing import Any, Dict, List, Optional, Set, Tuple
+from urllib.parse import urlparse
 
 import requests
 
-from lib.api.wpscan_client import WPScanClient, build_wordpress_version_path, count_vulnerabilities_in_response
+from lib.api.wpscan_client import (
+    WPScanClient,
+    build_wordpress_version_path,
+    count_vulnerabilities_in_response,
+    summarize_batch_vulnerabilities,
+)
 from lib.core.secrets import get_secret
 from lib.core.config import get_config
 from lib.core.logger import get_logger
@@ -15,6 +23,52 @@ from lib.ui import print_header, print_status, print_separator
 
 logger = get_logger(__name__)
 config = get_config()
+
+
+def _get_domain(url: str) -> str:
+    return urlparse(url).netloc
+
+
+def _load_existing_results(domain: str) -> Dict[str, Any]:
+    session_dir = config.get_domain_session_dir(domain)
+    session_file = os.path.join(session_dir, "waymap_full_results.json")
+    if os.path.exists(session_file):
+        try:
+            with open(session_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            if isinstance(data, dict):
+                return data
+        except Exception:
+            return {}
+    return {}
+
+
+def _save_results(domain: str, results: Dict[str, Any]) -> None:
+    session_dir = config.get_domain_session_dir(domain)
+    session_file = os.path.join(session_dir, "waymap_full_results.json")
+    try:
+        with open(session_file, "w", encoding="utf-8") as f:
+            json.dump(results, f, indent=4)
+    except Exception as e:
+        logger.error(f"Error saving results: {e}")
+
+
+def _append_result(results: Dict[str, Any], record: Dict[str, Any]) -> None:
+    vuln_key = "wordpress_profile"
+    if "scans" not in results or not isinstance(results.get("scans"), list):
+        results["scans"] = []
+
+    block = None
+    for entry in results["scans"]:
+        if isinstance(entry, dict) and vuln_key in entry:
+            block = entry[vuln_key]
+            break
+
+    if block is None:
+        block = []
+        results["scans"].append({vuln_key: block})
+
+    block.append(record)
 
 
 def _extract_wordpress_version(html: str) -> Optional[str]:
@@ -81,10 +135,10 @@ def run_wpscan_batch_lookup(
         status = getattr(e.response, "status_code", None)
         if status == 401 or status == 403:
             print_status("WPScan API authentication failed (check token)", "error")
-            return
+            raise
         if status == 429:
             print_status("WPScan API rate limit reached (HTTP 429)", "error")
-            return
+            raise
         raise
 
     total = 0
@@ -109,15 +163,39 @@ def run_wpscan_batch_lookup(
     print_separator()
     print_status(f"WPScan results: total={total}, wordpress={wp_total}, plugins={plugin_total}, themes={theme_total}", "info")
 
+    return {
+        "request_items": request_paths,
+        "counts": {
+            "total": total,
+            "wordpress": wp_total,
+            "plugins": plugin_total,
+            "themes": theme_total,
+        },
+        "summary": summarize_batch_vulnerabilities(batch.raw),
+        "raw": batch.raw,
+    }
+
 
 def wpscan_wordpress_vulnerabilities(target_url: str) -> None:
     print_header("WordPress Vulnerability Check (WPScan API)", color="cyan")
+
+    domain = _get_domain(target_url) or "unknown_domain"
+    results = _load_existing_results(domain)
+    record: Dict[str, Any] = {
+        "target": target_url,
+        "scan_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "status": "started",
+    }
 
     token = os.environ.get("WPSCAN_API_TOKEN")
     if not token:
         token = get_secret("wpscan_api_token", env_var="WPSCAN_API_TOKEN")
     if not token:
         print_status("WPScan token missing. Provide --wpscan-token or set env WPSCAN_API_TOKEN", "warning")
+        record["status"] = "error"
+        record["error"] = "missing_wpscan_token"
+        _append_result(results, record)
+        _save_results(domain, results)
         return
 
     headers = generate_random_headers()
@@ -128,6 +206,10 @@ def wpscan_wordpress_vulnerabilities(target_url: str) -> None:
     except Exception as e:
         logger.error(f"Failed to fetch target for WPScan discovery: {e}")
         print_status(f"Failed to fetch target: {e}", "error")
+        record["status"] = "error"
+        record["error"] = str(e)
+        _append_result(results, record)
+        _save_results(domain, results)
         return
 
     wp_version = _extract_wordpress_version(html)
@@ -137,10 +219,27 @@ def wpscan_wordpress_vulnerabilities(target_url: str) -> None:
     print_status(f"Detected plugins: {len(plugins)}", "info")
     print_status(f"Detected themes: {len(themes)}", "info")
 
-    run_wpscan_batch_lookup(
-        target_url=target_url,
-        wp_version=wp_version,
-        plugins=plugins,
-        themes=themes,
-        token=token,
-    )
+    record["detected"] = {
+        "wordpress_version": wp_version,
+        "plugins": sorted(list(plugins)),
+        "themes": sorted(list(themes)),
+        "plugin_count": len(plugins),
+        "theme_count": len(themes),
+    }
+
+    try:
+        batch_result = run_wpscan_batch_lookup(
+            target_url=target_url,
+            wp_version=wp_version,
+            plugins=plugins,
+            themes=themes,
+            token=token,
+        )
+        record["status"] = "ok"
+        record["wpscan"] = batch_result
+    except Exception as e:
+        record["status"] = "error"
+        record["error"] = str(e)
+
+    _append_result(results, record)
+    _save_results(domain, results)

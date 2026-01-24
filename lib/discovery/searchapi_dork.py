@@ -66,6 +66,14 @@ def discover_google_dork(
     while True:
         params["page"] = page
 
+        if limit:
+            print_status(
+                f"Fetching page {page} (discovered {len(unique)}/{limit})...",
+                "info",
+            )
+        else:
+            print_status(f"Fetching page {page} (discovered {len(unique)})...", "info")
+
         response = requests.get(SEARCHAPI_URL, params=params, timeout=timeout)
         response.raise_for_status()
 
@@ -88,6 +96,11 @@ def discover_google_dork(
             added_this_page += 1
             if limit and len(unique) >= limit:
                 break
+
+        print_status(
+            f"Page {page}: {len(links)} URL(s) returned, +{added_this_page} new, total {len(unique)}",
+            "info",
+        )
 
         if limit and len(unique) >= limit:
             break

@@ -85,6 +85,23 @@ class WaymapScanner:
                 scan_type,
                 technique_string
             )
+
+    def scan_urls(
+        self,
+        urls: List[str],
+        scan_type: str,
+        technique_string: Optional[str] = None,
+    ) -> None:
+        if not urls:
+            print_status("No URLs provided to scan", "warning")
+            return
+
+        scan_urls = [u for u in urls if isinstance(u, str) and u.strip()]
+        if not scan_urls:
+            print_status("No valid URLs provided to scan", "warning")
+            return
+
+        self._run_vulnerability_scan(scan_urls, scan_type, technique_string)
     
     def _crawl_target(self, target: str, depth: int) -> List[str]:
         """

@@ -1,278 +1,207 @@
-# Waymap - Web Vulnerability Scanner
+# Waymap v7.2.0 - Web Vulnerability Scanner & Web Application Security Toolkit
 
-**Current Version**: 7.1.0  
-**Author**: Trix Cyrus (Vicky)  
-**Copyright**: © 2024-25 Trixsec Org   
-**Maintained**: Yes   
+**Current Version**: 7.2.0
 
-![Waymap Logo](https://waymapscanner.github.io/images/waymap.jpg)
+**Waymap** is a fast, practical **web vulnerability scanner** and **web application security testing** toolkit for:
 
-## What is Waymap?
-**Waymap** is a fast and optimized web vulnerability scanner designed to identify security flaws in web applications. With support for multiple scan types and customizable configurations, it is a versatile tool for ethical hackers, penetration testers, and security enthusiasts. Capable of scanning for **75+ Web Vulnerabilities** with a completely standardized, professional UI/UX.
+- **SQL Injection (SQLi)** testing (Boolean-based, Error-based, Time-based)
+- **XSS** scanning (reflected payload testing)
+- **Command Injection / RCE** scanning (safe marker-based checks)
+- **LFI**, **CRLF Injection**, **CORS misconfiguration**, **Open Redirect**
+- **API Security Testing** for **REST** and **GraphQL** (auth checks, introspection, basic abuse checks)
+- **WordPress vulnerability scanning** (WPScan API batch lookups for core/plugins/themes)
 
----
-
-## 🆕 Latest Updates
-
-### v7.1.0 - API Security, Auth & Reporting 🚀
-**Release Date**: December 2024
-
-**Fast, Optimized, and Comprehensive Web Vulnerability Scanner**
-
-Waymap v7.1.0 introduces powerful new capabilities for API security testing, advanced authentication, and professional reporting.
-
-#### 🌟 What's New?
-
-##### 🔌 API Security Testing
-- **REST API Scanning**: Test endpoints for missing auth, IDOR, and rate limiting.
-- **GraphQL Support**: Detect introspection, query depth issues, and schema exposure.
-- **Method Testing**: Automated testing of GET, POST, PUT, DELETE, PATCH methods.
-
-##### 🔐 Advanced Authentication
-- **Multi-Protocol Support**: Form-based, HTTP Basic, Digest, Bearer Token, and API Key.
-- **Session Management**: Maintain authenticated sessions across scans.
-- **Custom Headers**: Inject custom authentication headers.
-
-##### 📊 Professional Reporting
-- **HTML Reports**: Interactive dashboards with charts and detailed findings.
-- **CSV Exports**: Spreadsheet-compatible data for analysis.
-- **Markdown**: Documentation-ready reports.
-- **PDF Reports**: Professional PDF summaries.
+Waymap focuses on automation-friendly scanning with consistent output, session-based result saving, and secrets management.
 
 ---
 
-### Previous Updates
+## What’s New in v7.2.0
 
-#### v7.0.0 - Major UI/UX Overhaul & Stability Release 🎉
-**Release Date**: December 2024
+### Discovery & Target Acquisition (Google Dorking)
 
-This is a **major release** focused on consistency, stability, and professional user experience.
+- **SearchAPI-powered Google dork discovery** via `--dork`
+- **Pagination support** (`page` parameter) to fetch all available result pages
+- **Domain blacklist** support using `config/waymap/domain_blacklist.txt`
+- Saves only **parameterized URLs** (must include `?` and `=`) for scan-ready targets
 
-##### 🎨 Complete UI/UX Standardization
-- ✅ **Unified Interface**: All 15 scan modules now have consistent output formatting
-- ✅ **Professional Headers**: Every scan starts with a cyan-colored header banner
-- ✅ **Standardized Messages**: Consistent icons and colors across all modules
-- ✅ **Uniform Prompts**: Consistent user interaction across all scan types
-- ✅ **Completion Messages**: Every scan properly indicates completion status
+### Secrets Management (API Keys)
 
-##### 🔧 Core Improvements
-- ✅ **Fixed Critical Bugs**: Resolved JSON structure inconsistencies causing crashes
-- ✅ **Circular Import Resolution**: Fixed module dependency issues
-- ✅ **Enhanced Threading**: Consistent thread management across all modules
-- ✅ **Graceful Exit Handling**: Proper KeyboardInterrupt handling everywhere
-- ✅ **Verbose Mode**: Standardized debug output with `--verbose` flag
-- ✅ **Result Saving**: Fixed and standardized result saving across all scan types
+Waymap supports storing secrets outside code:
 
-##### 📦 Modules Standardized
-- **Injection Scans**: LFI, CMDi, SSTI, CRLF, CORS, Open Redirect, XSS
-- **SQL Injection**: Boolean, Error, Time-based
-- **Profile Scans**: WordPress Vulnerability Scan (WPScan API)
-- **Orchestrators**: SQLi, XSS
+- `config/waymap/secrets.json`
+  - `searchapi_api_key`
+  - `wpscan_api_token`
 
-##### 🐛 Bug Fixes
-- Fixed `TypeError` in result saving
-- Fixed missing `verbose` parameters
-- Fixed circular imports
-- Fixed missing dependencies
-- Fixed inconsistent JSON structures
+Keys can be supplied via:
 
-##### 📚 Documentation
-- Comprehensive standardization documentation
-- UI/UX guidelines
-- Updated command reference
-- Testing reports
+- CLI (ex: `--dork-api-key`, `--wpscan-token`)
+- env vars (ex: `SEARCHAPI_API_KEY`, `WPSCAN_API_TOKEN`)
+- secrets file (preferred)
+
+### WordPress Vulnerability Profile (WPScan API)
+
+- Single profile: `--profile wordpress`
+- Lightweight WordPress detection gate before calling WPScan
+- Uses **WPScan API v3 batch** (`POST /batch`) with multiple lookup items
+- Saves output (including failures) to `sessions/<domain>/waymap_full_results.json`
+
+### RCE / Command Injection Scanner
+
+- New scan type: `--scan rce`
+- Safe marker-based payloads (no destructive commands)
+- Works on parameterized URLs
+- Saves results to `sessions/<domain>/waymap_full_results.json`
 
 ---
 
-## 🚀 Features
-
-   - **WordPress Vulnerability Profile:** WPScan API-based WordPress core/plugin/theme vulnerability lookup
-
-### 4. **Crawling Capabilities**
-   - Crawl target websites with customizable depth (`--crawl`)
-   - Automatically discover and extract URLs for scanning
-
-### 5. **Threaded Scanning**
-   - Speed up scans with multithreading (`--threads`)
-   - Optimized thread management for better performance
-
-### 6. **Automation Features**
-   - Skip prompts using the `--no-prompt` option
-   - Automatically handle missing directories, files, and session data
-   - Consistent result saving in JSON format
-
-### 7. **Update Checker**
-   - Easily check for the latest updates (`--check-updates`)
-   - Auto-notification of new versions
-
-### 8. **WAF Detection**
-   - Detect 160+ types of WAF/IPS systems
-   - Usage: `--check-waf https://example.com`
-
----
-
-## 🛠️ How to Use
-
-### Basic Commands
-
-1. **Scan a single target:**
-   ```bash
-   python waymap.py --crawl 3 --target https://example.com --scan {scan_type}
-   ```
-
-2. **Scan multiple targets from a file:**
-   ```bash
-   python waymap.py --crawl 3 --multi-target targets.txt --scan {scan_type}
-   ```
-
-3. **Directly scan a single target without crawling:**
-   ```bash
-   python waymap.py --target https://example.com/page?id=1 --scan {scan_type}
-   ```
-
-4. **Directly scan multiple targets from a file:**
-   ```bash
-   python waymap.py --multi-target targets.txt --scan {scan_type}
-   ```
-   *(Example URL type: https://example.com/page?id=1)*
-
-### 4. **New v7.1.0 Arguments**
-
-#### **API Scanning**
-- `--scan api`: Enable API scanning mode
-- `--api-type`: Specify API type (`rest` or `graphql`)
-- `--api-endpoints`: Comma-separated list of endpoints (e.g., `/api/v1/users,/api/v1/login`)
-
-#### **Authentication**
-- `--auth-type`: Authentication type (`form`, `basic`, `digest`, `bearer`, `api_key`)
-- `--auth-url`: Login URL (for form auth)
-- `--username` / `-u`: Username
-- `--password` / `-pw`: Password
-- `--token`: Bearer token or API key
-- `--auth-header`: Custom header name for API key (default: `X-API-Key`)
-
-#### **Reporting**
-- `--report-format`: Output formats (`html`, `csv`, `markdown`, `pdf`)
-- `--output-dir`: Directory to save reports (default: `reports/`)
-
-### 5. **Example Usage**
-
-**Standard Scan:**
-```bash
-python waymap.py --target http://testphp.vulnweb.com --scan xss
-```
-
-**API Scan (REST):**
-```bash
-python waymap.py --target http://api.example.com --scan api --api-type rest --token "eyJhbG..."
-```
-
-**Authenticated Scan:**
-```bash
-python waymap.py --target http://example.com --auth-type form -u admin -pw secret --scan all
-```
-
-**Generate Reports:**
-```bash
-python waymap.py --target http://example.com --scan all --report-format html,pdf
-```
-### 6. **Profile-based scanning**
-   ```bash
-   python waymap.py --target https://example.com --profile wordpress
-   ```
-
-### 7. **Verbose mode for detailed output**
-   ```bash
-   python waymap.py --target https://example.com --scan xss --verbose
-   ```
-
-7. **No-prompt mode for automation:**
-   ```bash
-   python waymap.py --multi-target targets.txt --scan cors --no-prompt
-   ```
-
-### Thread Configuration
-
-1. **Use threading for faster scans:**
-   ```bash
-   python waymap.py --crawl 3 --target https://example.com --scan ssti --threads 10
-   ```
-
-### SQL Injection Techniques
-
-1. **Boolean-based SQLi:**
-   ```bash
-   python waymap.py --target https://example.com --scan sqli --technique B
-   ```
-
-2. **Error-based SQLi:**
-   ```bash
-   python waymap.py --target https://example.com --scan sqli --technique E
-   ```
-
-3. **Time-based SQLi:**
-   ```bash
-   python waymap.py --target https://example.com --scan sqli --technique T
-   ```
-
-### Update Check
-
-1. **Ensure you have the latest version:**
-   ```bash
-   python waymap.py --check-updates
-   ```
-
-### Check Help
+## Installation
 
 ```bash
-python waymap.py -h
+pip install -r requirements.txt
 ```
 
 ---
 
-## 📊 What's New in v7.0.0
+## Quick Start
 
-### Before v7.0.0:
-- Inconsistent output formatting across modules
-- Different color themes for different scans
-- Varying prompt styles
-- Threading inconsistencies
-- Result saving bugs
+### 1) Scan a target (standard web vulnerability scanning)
 
-### After v7.0.0:
-- ✅ **100% Consistent UI/UX** across all 15 modules
-- ✅ **Professional Output** with standardized colors and icons
-- ✅ **Reliable Threading** with proper stop_scan event handling
-- ✅ **Fixed Result Saving** with consistent JSON structure
-- ✅ **Graceful Exit** handling everywhere
-- ✅ **Verbose Mode** for debugging
-- ✅ **Production Ready** with polished user experience
+```bash
+python waymap.py --target https://example.com --scan xss --crawl 2
+```
 
----
+### 2) RCE / Command Injection scan
 
-**Repository Views** ![Views](https://profile-counter.glitch.me/waymap/count.svg) (After 05-01-2025)
+```bash
+python waymap.py --target "https://example.com/page.php?id=1" --scan rce
+```
 
-### Waymap makes web vulnerability scanning efficient and accessible. Start securing your applications today! 🎯
+### 3) WordPress vulnerability scan (WPScan profile)
 
----
+```bash
+python waymap.py --target https://example.com --profile wordpress
+```
 
-## Credits
-- Thanks SQLMAP For Payloads XML File
+### 4) Discover targets using Google dorks (SearchAPI)
 
-## Support & Issues
+```bash
+python waymap.py --dork "inurl:.php?id="
+```
 
-If you face any issues in Waymap, please submit them here: https://github.com/TrixSec/waymap/issues
-
-### ⭐ Star The Repo And Fork It
+By default results are saved to `dork_targets.txt` (or to a domain session if `--target` is also provided).
 
 ---
 
-## Follow Us on Telegram
+## Configuration
 
-Stay updated with the latest tools and hacking resources. Join our Telegram Channel by clicking the logo below:
+### Secrets file
 
-[![Telegram](https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Telegram_logo.svg/240px-Telegram_logo.svg.png)](https://t.me/Trixsec)
+Create/edit:
+
+`config/waymap/secrets.json`
+
+```json
+{
+  "searchapi_api_key": "",
+  "wpscan_api_token": ""
+}
+```
+
+### Domain blacklist for discovery
+
+Edit:
+
+`config/waymap/domain_blacklist.txt`
+
+One domain per line (subdomains are matched too).
 
 ---
 
-### Happy Hacking! 🎯
+## Supported Scan Types
+
+Use `--scan` with one of:
+
+- `sqli`
+- `xss`
+- `cmdi`
+- `rce`
+- `ssti`
+- `lfi`
+- `open-redirect`
+- `crlf`
+- `cors`
+- `api`
+- `all`
+
+---
+
+## API Security Testing (REST / GraphQL)
+
+```bash
+python waymap.py --target https://api.example.com --scan api --api-type rest
+python waymap.py --target https://api.example.com/graphql --scan api --api-type graphql
+```
+
+Optional:
+
+- `--api-endpoints /users,/login` (REST)
+
+---
+
+## Authentication Support
+
+Supported `--auth-type` values:
+
+- `form`
+- `basic`
+- `digest`
+- `bearer`
+- `api_key`
+
+Example:
+
+```bash
+python waymap.py --target https://example.com --auth-type bearer --token "YOUR_TOKEN" --scan all
+```
+
+---
+
+## Reporting
+
+```bash
+python waymap.py --target https://example.com --scan all --report-format html,csv,markdown --output-dir reports
+```
+
+---
+
+## Results / Output Files
+
+Waymap stores scan output per target domain:
+
+- `sessions/<domain>/waymap_full_results.json`
+
+This includes findings from:
+
+- Standard vulnerability scans
+- WordPress profile scans
+- RCE scan
+
+---
+
+## Help
+
+```bash
+python waymap.py --help
+```
+
+---
+
+## Legal / Disclaimer
+
+Waymap is intended for **authorized security testing** and educational use only.
+
+---
+
+## Support
+
+Issues: https://github.com/TrixSec/waymap/issues

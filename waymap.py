@@ -164,7 +164,6 @@ Examples:
     discovery_group = parser.add_argument_group('Discovery')
     discovery_group.add_argument('--dork', type=str, help='Google dork query for target discovery (SearchAPI)')
     discovery_group.add_argument('--dork-api-key', type=str, help='SearchAPI api_key (or set env SEARCHAPI_API_KEY)')
-    discovery_group.add_argument('--dork-limit', type=int, default=50, help='Max URLs to save from dork results (default: 50)')
     discovery_group.add_argument('--dork-output', type=str, help='Output file to save discovered URLs')
 
     # WPScan API (v7.2.0)
@@ -393,10 +392,28 @@ def main():
             urls = discover_google_dork(
                 query=args.dork,
                 api_key=api_key,
-                limit=args.dork_limit
+                limit=None
             )
             saved_path = save_discovered_urls(urls, output_file)
             print_status(f"Saved {len(urls)} discovered URL(s) to: {saved_path}", "success")
+
+            try:
+                with open(saved_path, "r", encoding="utf-8") as f:
+                    scan_urls = [line.strip() for line in f if line.strip()]
+            except Exception as e:
+                print_status(f"Failed to read discovered URLs for scanning: {e}", "error")
+                return
+
+            if not scan_urls:
+                print_status("No parameterized URLs found after filtering; skipping auto SQLi scan", "warning")
+                return
+
+            print_separator()
+            print_status(f"Auto-starting SQLi scan on {len(scan_urls)} discovered URL(s)", "info")
+
+            from lib.scanner.scanner import WaymapScanner
+            scanner = WaymapScanner(thread_count=args.threads, no_prompt=getattr(args, 'no_prompt', False))
+            scanner.scan_urls(scan_urls, 'sqli', technique_string=getattr(args, 'technique', None))
         except Exception as e:
             handle_error(e)
         return
