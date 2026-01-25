@@ -123,7 +123,11 @@ Examples:
     scan_group = parser.add_argument_group('Scan Configuration')
     scan_group.add_argument('--crawl', '-c', type=int, help='Crawl depth (0-10)')
     scan_group.add_argument('--scan', '-s', type=str, 
-                        choices=['sqli', 'cmdi', 'rce', 'ssti', 'xss', 'lfi', 'open-redirect', 'crlf', 'cors', 'api', 'all'],
+                        choices=[
+                            'sqli', 'cmdi', 'rce', 'ssti', 'xss', 'lfi', 'open-redirect', 'crlf', 'cors', 'api', 'all',
+                            'recon', 'misconfig', 'redirect', 'injection-advanced', 'graphql-suite', 'auth-logic',
+                            'cache-smuggling', 'wordpress-extras', 'optional'
+                        ],
                         help='Type of scan to perform')
     scan_group.add_argument('--technique', '-k', type=str, 
                         help='SQL injection technique [B (boolean), E (error), T (time)]. Combine like BET')
@@ -493,30 +497,38 @@ def main():
         # Handle Standard Scans
         elif args.scan or args.profile:
             if args.scan:
-                 print_status(f"Starting {args.scan} scan on {args.target or 'multi-target list'}", "info")
-                 
-                 # Map scan types to functions
-                 if args.scan == 'xss':
-                     from lib.injection.xss import perform_xss_scan
-                     perform_xss_scan([args.target] if args.target else [], args.threads, args.no_prompt, args.verbose)
+                print_status(f"Starting {args.scan} scan on {args.target or 'multi-target list'}", "info")
 
-                 elif args.scan == 'rce':
-                     from lib.injection.rce import perform_rce_scan
-                     perform_rce_scan([args.target] if args.target else [], args.threads, args.no_prompt, args.verbose)
-                     
-                 elif args.scan == 'sqli':
-                     # Placeholder for SQLi integration
-                     pass
-                     
-                 # ... other scan types would be called here
-            
+                from lib.scanner.scanner import WaymapScanner
+                scanner = WaymapScanner(thread_count=args.threads, no_prompt=args.no_prompt)
+
+                if args.target:
+                    scanner.scan(
+                        args.target,
+                        args.scan,
+                        crawl_depth=args.crawl or 0,
+                        technique_string=args.technique,
+                    )
+                elif args.multi_target:
+                    from lib.utils.file_utils import load_file_lines
+                    targets = load_file_lines(args.multi_target)
+                    for target in targets:
+                        if not target:
+                            continue
+                        scanner.scan(
+                            target,
+                            args.scan,
+                            crawl_depth=args.crawl or 0,
+                            technique_string=args.technique,
+                        )
+
             if args.profile:
-                 print_status(f"Starting {args.profile} profile scan", "info")
-                 if args.profile == 'wordpress':
-                     from lib.ProfileWordpress.profile_wordpress import wordpress_vuln_scan
-                     if args.target:
-                         wordpress_vuln_scan(args.target)
-            
+                print_status(f"Starting {args.profile} profile scan", "info")
+                if args.profile == 'wordpress':
+                    from lib.ProfileWordpress.profile_wordpress import wordpress_vuln_scan
+                    if args.target:
+                        wordpress_vuln_scan(args.target)
+
             # Load results from standard scans if target is provided
             if args.target:
                 standard_results = load_standard_scan_results(args.target)

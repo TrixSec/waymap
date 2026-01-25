@@ -162,7 +162,16 @@ class WaymapScanner:
             'lfi': ('Local File Inclusion', 'blue'),
             'open-redirect': ('Open Redirect', 'green'),
             'crlf': ('CRLF Injection', 'yellow'),
-            'cors': ('CORS Misconfiguration', 'red')
+            'cors': ('CORS Misconfiguration', 'red'),
+            'recon': ('Recon Scan', 'cyan'),
+            'misconfig': ('Misconfiguration Scan', 'cyan'),
+            'redirect': ('Redirect/Header Injection', 'cyan'),
+            'injection-advanced': ('Advanced Injection', 'magenta'),
+            'graphql-suite': ('GraphQL Suite', 'magenta'),
+            'auth-logic': ('Auth Logic Checks', 'yellow'),
+            'cache-smuggling': ('Cache/Smuggling Checks', 'yellow'),
+            'wordpress-extras': ('WordPress Extras', 'green'),
+            'optional': ('Optional Checks', 'blue')
         }
         
         if scan_type == 'all':
@@ -240,6 +249,42 @@ class WaymapScanner:
             elif scan_type == 'cors':
                 from lib.injection.cors import perform_cors_scan
                 perform_cors_scan(urls, self.thread_count, self.no_prompt, verbose=True)
+
+            elif scan_type == 'recon':
+                from lib.recon.foundation import perform_recon_scan
+                perform_recon_scan(urls, self.thread_count, self.no_prompt, verbose=True)
+
+            elif scan_type == 'misconfig':
+                from lib.recon.misconfig import perform_misconfig_scan
+                perform_misconfig_scan(urls, self.thread_count, self.no_prompt, verbose=True)
+
+            elif scan_type == 'redirect':
+                from lib.recon.redirects import perform_redirect_injection_scan
+                perform_redirect_injection_scan(urls, self.thread_count, self.no_prompt, verbose=True)
+
+            elif scan_type == 'injection-advanced':
+                from lib.injection.advanced import perform_injection_advanced_scan
+                perform_injection_advanced_scan(urls, self.thread_count, self.no_prompt, verbose=True)
+
+            elif scan_type == 'graphql-suite':
+                from lib.api.graphql_suite import perform_graphql_suite_scan
+                perform_graphql_suite_scan(urls, verbose=True)
+
+            elif scan_type == 'auth-logic':
+                from lib.api.auth_logic import perform_auth_logic_scan
+                perform_auth_logic_scan(urls, verbose=True)
+
+            elif scan_type == 'cache-smuggling':
+                from lib.cache.smuggling import perform_cache_smuggling_scan
+                perform_cache_smuggling_scan(urls, verbose=True)
+
+            elif scan_type == 'wordpress-extras':
+                from lib.ProfileWordpress.wordpress_extras import perform_wordpress_extras_scan
+                perform_wordpress_extras_scan(urls, verbose=True)
+
+            elif scan_type == 'optional':
+                from lib.optional.optional_checks import perform_optional_scan
+                perform_optional_scan(urls, verbose=True)
             
             self.logger.info(f"Completed {scan_type} scan")
             
