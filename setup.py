@@ -50,12 +50,12 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "waymap=waymap:main",
+            "waymap=waymap.waymap:main",
         ],
     },
     include_package_data=True,
     package_data={
-        "": ["data/*", "*.txt", "*.json", "*.xml"],
+        "": ["data/*", "*.txt", "*.json", "*.xml", "*.md", "VERSION"],
     },
     keywords="security scanner vulnerability web-security penetration-testing",
     project_urls={
