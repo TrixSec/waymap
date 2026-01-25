@@ -233,7 +233,7 @@ def interactive_wizard() -> argparse.Namespace:
     """
     from lib.ui import colored
     
-    print_separator("Interactive Mode", "cyan")
+    print_header("Interactive Mode", "cyan")
     print_status("Configure your scan options below:", "info")
     print()
     
