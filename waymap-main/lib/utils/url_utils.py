@@ -3,8 +3,8 @@
 
 """URL utility functions."""
 
-from urllib.parse import urlparse
-from typing import Optional
+from urllib.parse import urlparse, parse_qs
+from typing import List, Optional
 
 
 def is_valid_url(url: str) -> bool:
@@ -26,7 +26,7 @@ def is_valid_url(url: str) -> bool:
 
 def has_query_parameters(url: str) -> bool:
     """
-    Check if URL has query parameters.
+    Check if URL has parseable query parameters.
     
     Args:
         url: The URL to check
@@ -34,7 +34,15 @@ def has_query_parameters(url: str) -> bool:
     Returns:
         True if URL has query parameters, False otherwise
     """
-    return any(symbol in url for symbol in ['?', '&', '='])
+    try:
+        return bool(parse_qs(urlparse(url).query))
+    except Exception:
+        return False
+
+
+def filter_urls_with_params(urls: List[str]) -> List[str]:
+    """Return URLs that contain at least one query parameter."""
+    return [url for url in urls if has_query_parameters(url)]
 
 
 def is_within_domain(url: str, base_domain: str) -> bool:

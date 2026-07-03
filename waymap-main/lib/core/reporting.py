@@ -529,13 +529,18 @@ class ReportGenerator:
         return md
 
 
-def generate_all_reports(scan_results: Dict[str, Any], output_dir: str = ".") -> Dict[str, str]:
+def generate_all_reports(
+    scan_results: Dict[str, Any],
+    output_dir: str = ".",
+    formats: Optional[List[str]] = None,
+) -> Dict[str, str]:
     """
-    Generate all report formats
+    Generate report formats from scan results
     
     Args:
         scan_results: Scan results dictionary
         output_dir: Output directory for reports
+        formats: Report formats to generate (html, csv, markdown, pdf)
         
     Returns:
         Dictionary mapping format to file path
@@ -543,27 +548,37 @@ def generate_all_reports(scan_results: Dict[str, Any], output_dir: str = ".") ->
     generator = ReportGenerator(scan_results)
     output_dir = Path(output_dir)
     output_dir.mkdir(exist_ok=True)
-    
+
+    requested = formats or ['html', 'csv', 'markdown', 'pdf']
+    normalized = {fmt.strip().lower() for fmt in requested if fmt.strip()}
+    if not normalized:
+        normalized = {'html'}
+
+    format_generators = {
+        'html': lambda: generator.generate_html_report(
+            str(output_dir / f"waymap_report_{generator.timestamp}.html")
+        ),
+        'csv': lambda: generator.generate_csv_report(
+            str(output_dir / f"waymap_report_{generator.timestamp}.csv")
+        ),
+        'markdown': lambda: generator.generate_markdown_report(
+            str(output_dir / f"waymap_report_{generator.timestamp}.md")
+        ),
+        'pdf': lambda: generator.generate_pdf_report(
+            str(output_dir / f"waymap_report_{generator.timestamp}.pdf")
+        ),
+    }
+
     reports = {}
-    
+
     try:
-        # HTML Report
-        html_path = str(output_dir / f"waymap_report_{generator.timestamp}.html")
-        reports['html'] = generator.generate_html_report(html_path)
-        
-        # CSV Report
-        csv_path = str(output_dir / f"waymap_report_{generator.timestamp}.csv")
-        reports['csv'] = generator.generate_csv_report(csv_path)
-        
-        # Markdown Report
-        md_path = str(output_dir / f"waymap_report_{generator.timestamp}.md")
-        reports['markdown'] = generator.generate_markdown_report(md_path)
-        
-        # PDF Report
-        pdf_path = str(output_dir / f"waymap_report_{generator.timestamp}.pdf")
-        reports['pdf'] = generator.generate_pdf_report(pdf_path)
-        
-        print_status(f"All reports generated in: {output_dir}", "success")
+        for fmt in ('html', 'csv', 'markdown', 'pdf'):
+            if fmt not in normalized:
+                continue
+            reports[fmt] = format_generators[fmt]()
+
+        if reports:
+            print_status(f"Reports generated in: {output_dir}", "success")
         
     except Exception as e:
         logger.error(f"Error generating reports: {e}")

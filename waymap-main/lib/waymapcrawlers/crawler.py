@@ -15,7 +15,7 @@ import urllib3
 
 from lib.core.config import get_config
 from lib.core.logger import get_logger
-from lib.ui import print_status, print_header, prompt_line
+from lib.ui import print_status, print_header, prompt_line, colored
 from lib.utils import is_valid_url, has_query_parameters, is_within_domain
 from lib.parse.random_headers import generate_random_headers
 
@@ -197,10 +197,10 @@ class WaymapCrawler:
             except OSError:
                 pass
 
-        # Threading prompt
+        # Threading: honor configured thread_count when prompts are disabled
         use_threads = False
         if no_prompt:
-            use_threads = config.DEFAULT_INPUT.lower() == 'y'
+            use_threads = self.thread_count > 1
         else:
             choice = prompt_line("Enable multi-threading? [y/N]", "n").lower()
             use_threads = choice == 'y'
