@@ -1,0 +1,7 @@
+stackoverflow.com
+php.net
+security.stackexchange.com
+sitepoint.com
+webmasterworld.com
+moodle.org
+w3schools.com

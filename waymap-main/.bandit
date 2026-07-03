@@ -1,0 +1,11 @@
+skips:
+  - B501  # verify=False is intentional for a vulnerability scanner probing arbitrary targets
+  - B311  # random module used for payload fuzzing, not cryptography
+  - B107  # false positive on auth parameter names like password_field
+  - B404  # subprocess used for optional DNS recon helpers
+  - B603  # subprocess calls use fixed argv without shell=True
+  - B607  # nslookup resolved via PATH on the scanning host
+exclude_dirs:
+  - /data
+  - /sessions
+  - /reports

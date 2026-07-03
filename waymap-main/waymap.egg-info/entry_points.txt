@@ -1,0 +1,2 @@
+[console_scripts]
+waymap = waymap.waymap:main

