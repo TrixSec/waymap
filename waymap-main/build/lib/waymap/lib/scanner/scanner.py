@@ -8,10 +8,16 @@ from typing import List, Optional
 from lib.core.logger import get_logger
 from lib.core.config import get_config
 from lib.ui import print_status, print_header, print_separator
-from lib.utils import is_valid_url, has_query_parameters, extract_domain
+from lib.utils import is_valid_url, has_query_parameters, filter_urls_with_params, extract_domain
 
 logger = get_logger(__name__)
 config = get_config()
+
+# Scans that require query parameters for injection testing
+PARAM_SCANS = frozenset({
+    'sqli', 'cmdi', 'rce', 'ssti', 'xss', 'lfi',
+    'open-redirect', 'crlf', 'injection-advanced',
+})
 
 
 class WaymapScanner:
@@ -56,18 +62,8 @@ class WaymapScanner:
         if domain:
             self.logger = get_logger(f"{__name__}.WaymapScanner", domain)
         
-        # Determine if we need to crawl
-        urls_to_scan = []
-        
-        if has_query_parameters(target):
-            print_status(f"Target has parameters, skipping crawl", "info")
-            urls_to_scan = [target]
-        elif crawl_depth > 0:
-            print_status(f"Starting crawl with depth {crawl_depth}", "info")
-            urls_to_scan = self._crawl_target(target, crawl_depth)
-        else:
-            print_status("No crawl depth specified and target has no parameters", "warning")
-            urls_to_scan = [target]
+        # Determine URLs to scan
+        urls_to_scan = self._resolve_urls_to_scan(target, crawl_depth)
         
         if not urls_to_scan:
             print_status("No URLs found to scan", "warning")
@@ -103,6 +99,25 @@ class WaymapScanner:
 
         self._run_vulnerability_scan(scan_urls, scan_type, technique_string)
     
+    def _resolve_urls_to_scan(self, target: str, crawl_depth: int) -> List[str]:
+        """Resolve which URLs to scan, optionally crawling first."""
+        if has_query_parameters(target):
+            print_status("Target has query parameters, skipping crawl", "info")
+            return [target]
+
+        if crawl_depth > 0:
+            print_status(f"Starting crawl with depth {crawl_depth}", "info")
+            crawled = self._crawl_target(target, crawl_depth)
+            if crawled:
+                return crawled
+            print_status(
+                "Crawl found no parameterized URLs; falling back to base target",
+                "warning",
+            )
+
+        print_status(f"Scanning base URL: {target}", "info")
+        return [target]
+    
     def _crawl_target(self, target: str, depth: int) -> List[str]:
         """
         Crawl target to find URLs.
@@ -125,11 +140,9 @@ class WaymapScanner:
             )
             
             # Filter valid URLs with parameters
-            domain = extract_domain(target)
-            valid_urls = [
-                url for url in urls
-                if is_valid_url(url) and has_query_parameters(url)
-            ]
+            valid_urls = filter_urls_with_params([
+                url for url in urls if is_valid_url(url)
+            ])
             
             print_status(f"Found {len(valid_urls)} valid URLs with parameters", "success")
             return valid_urls
@@ -138,6 +151,20 @@ class WaymapScanner:
             self.logger.error(f"Crawling failed: {e}", exc_info=True)
             print_status(f"Crawling failed: {e}", "error")
             return []
+    
+    def _urls_for_scan_type(self, urls: List[str], scan_type: str) -> Optional[List[str]]:
+        """Return the URL list appropriate for a scan type, or None to skip."""
+        if scan_type not in PARAM_SCANS:
+            return urls
+
+        param_urls = filter_urls_with_params(urls)
+        if not param_urls:
+            print_status(
+                f"{scan_type} requires URLs with query parameters; none found — skipping",
+                "warning",
+            )
+            return None
+        return param_urls
     
     def _run_vulnerability_scan(
         self,
@@ -201,7 +228,11 @@ class WaymapScanner:
             technique_string: Optional SQLi techniques
         """
         try:
-            print_status(f"Scanning {len(urls)} URLs for {scan_type}", "info")
+            scan_urls = self._urls_for_scan_type(urls, scan_type)
+            if scan_urls is None:
+                return
+
+            print_status(f"Scanning {len(scan_urls)} URLs for {scan_type}", "info")
             
             if scan_type == 'sqli':
                 from lib.injection.sqlin.sql import run_sql_tests, run_boolean_sqli, run_error_sqli, run_time_blind_sqli
@@ -209,82 +240,82 @@ class WaymapScanner:
                 if technique_string:
                     for char in technique_string.upper():
                         if char == 'B':
-                            run_boolean_sqli(urls, self.thread_count)
+                            run_boolean_sqli(scan_urls, self.thread_count)
                         elif char == 'E':
-                            run_error_sqli(urls, self.thread_count)
+                            run_error_sqli(scan_urls, self.thread_count)
                         elif char == 'T':
-                            run_time_blind_sqli(urls, self.thread_count)
+                            run_time_blind_sqli(scan_urls, self.thread_count)
                 else:
-                    run_sql_tests(urls, self.thread_count)
+                    run_sql_tests(scan_urls, self.thread_count)
                     
             elif scan_type == 'cmdi':
                 from lib.injection.cmdi import perform_cmdi_scan
                 payloads = self._load_payloads('cmdipayload.txt')
-                perform_cmdi_scan(urls, payloads, self.thread_count, self.no_prompt)
+                perform_cmdi_scan(scan_urls, payloads, self.thread_count, self.no_prompt)
 
             elif scan_type == 'rce':
                 from lib.injection.rce import perform_rce_scan
-                perform_rce_scan(urls, self.thread_count, self.no_prompt, verbose=True)
+                perform_rce_scan(scan_urls, self.thread_count, self.no_prompt, verbose=True)
                 
             elif scan_type == 'ssti':
                 from lib.injection.ssti import perform_ssti_scan
-                perform_ssti_scan(urls, self.thread_count, self.no_prompt, verbose=True)
+                perform_ssti_scan(scan_urls, self.thread_count, self.no_prompt, verbose=True)
                 
             elif scan_type == 'xss':
                 from lib.injection.xss import perform_xss_scan
-                perform_xss_scan(urls, self.thread_count, self.no_prompt, verbose=True)
+                perform_xss_scan(scan_urls, self.thread_count, self.no_prompt, verbose=True)
                 
             elif scan_type == 'lfi':
                 from lib.injection.lfi import perform_lfi_scan
-                perform_lfi_scan(urls, self.thread_count, self.no_prompt, verbose=True)
+                perform_lfi_scan(scan_urls, self.thread_count, self.no_prompt, verbose=True)
                 
             elif scan_type == 'open-redirect':
                 from lib.injection.openredirect import perform_redirect_scan
-                perform_redirect_scan(urls, self.thread_count, self.no_prompt, verbose=True)
+                perform_redirect_scan(scan_urls, self.thread_count, self.no_prompt, verbose=True)
                 
             elif scan_type == 'crlf':
                 from lib.injection.crlf import perform_crlf_scan
-                perform_crlf_scan(urls, self.thread_count, self.no_prompt, verbose=True)
+                perform_crlf_scan(scan_urls, self.thread_count, self.no_prompt, verbose=True)
                 
             elif scan_type == 'cors':
                 from lib.injection.cors import perform_cors_scan
-                perform_cors_scan(urls, self.thread_count, self.no_prompt, verbose=True)
+                perform_cors_scan(scan_urls, self.thread_count, self.no_prompt, verbose=True)
 
             elif scan_type == 'recon':
                 from lib.recon.foundation import perform_recon_scan
-                perform_recon_scan(urls, self.thread_count, self.no_prompt, verbose=True)
+                perform_recon_scan(scan_urls, self.thread_count, self.no_prompt, verbose=True)
 
             elif scan_type == 'misconfig':
                 from lib.recon.misconfig import perform_misconfig_scan
-                perform_misconfig_scan(urls, self.thread_count, self.no_prompt, verbose=True)
+                perform_misconfig_scan(scan_urls, self.thread_count, self.no_prompt, verbose=True)
 
             elif scan_type == 'redirect':
                 from lib.recon.redirects import perform_redirect_injection_scan
-                perform_redirect_injection_scan(urls, self.thread_count, self.no_prompt, verbose=True)
+                perform_redirect_injection_scan(scan_urls, self.thread_count, self.no_prompt, verbose=True)
 
             elif scan_type == 'injection-advanced':
                 from lib.injection.advanced import perform_injection_advanced_scan
-                perform_injection_advanced_scan(urls, self.thread_count, self.no_prompt, verbose=True)
+                perform_injection_advanced_scan(scan_urls, self.thread_count, self.no_prompt, verbose=True)
 
             elif scan_type == 'graphql-suite':
                 from lib.api.graphql_suite import perform_graphql_suite_scan
-                perform_graphql_suite_scan(urls, verbose=True)
+                perform_graphql_suite_scan(scan_urls, verbose=True)
 
             elif scan_type == 'auth-logic':
                 from lib.api.auth_logic import perform_auth_logic_scan
-                perform_auth_logic_scan(urls, verbose=True)
+                perform_auth_logic_scan(scan_urls, verbose=True)
 
             elif scan_type == 'cache-smuggling':
                 from lib.cache.smuggling import perform_cache_smuggling_scan
-                perform_cache_smuggling_scan(urls, verbose=True)
+                perform_cache_smuggling_scan(scan_urls, verbose=True)
 
             elif scan_type == 'wordpress-extras':
                 from lib.ProfileWordpress.wordpress_extras import perform_wordpress_extras_scan
-                perform_wordpress_extras_scan(urls, verbose=True)
+                perform_wordpress_extras_scan(scan_urls, verbose=True)
 
             elif scan_type == 'optional':
                 from lib.optional.optional_checks import perform_optional_scan
-                perform_optional_scan(urls, verbose=True)
+                perform_optional_scan(scan_urls, verbose=True)
             
             self.logger.info(f"Completed {scan_type} scan")
             

@@ -2,11 +2,8 @@ LICENSE
 MANIFEST.in
 README.md
 VERSION
-__init__.py
 pyproject.toml
-requirements.txt
 setup.py
-targets.txt
 usage.md
 waymap.py
 ./README.md
@@ -144,6 +141,7 @@ lib/api/api_scanner.py
 lib/api/auth_logic.py
 lib/api/graphql_suite.py
 lib/api/wpscan_client.py
+lib/api/__pycache__/__init__.cpython-314.pyc
 lib/api/__pycache__/api_scanner.cpython-314.pyc
 lib/api/__pycache__/auth_logic.cpython-314.pyc
 lib/api/__pycache__/graphql_suite.cpython-314.pyc

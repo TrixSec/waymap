@@ -10,11 +10,20 @@ from lib.injection.sqlin.error import process_urls as process_error_urls
 from lib.injection.sqlin.timeblind import process_urls as process_time_blind_urls
 from lib.core.logger import get_logger
 from lib.core.state import stop_scan
+from lib.utils import filter_urls_with_params
 
 logger = get_logger(__name__)
 
+def _parameterized_urls(urls: List[str]) -> List[str]:
+    """Filter to URLs with injectable query parameters."""
+    return filter_urls_with_params(urls)
+
 def run_sql_tests(urls: List[str], thread_count: int) -> None:
     """Run all SQL injection tests."""
+    urls = _parameterized_urls(urls)
+    if not urls:
+        return
+
     stop_scan.clear()
     
     # We pass the full list to the processors if they support it, 
@@ -44,13 +53,22 @@ def run_sql_tests(urls: List[str], thread_count: int) -> None:
         logger.error(f"Error in time-blind SQLi: {e}")
 
 def run_boolean_sqli(urls: List[str], thread_count: int) -> None:
+    urls = _parameterized_urls(urls)
+    if not urls:
+        return
     stop_scan.clear()
     process_boolean_urls(urls, thread_count)
 
 def run_error_sqli(urls: List[str], thread_count: int) -> None:
+    urls = _parameterized_urls(urls)
+    if not urls:
+        return
     stop_scan.clear()
     process_error_urls(urls, thread_count)
 
 def run_time_blind_sqli(urls: List[str], thread_count: int) -> None:
+    urls = _parameterized_urls(urls)
+    if not urls:
+        return
     stop_scan.clear()
     process_time_blind_urls(urls, thread_count)

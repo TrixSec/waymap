@@ -407,7 +407,8 @@ def _run():
         if args.report_format:
             print_separator()
             print_status("Generating Reports...", "info")
-            generate_all_reports(scan_results, args.output_dir)
+            formats = [f.strip() for f in args.report_format.split(',') if f.strip()]
+            generate_all_reports(scan_results, args.output_dir, formats=formats)
 
     except KeyboardInterrupt:
         exit_clean()
