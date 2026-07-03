@@ -1,9 +1,0 @@
-https://google.com/
-https://example.com
-https://example.com/
-https://www.example.com
-http://example.com
-http://example.com/
-http://www.example.com
-https://google.com
-https://evil.com
