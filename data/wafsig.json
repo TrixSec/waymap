@@ -1,0 +1,1664 @@
+{
+    "wafs": [
+        {
+            "name": "aeSecure",
+            "errors": {
+                "header": [
+                    "aeSecure-code:.+?"
+                ],
+                "content": [
+                    "aesecure_denied\\.png"
+                ]
+            }
+        },
+        {
+            "name": "AireeCDN",
+            "errors": {
+                "header": [
+                    "Server: Airee",
+                    "X-Cache: (\\w+\\.)?airee\\.cloud"
+                ],
+                "content": [
+                    "airee\\.cloud"
+                ]
+            }
+        },
+        {
+            "name": "Airlock",
+            "errors": {
+                "cookie": [
+                    "^al[_-]?(sess|lb)="
+                ],
+                "content": [
+                    "server detected a syntax error in your request"
+                ]
+            }
+        },
+        {
+            "name": "Alert Logic",
+            "errors": {
+                "content": [
+                    "<(title|h\\d{1})>requested url cannot be found",
+                    "we are sorry.{0,10}?but the page you are looking for cannot be found",
+                    "back to previous page",
+                    "proceed to homepage",
+                    "reference id"
+                ]
+            }
+        },
+        {
+            "name": "AliYunDun",
+            "errors": {
+                "content": [
+                    "error(s)?\\.aliyun(dun)?\\.(com|net)?",
+                    "alicdn\\.com\\/sd\\-base\\/static\\/\\d{1,2}\\.\\d{1,2}\\.\\d{1,2}\\/image\\/405\\.png",
+                    "Sorry, your request has been blocked as it may cause potential threats to the server's security."
+                ],
+                "status": [
+                    "405"
+                ]
+            }
+        },
+        {
+            "name": "Anquanbao",
+            "errors": {
+                "header": [
+                    "X-Powered-By-Anquanbao:.+?"
+                ],
+                "content": [
+                    "aqb_cc/error/"
+                ]
+            }
+        },
+        {
+            "name": "AnYu",
+            "errors": {
+                "content": [
+                    "anyu.{0,10}?the green channel",
+                    "your access has been intercepted by anyu"
+                ]
+            }
+        },
+        {
+            "name": "Azure Application Gateway",
+            "errors": {
+                "content": [
+                    "<center>Microsoft-Azure-Application-Gateway/v2</center>",
+                    "<h1>403 Forbidden</h1>"
+                ]
+            }
+        },
+        {
+            "name": "Approach",
+            "errors": {
+                "content": [
+                    "approach.{0,10}?web application (firewall|filtering)",
+                    "approach.{0,10}?infrastructure team"
+                ]
+            }
+        },
+        {
+            "name": "Armor Defense",
+            "errors": {
+                "content": [
+                    "blocked by website protection from armor",
+                    "please create an armor support ticket"
+                ]
+            }
+        },
+        {
+            "name": "ArvanCloud",
+            "errors": {
+                "header": [
+                    "Server: ArvanCloud"
+                ]
+            }
+        },
+        {
+            "name": "ASPA Firewall",
+            "errors": {
+                "header": [
+                    "Server: ASPA[\\-_]?WAF",
+                    "ASPA-Cache-Status:.+?"
+                ]
+            }
+        },
+        {
+            "name": "ASP.NET Generic",
+            "errors": {
+                "content": [
+                    "iis (\\d+.)+?detailed error",
+                    "potentially dangerous request querystring",
+                    "application error from being viewed remotely (for security reasons)?",
+                    "An application error occurred on the server"
+                ]
+            }
+        },
+        {
+            "name": "Astra",
+            "errors": {
+                "cookie": [
+                    "^cz_astra_csrf_cookie"
+                ],
+                "content": [
+                    "astrawebsecurity\\.freshdesk\\.com",
+                    "www\\.getastra\\.com/assets/images"
+                ]
+            }
+        },
+        {
+            "name": "AWS Elastic Load Balancer",
+            "errors": {
+                "header": [
+                    "X-AMZ-ID:.+?",
+                    "X-AMZ-Request-ID:.+?",
+                    "Server: aws.?elb",
+                    "X-Blocked-By-WAF: Blocked_by_custom_response_for_AWSManagedRules.*"
+                ],
+                "cookie": [
+                    "^aws.?alb="
+                ]
+            }
+        },
+        {
+            "name": "Azion Edge Firewall",
+            "errors": {
+                "header": [
+                    "x-azion-edge-pop:.+?",
+                    "x-azion-request-id:.+?"
+                ]
+            }
+        },
+        {
+            "name": "Yunjiasu",
+            "errors": {
+                "header": [
+                    "Server: yunjiasu.*"
+                ],
+                "content": [
+                    "href=\"/.well-known/yunjiasu-cgi/",
+                    "document.cookie='yjs_use_ob=0"
+                ]
+            }
+        },
+        {
+            "name": "Barikode",
+            "errors": {
+                "content": [
+                    "<strong>barikode</strong>"
+                ]
+            }
+        },
+        {
+            "name": "Barracuda",
+            "errors": {
+                "cookie": [
+                    "^barra_counter_session=",
+                    "^BNI__BARRACUDA_LB_COOKIE=",
+                    "^BNI_persistence=",
+                    "^BN[IE]S_.*?="
+                ],
+                "content": [
+                    "Barracuda.Networks"
+                ]
+            }
+        },
+        {
+            "name": "Bekchy",
+            "errors": {
+                "content": [
+                    "Bekchy.{0,10}?Access Denied",
+                    "bekchy\\.com/report"
+                ]
+            }
+        },
+        {
+            "name": "Beluga CDN",
+            "errors": {
+                "header": [
+                    "Server: Beluga"
+                ],
+                "cookie": [
+                    "^beluga_request_trail="
+                ]
+            }
+        },
+        {
+            "name": "BinarySec",
+            "errors": {
+                "header": [
+                    "Server: BinarySec",
+                    "x-binarysec-via:.+",
+                    "x-binarysec-nocache:.+"
+                ]
+            }
+        },
+        {
+            "name": "BitNinja",
+            "errors": {
+                "content": [
+                    "Security check by BitNinja",
+                    "Visitor anti-robot validation"
+                ]
+            }
+        },
+        {
+            "name": "BlockDoS",
+            "errors": {
+                "header": [
+                    "Server: blockdos\\.net"
+                ]
+            }
+        },
+        {
+            "name": "Bluedon",
+            "errors": {
+                "header": [
+                    "Server: BDWAF"
+                ],
+                "content": [
+                    "bluedon web application firewall"
+                ]
+            }
+        },
+        {
+            "name": "BulletProof Security Pro",
+            "errors": {
+                "content": [
+                    "\\+?bpsMessage",
+                    "403 Forbidden Error Page",
+                    "If you arrived here due to a search"
+                ]
+            }
+        },
+        {
+            "name": "CacheFly CDN",
+            "errors": {
+                "header": [
+                    "BestCDN: Cachefly"
+                ],
+                "cookie": [
+                    "^cfly_req.*="
+                ]
+            }
+        },
+        {
+            "name": "CacheWall",
+            "errors": {
+                "header": [
+                    "Server: Varnish",
+                    "X-Varnish:.+",
+                    "X-Cachewall-Action:.+?",
+                    "X-Cachewall-Reason:.+?"
+                ],
+                "content": [
+                    "security by cachewall",
+                    "403 naughty.{0,10}?not nice!",
+                    "varnish cache server"
+                ]
+            }
+        },
+        {
+            "name": "CdnNS Application Gateway",
+            "errors": {
+                "content": [
+                    "cdnnswaf application gateway"
+                ]
+            }
+        },
+        {
+            "name": "WP Cerber Security",
+            "errors": {
+                "content": [
+                    "your request looks suspicious or similar to automated",
+                    "our server stopped processing your request",
+                    "We.re sorry.{0,10}?you are not allowed to proceed",
+                    "requests from spam posting software",
+                    "<title>403 Access Forbidden"
+                ]
+            }
+        },
+        {
+            "name": "ChinaCache Load Balancer",
+            "errors": {
+                "header": [
+                    "Powered-By-ChinaCache:.+"
+                ]
+            }
+        },
+        {
+            "name": "Chuang Yu Shield",
+            "errors": {
+                "content": [
+                    "www\\.365cyd\\.com",
+                    "help\\.365cyd\\.com/cyd\\-error\\-help.html\\?code=403"
+                ]
+            }
+        },
+        {
+            "name": "ACE XML Gateway",
+            "errors": {
+                "header": [
+                    "Server: ACE XML Gateway"
+                ]
+            }
+        },
+        {
+            "name": "Cloudbric",
+            "errors": {
+                "content": [
+                    "<title>Cloudbric.{0,5}?ERROR!",
+                    "Your request was blocked by Cloudbric",
+                    "please contact Cloudbric Support",
+                    "cloudbric\\.zendesk\\.com",
+                    "Cloudbric Help Center",
+                    "malformed request syntax.{0,4}?invalid request message framing.{0,4}?or deceptive request routing"
+                ]
+            }
+        },
+        {
+            "name": "Cloudflare",
+            "errors": {
+                "header": [
+                    "server: cloudflare",
+                    "server: cloudflare[-_]nginx",
+                    "cf-ray: .+"
+                ],
+                "content": [
+                    "Attention Required! \\| Cloudflare|CLOUDFLARE_ERROR_"
+                ],
+                "cookie": [
+                    "__cfduid"
+                ]
+            }
+        },
+        {
+            "name": "Cloudfloor",
+            "errors": {
+                "header": [
+                    "Server: CloudfloorDNS(.WAF)?"
+                ],
+                "content": [
+                    "<(title|h\\d{1})>CloudfloorDNS.{0,6}?Web Application Firewall Error",
+                    "www\\.cloudfloordns\\.com/contact"
+                ]
+            }
+        },
+        {
+            "name": "Cloudfront",
+            "errors": {
+                "header": [
+                    "Server: Cloudfront",
+                    "Via: [0-9\\.]+? \\w+?\\.cloudfront\\.net \\(Cloudfront\\)",
+                    "X-Amz-Cf-Id: .+",
+                    "X-Cache: Error from Cloudfront"
+                ],
+                "content": [
+                    "Generated by cloudfront \\(CloudFront\\)"
+                ]
+            }
+        },
+        {
+            "name": "Cloud Protector",
+            "errors": {
+                "content": [
+                    "Cloud Protector.*?by Rohde.{3,8}?Schwarz Cybersecurity",
+                    "<a href='https?:\\/\\/(?:www\\.)?cloudprotector\\.com\\/'>R.{1,6}?S.Cloud Protector"
+                ]
+            }
+        },
+        {
+            "name": "Comodo cWatch",
+            "errors": {
+                "header": [
+                    "Server: Protected by COMODO WAF(.+)?"
+                ]
+            }
+        },
+        {
+            "name": "CrawlProtect",
+            "errors": {
+                "cookie": [
+                    "^crawlprotecttag="
+                ],
+                "content": [
+                    "<title>crawlprotect",
+                    "this site is protected by crawlprotect"
+                ]
+            }
+        },
+        {
+            "name": "DDoS-GUARD",
+            "errors": {
+                "cookie": [
+                    "^__ddg1.*=",
+                    "^__ddg2.*=",
+                    "^__ddgid.*=",
+                    "^__ddgmark.*="
+                ],
+                "header": [
+                    "Server: ddos-guard"
+                ]
+            }
+        },
+        {
+            "name": "DenyALL",
+            "errors": {
+                "status": [
+                    "200"
+                ],
+                "reason": [
+                    "Condition Intercepted"
+                ]
+            }
+        },
+        {
+            "name": "Distil",
+            "errors": {
+                "content": [
+                    "cdn\\.distilnetworks\\.com/images/anomaly\\.detected\\.png",
+                    "distilCaptchaForm",
+                    "distilCallbackGuard"
+                ]
+            }
+        },
+        {
+            "name": "DOSarrest",
+            "errors": {
+                "header": [
+                    "X-DIS-Request-ID: .+",
+                    "Server: DOSarrest(.*)?"
+                ]
+            }
+        },
+        {
+            "name": "DotDefender",
+            "errors": {
+                "header": [
+                    "X-dotDefender-denied: .+?"
+                ],
+                "content": [
+                    "dotdefender blocked your request",
+                    "Applicure is the leading provider of web application security"
+                ]
+            }
+        },
+        {
+            "name": "DynamicWeb Injection Check",
+            "errors": {
+                "header": [
+                    "X-403-Status-By: dw.inj.check"
+                ],
+                "content": [
+                    "by dynamic check(.{0,10}?module)?"
+                ]
+            }
+        },
+        {
+            "name": "Eisoo Cloud Firewall",
+            "errors": {
+                "header": [
+                    "Server: EisooWAF(\\-AZURE)?/?"
+                ],
+                "content": [
+                    "<link.{0,10}?href=\"/eisoo\\-firewall\\-block\\.css",
+                    "www\\.eisoo\\.com",
+                    "\\u00a9 \\d{4} Eisoo Inc"
+                ]
+            }
+        },
+        {
+            "name": "Envoy",
+            "errors": {
+                "header": [
+                    "server: envoy",
+                    "x-envoy-upstream-service-time: .+",
+                    "x-envoy-downstream-service-cluster: .+",
+                    "x-envoy-downstream-service-node: .+",
+                    "x-envoy-external-address: .+",
+                    "x-envoy-force-trace: .+",
+                    "x-envoy-internal: .+",
+                    "x-envoy-original-dst-host: .+",
+                    "x-envoy-original-path: .+",
+                    "x-envoy-local-overloaded: .+"
+                ]
+            }
+        },
+        {
+            "name": "Expression Engine",
+            "errors": {
+                "cookie": [
+                    "^exp_track.+?=",
+                    "^exp_last_.+?="
+                ],
+                "content": [
+                    "invalid get data"
+                ]
+            }
+        },
+        {
+            "name": "BIG-IP AP Manager (F5 Networks)",
+            "errors": {
+                "cookie": [
+                    "^LastMRH_Session",
+                    "^MRHSession",
+                    "^F5_fullWT",
+                    "^F5_HT_shrinked"
+                ],
+                "header": [
+                    "Server: Big([-_])?IP"
+                ]
+            }
+        },
+        {
+            "name": "BIG-IP AppSec Manager (F5 Networks)",
+            "errors": {
+                "content": [
+                    "the requested url was rejected",
+                    "please consult with your administrator"
+                ],
+                "cookie": [
+                    "^TS.+?"
+                ]
+            }
+        },
+        {
+            "name": "BIG-IP Local Traffic Manager (F5 Networks)",
+            "errors": {
+                "cookie": [
+                    "^bigipserver"
+                ],
+                "header": [
+                    "X-Cnection: close"
+                ]
+            }
+        },
+        {
+            "name": "FirePass (F5 Networks)",
+            "errors": {
+                "cookie": [
+                    "^VHOST",
+                    "^F5_fire.+?",
+                    "^F5_passid_shrinked"
+                ],
+                "header": [
+                    "Location: \\/my\\.logon\\.php3"
+                ]
+            }
+        },
+        {
+            "name": "Trafficshield (F5 Networks)",
+            "errors": {
+                "cookie": [
+                    "^ASINFO="
+                ],
+                "header": [
+                    "Server: F5-TrafficShield"
+                ]
+            }
+        },
+        {
+            "name": "FortiGate (Fortinet)",
+            "errors": {
+                "content": [
+                    "//globalurl.fortinet.net",
+                    "FortiGate Application Control",
+                    "Web Application Firewall",
+                    "Event ID"
+                ]
+            }
+        },
+        {
+            "name": "FortiGuard (Fortinet)",
+            "errors": {
+                "content": [
+                    "FortiGuard Intrusion Prevention",
+                    "//globalurl.fortinet.net",
+                    "<title>Web Filter Violation"
+                ]
+            }
+        },
+        {
+            "name": "FortiWeb (Fortinet)",
+            "errors": {
+                "cookie": [
+                    "^FORTIWAFSID="
+                ],
+                "content": [
+                    ".fgd_icon",
+                    "web.page.blocked",
+                    "attack.id",
+                    "client.ip"
+                ]
+            }
+        },
+        {
+            "name": "Azure Front Door (Microsoft)",
+            "errors": {
+                "header": [
+                    "X-Azure-Ref: .+?"
+                ]
+            }
+        },
+        {
+            "name": "Google Cloud App Armor (Google Cloud)",
+            "errors": {
+                "header": [
+                    "Via: 1.1 google"
+                ]
+            }
+        },
+        {
+            "name": "GoDaddy Website Protection (GoDaddy)",
+            "errors": {
+                "content": [
+                    "GoDaddy (security|website firewall)"
+                ]
+            }
+        },
+        {
+            "name": "Greywizard (Grey Wizard)",
+            "errors": {
+                "header": [
+                    "Server: greywizard"
+                ],
+                "content": [
+                    "<(title|h\\d{1})>Grey Wizard",
+                    "contact the website owner or Grey Wizard",
+                    "We.ve detected attempted attack or non standard traffic from your ip address"
+                ]
+            }
+        },
+        {
+            "name": "Huawei Cloud Firewall (Huawei)",
+            "errors": {
+                "cookie": [
+                    "^HWWAFSESID="
+                ],
+                "header": [
+                    "Server: HuaweiCloudWAF"
+                ],
+                "content": [
+                    "hwclouds\\.com",
+                    "hws_security@"
+                ]
+            }
+        },
+        {
+            "name": "DataPower (IBM)",
+            "errors": {
+                "header": [
+                    "X-Backside-Transport: (OK|FAIL)"
+                ]
+            }
+        },
+        {
+            "name": "Imunify360 (CloudLinux)",
+            "errors": {
+                "header": [
+                    "Server: imunify360.{0,10}?"
+                ],
+                "content": [
+                    "protected.by.{0,10}?imunify360",
+                    "powered.by.{0,10}?imunify360",
+                    "imunify360.preloader"
+                ]
+            }
+        },
+        {
+            "name": "Incapsula (Imperva Inc.)",
+            "errors": {
+                "cookie": [
+                    "^incap_ses.*=",
+                    "^visid_incap.*="
+                ],
+                "content": [
+                    "incapsula incident id",
+                    "powered by incapsula",
+                    "/_Incapsula_Resource"
+                ]
+            }
+        },
+        {
+            "name": "IndusGuard (Indusface)",
+            "errors": {
+                "header": [
+                    "Server: IF_WAF"
+                ],
+                "content": [
+                    "This website is secured against online attacks. Your request was blocked"
+                ]
+            }
+        },
+        {
+            "name": "Instart DX (Instart Logic)",
+            "errors": {
+                "header": [
+                    "X-Instart-Request-ID: .+",
+                    "X-Instart-Cache: .+",
+                    "X-Instart-WL: .+"
+                ],
+                "content": [
+                    "the requested url was rejected",
+                    "please consult with your administrator",
+                    "your support id is"
+                ]
+            }
+        },
+        {
+            "name": "ISA Server (Microsoft)",
+            "errors": {
+                "content": [
+                    "The.{0,10}?(isa.)?server.{0,10}?denied the specified uniform resource locator \\(url\\)"
+                ]
+            }
+        },
+        {
+            "name": "Janusec Application Gateway (Janusec)",
+            "errors": {
+                "content": [
+                    "janusec application gateway"
+                ]
+            }
+        },
+        {
+            "name": "Jiasule (Jiasule)",
+            "errors": {
+                "header": [
+                    "Server: jiasule\\-waf"
+                ],
+                "cookie": [
+                    "^jsl_tracking(.+)?=",
+                    "__jsluid="
+                ],
+                "content": [
+                    "notice\\-jiasule",
+                    "static\\.jiasule\\.com"
+                ]
+            }
+        },
+        {
+            "name": "Kemp LoadMaster (Progress Software)",
+            "errors": {
+                "header": [
+                    "X-ServedBy: KEMP-LM"
+                ],
+                "content": [
+                    "<title>403 Forbidden</title>"
+                ]
+            }
+        },
+        {
+            "name": "KeyCDN (KeyCDN)",
+            "errors": {
+                "header": [
+                    "Server: KeyCDN"
+                ]
+            }
+        },
+        {
+            "name": "Kona SiteDefender (Akamai)",
+            "errors": {
+                "header": [
+                    "Server: AkamaiGHost",
+                    "Server: AkamaiGHost"
+                ]
+            }
+        },
+        {
+            "name": "LimeLight CDN (LimeLight)",
+            "errors": {
+                "cookie": [
+                    "^limelight",
+                    "^l[mg]_sessid="
+                ]
+            }
+        },
+        {
+            "name": "Malcare (Inactiv)",
+            "errors": {
+                "content": [
+                    "firewall.{0,15}?powered.by.{0,15}?malcare.{0,15}?pro",
+                    "blocked because of malicious activities"
+                ]
+            }
+        },
+        {
+            "name": "Mission Control Shield (Mission Control)",
+            "errors": {
+                "header": [
+                    "Server: Mission Control Application Shield"
+                ]
+            }
+        },
+        {
+            "name": "ModSecurity (SpiderLabs)",
+            "errors": {
+                "header": [
+                    "(mod_security|Mod_Security|NOYB)"
+                ],
+                "content": [
+                    "This error was generated by Mod.?Security",
+                    "rules of the mod.security.module",
+                    "mod.security.rules triggered",
+                    "Protected by Mod.?Security",
+                    "/modsecurity[\\\\-_]errorpage/",
+                    "modsecurity iis"
+                ],
+                "reason": [
+                    "ModSecurity Action",
+                    "ModSecurity Action"
+                ]
+            }
+        },
+        {
+            "name": "NAXSI (NBS Systems)",
+            "errors": {
+                "header": [
+                    "^naxsi(.+)?$",
+                    "^naxsi(.+)?$"
+                ],
+                "content": [
+                    "blocked by naxsi",
+                    "naxsi blocked information"
+                ]
+            }
+        },
+        {
+            "name": "NetContinuum (Barracuda Networks)",
+            "errors": {
+                "cookie": [
+                    "^NCI__SessionId="
+                ]
+            }
+        },
+        {
+            "name": "NetScaler AppFirewall (Citrix Systems)",
+            "errors": {
+                "header": [
+                    "NS\\-CACHE",
+                    "^(keep alive|close)",
+                    "^(keep alive|close)"
+                ],
+                "cookie": [
+                    "^(ns_af=|citrix_ns_id|NSC_)"
+                ],
+                "content": [
+                    "(NS Transaction|AppFW Session) id",
+                    "Violation Category.{0,5}?APPFW_",
+                    "Citrix\\|NetScaler"
+                ]
+            }
+        },
+        {
+            "name": "NevisProxy (AdNovum)",
+            "errors": {
+                "cookie": [
+                    "^Navajo",
+                    "^NP_ID"
+                ]
+            }
+        },
+        {
+            "name": "Newdefend (NewDefend)",
+            "errors": {
+                "header": {
+                    "Newdefend": [
+                        "Server"
+                    ]
+                },
+                "content": [
+                    "www\\.newdefend\\.com/feedback",
+                    "/nd\\-block/"
+                ]
+            }
+        },
+        {
+            "name": "NinjaFirewall (NinTechNet)",
+            "errors": {
+                "content": [
+                    "<title>NinjaFirewall.{0,10}?\\\\d{3}.forbidden",
+                    "For security reasons?.{0,10}?it was blocked and logged"
+                ]
+            }
+        },
+        {
+            "name": "NSFocus (NSFocus Global Inc.)",
+            "errors": {
+                "header": {
+                    "NSFocus": [
+                        "Server"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "NullDDoS Protection (NullDDoS)",
+            "errors": {
+                "header": [
+                    "NullDDoS(.System)?"
+                ]
+            }
+        },
+        {
+            "name": "OnMessage Shield (BlackBaud)",
+            "errors": {
+                "header": [
+                    "^onMessage Shield$"
+                ],
+                "content": [
+                    "Blackbaud K\\-12 conducts routine maintenance",
+                    "onMessage SHEILD",
+                    "maintenance\\.blackbaud\\.com",
+                    "status\\.blackbaud\\.com"
+                ]
+            }
+        },
+        {
+            "name": "Open-Resty Lua Nginx (FLOSS)",
+            "errors": {
+                "header": [
+                    "^openresty/[0-9\\.]+?$"
+                ],
+                "status": [
+                    "403",
+                    "406"
+                ],
+                "content": [
+                    "openresty/[0-9\\.]+?"
+                ]
+            }
+        },
+        {
+            "name": "Palo Alto Next Gen Firewall (Palo Alto Networks)",
+            "errors": {
+                "content": [
+                    "Download of virus\\.spyware blocked",
+                    "Palo Alto Next Generation Security Platform"
+                ]
+            }
+        },
+        {
+            "name": "PentaWAF (Global Network Services)",
+            "errors": {
+                "header": [
+                    "^PentaWaf(/[0-9\\.]+)?"
+                ],
+                "content": [
+                    "Penta.?Waf/[0-9\\.]+?.server"
+                ]
+            }
+        },
+        {
+            "name": "PerimeterX (PerimeterX)",
+            "errors": {
+                "content": [
+                    "www\\.perimeterx\\.(com|net)/whywasiblocked",
+                    "client\\.perimeterx\\.(net|com)",
+                    "denied because we believe you are using automation tools"
+                ]
+            }
+        },
+        {
+            "name": "pkSecurity IDS (pkSec)",
+            "errors": {
+                "content": [
+                    "pk.?Security.?Module",
+                    "Security\\.Alert",
+                    "As this could be a potential hack attack",
+                    "A safety critical (call|request) was (detected|discovered) and blocked",
+                    "maximum number of reloads per minute and prevented access"
+                ]
+            }
+        },
+        {
+            "name": "Profense (ArmorLogic)",
+            "errors": {
+                "header": [
+                    "^Profense$"
+                ],
+                "cookie": [
+                    "^PLBSID="
+                ]
+            }
+        },
+        {
+            "name": "PT Application Firewall (Positive Technologies)",
+            "errors": {
+                "content": [
+                    "<h1.{0,10}?Forbidden",
+                    "<pre>Request\\.ID:.{0,10}?\\\\d{4}-(\\\\d{2})+.{0,35}?</pre>"
+                ]
+            }
+        },
+        {
+            "name": "Qcloud (Tencent Cloud)",
+            "errors": {
+                "content": [
+                    "\\u817e\\u8baf\\u4e91\\Web\\u5e94\\u7528\\u9632\\u706b\\u5899"
+                ],
+                "status": [
+                    "403"
+                ]
+            }
+        },
+        {
+            "name": "Qiniu (Qiniu CDN)",
+            "errors": {
+                "header": [
+                    "X-Qiniu-CDN"
+                ]
+            }
+        },
+        {
+            "name": "Qrator (Qrator)",
+            "errors": {
+                "header": [
+                    "^QRATOR$"
+                ]
+            }
+        },
+        {
+            "name": "AppWall (Radware)",
+            "errors": {
+                "content": [
+                    "CloudWebSec\\.radware\\.com",
+                    "because we have detected unauthorized activity",
+                    "<title>Unauthorized Request Blocked</title>",
+                    "if you believe that there has been some mistake",
+                    "\\?Subject=Security Page.{0,10}?Case Number"
+                ],
+                "header": [
+                    "X-SL-CompState"
+                ]
+            }
+        },
+        {
+            "name": "RSFirewall (RSJoomla!)",
+            "errors": {
+                "content": [
+                    "com_rsfirewall_(\\d{3}_forbidden|event)?"
+                ]
+            }
+        },
+        {
+            "name": "RequestValidationMode (Microsoft)",
+            "errors": {
+                "content": [
+                    "Request Validation has detected a potentially dangerous client input",
+                    "ASP\\.NET has detected data in the request",
+                    "HttpRequestValidationException"
+                ]
+            }
+        },
+        {
+           "name": "Safe3 Web Firewall (Safe3)",
+           "errors": {
+               "header": [
+                   "^Server: Safe3 Web Firewall$",
+                   "^X-Powered-By: Safe3WAF/[\\.0-9]+?$"
+                ],
+               "content": [
+                   "Safe3waf/[0-9\\.]+?"
+                ]
+            }
+        },
+        {
+            "name": "Safedog (SafeDog)",
+            "errors": {
+                "cookie": [
+                    "^safedog\\-flow\\-item="
+                ],
+                "header": [
+                    "^Safedog$"
+                ],
+                "content": [
+                    "safedogsite/broswer_logo\\.jpg",
+                    "404\\.safedog\\.cn/sitedog_stat.html",
+                    "404\\.safedog\\.cn/images/safedogsite/head\\.png"
+                ]
+            }
+        },
+        {
+            "name": "Safeline (Chaitin Tech.)",
+            "errors": {
+                "content": [
+                    "safeline|<!--\\sevent id:"
+                ]
+            }
+        },
+        {
+            "name": "SecKing (SecKing)",
+            "errors": {
+                "header": [
+                    "secking(.?waf)?"
+                ]
+            }
+        },
+        {
+            "name": "SecuPress WP Security (SecuPress)",
+            "errors": {
+                "content": [
+                    "<(title|h\\d{1})>SecuPress"
+                ]
+            }
+        },
+        {
+            "name": "Secure Entry (United Security Providers)",
+            "errors": {
+                "header": [
+                    "^Secure Entry Server$"
+                ]
+            }
+        },
+        {
+            "name": "SecureSphere (Imperva Inc.)",
+            "errors": {
+                "content": [
+                    "<(title|h2)>Error",
+                    "The incident ID is",
+                    "This page can't be displayed",
+                    "Contact support for additional information"
+                ]
+            }
+        },
+        {
+            "name": "SEnginx (Neusoft)",
+            "errors": {
+                "content": [
+                    "SENGINX\\-ROBOT\\-MITIGATION"
+                ]
+            }
+        },
+        {
+            "name": "ServerDefender VP (Port80 Software)",
+            "errors": {
+                "header": [
+                    "X-Pint"
+                ]
+            }
+        },
+        {
+            "name": "Shadow Daemon (Zecure)",
+            "errors": {
+                "content": [
+                    "<h\\d{1}>\\d{3}.forbidden</h\\d{1}>",
+                    "request forbidden by administrative rules"
+                ]
+            }
+        },
+        {
+            "name": "Shieldon Firewall (Shieldon.io)",
+            "errors": {
+                "content": [
+                    "Please solve CAPTCHA",
+                    "shieldon_captcha",
+                    "Unusual behavior detected",
+                    "status-user-info",
+                    "Access denied",
+                    "The IP address you are using has been blocked\\.",
+                    "Please line up",
+                    "This page is limiting the number of people online\\. Please wait a moment\\."
+                ],
+                "header": [
+                    "[Xx]-[Pp]rotected-[Bb]y: shieldon\\.io"
+                ]
+            }
+        },
+        {
+            "name": "Shield Security (One Dollar Plugin)",
+            "errors": {
+                "content": [
+                    "You were blocked by the Shield",
+                    "remaining transgression\\(s\\) against this site",
+                    "Something in the URL.{0,5}?Form or Cookie data wasn\\'t appropriate"
+                ]
+            }
+        },
+        {
+            "name": "SiteGround (SiteGround)",
+            "errors": {
+                "content": [
+                    "Our system thinks you might be a robot!",
+                    "access is restricted due to a security rule"
+                ]
+            }
+        },
+        {
+            "name": "SiteGuard (Sakura Inc.)",
+            "errors": {
+                "content": [
+                    "Powered by SiteGuard",
+                    "The server refuse to browse the page"
+                ]
+            }
+        },
+        {
+            "name": "Sitelock (TrueShield)",
+            "errors": {
+                "content": [
+                    "SiteLock will remember you",
+                    "Sitelock is leader in Business Website Security Services",
+                    "sitelock[_\\-]shield([_\\-]logo|[\\-_]badge)?",
+                    "SiteLock incident ID"
+                ]
+            }
+        },
+        {
+            "name": "SonicWall (Dell)",
+            "errors": {
+                "header": [
+                    "Server: SonicWALL"
+                ],
+                "content": [
+                    "<(title|h\\d{1})>Web Site Blocked",
+                    "\\+?nsa_banner"
+                ]
+            }
+        },
+        {
+            "name": "UTM Web Protection (Sophos)",
+            "errors": {
+                "content": [
+                    "www\\.sophos\\.com",
+                    "Powered by.?(Sophos)? UTM Web Protection",
+                    "<title>Access to the requested URL was blocked",
+                    "Access to the requested URL was blocked",
+                    "incident was logged with the following log identifier",
+                    "Inbound Anomaly Score exceeded",
+                    "Your cache administrator is"
+                ]
+            }
+        },
+        {
+            "name": "Squarespace (Squarespace)",
+            "errors": {
+                "header": [
+                    "Server: Squarespace"
+                ],
+                "cookie": [
+                    "^SS_ANALYTICS_ID=",
+                    "^SS_MATTR=",
+                    "^SS_MID=",
+                    "SS_CVT="
+                ],
+                "content": [
+                    "status\\.squarespace\\.com",
+                    "BRICK\\-\\d{2}"
+                ]
+            }
+        },
+        {
+            "name": "SquidProxy IDS (SquidProxy)",
+            "errors": {
+                "header": [
+                    "Server: squid(/[0-9\\.]+)?"
+                ],
+                "content": [
+                    "Access control configuration prevents your request"
+                ]
+            }
+        },
+        {
+            "name": "StackPath (StackPath)",
+            "errors": {
+                "content": [
+                    "<title>StackPath[^<]+</title>",
+                    "Protected by <a href=\"https?:\\/\\/(?:www\\.)?stackpath\\.com\\/\"[^>]+>StackPath",
+                    "is using a security service for protection against online attacks",
+                    "An action has triggered the service and blocked your request"
+                ]
+            }
+        },
+        {
+            "name": "Sucuri CloudProxy (Sucuri Inc.)",
+            "errors": {
+                "header": [
+                    "X-Sucuri-ID: .+?",
+                    "X-Sucuri-Cache: .+?",
+                    "Server: Sucuri(\\-Cloudproxy)?",
+                    "X-Sucuri-Block: .+?"
+                ],
+                "content": [
+                    "Access Denied.{0,6}?Sucuri Website Firewall",
+                    "<title>Sucuri WebSite Firewall.{0,6}?(CloudProxy)?.{0,6}?Access Denied</title>",
+                    "sucuri\\.net/privacy\\-policy",
+                    "cdn\\.sucuri\\.net/sucuri[-_]firewall[-_]block\\.css",
+                    "cloudproxy@sucuri\\.net"
+                ]
+            }
+        },
+        {
+            "name": "Tencent Cloud Firewall (Tencent Technologies)",
+            "errors": {
+                "content": [
+                    "waf\\.tencent\\-?cloud\\.com/"
+                ]
+            }
+        },
+        {
+            "name": "Teros (Citrix Systems)",
+            "errors": {
+                "cookie": [
+                    "^st8id="
+                ]
+            }
+        },
+        {
+            "name": "TransIP Web Firewall (TransIP)",
+            "errors": {
+                "header": [
+                    "X-TransIP-Backend: .+",
+                    "X-TransIP-Balancer: .+"
+                ]
+            }
+        },
+        {
+            "name": "UEWaf (UCloud)",
+            "errors": {
+                "header": [
+                    "Server: uewaf(/[0-9\\.]+)?"
+                ],
+                "content": [
+                    "/uewaf_deny_pages/default/img/",
+                    "ucloud\\.cn"
+                ]
+            }
+        },
+        {
+            "name": "URLMaster SecurityCheck (iFinity/DotNetNuke)",
+            "errors": {
+                "header": [
+                    "X-UrlMaster-Debug: .+",
+                    "X-UrlMaster-Ex: .+"
+                ],
+                "content": [
+                    "Ur[li]RewriteModule",
+                    "SecurityCheck"
+                ]
+            }
+        },
+        {
+            "name": "URLScan (Microsoft)",
+            "errors": {
+                "content": [
+                    "Rejected[-_]By[_-]UrlScan",
+                    "A custom filter or module.{0,4}?such as URLScan"
+                ]
+            }
+        },
+        {
+            "name": "Variti (Variti)",
+            "errors": {
+                "header": [
+                    "Server: Variti(?:\\/[a-z0-9\\.\\-]+)?"
+                ]
+            }
+        },
+        {
+            "name": "Varnish (OWASP)",
+            "errors": {
+                "content": [
+                    "Request rejected by xVarnish\\-WAF"
+                ]
+            }
+        },
+        {
+            "name": "Viettel (Cloudrity)",
+            "errors": {
+                "content": [
+                    "Access Denied.{0,10}?Viettel WAF",
+                    "cloudrity\\.com\\.(vn)?/",
+                    "Viettel WAF System"
+                ]
+            }
+        },
+        {
+            "name": "VirusDie (VirusDie LLC)",
+            "errors": {
+                "content": [
+                    "cdn\\.virusdie\\.ru/splash/firewallstop\\.png",
+                    "copy.{0,10}?Virusdie\\.ru"
+                ]
+            }
+        },
+        {
+            "name": "Wallarm (Wallarm Inc.)",
+            "errors": {
+                "header": [
+                    "Server: nginx[\\-_]wallarm"
+                ]
+            }
+        },
+        {
+            "name": "WatchGuard (WatchGuard Technologies)",
+            "errors": {
+                "header": [
+                    "Server: WatchGuard"
+                ],
+                "content": [
+                    "Request denied by WatchGuard Firewall",
+                    "WatchGuard Technologies Inc\\."
+                ]
+            }
+        },
+        {
+            "name": "WebARX (WebARX Security Solutions)",
+            "errors": {
+                "content": [
+                    "WebARX.{0,10}?Web Application Firewall",
+                    "www\\.webarxsecurity\\.com",
+                    "/wp\\-content/plugins/webarx/includes/"
+                ]
+            }
+        },
+        {
+            "name": "WebKnight (AQTRONIX)",
+            "errors": {
+                "status": [
+                    "Status: 999",
+                    "Reason: No Hacking",
+                    "Status: 404",
+                    "Reason: Hack Not Found"
+                ],
+                "content": [
+                    "WebKnight Application Firewall Alert",
+                    "What is webknight\\?",
+                    "AQTRONIX WebKnight is an application firewall",
+                    "WebKnight will take over and protect",
+                    "aqtronix\\.com/WebKnight",
+                    "AQTRONIX.{0,10}?WebKnight"
+                ]
+            }
+        },
+        {
+            "name": "WebLand (WebLand)",
+            "errors": {
+                "header": [
+                    "Server: protected by webland"
+                ]
+            }
+        },
+        {
+            "name": "RayWAF (WebRay Solutions)",
+            "errors": {
+                "header": [
+                    "Server: WebRay\\-WAF",
+                    "DrivedBy: RaySrv.RayEng/[0-9\\.]+?"
+                ]
+            }
+        },
+        {
+            "name": "WebSEAL (IBM)",
+            "errors": {
+                "header": [
+                    "Server: WebSEAL"
+                ],
+                "content": [
+                    "This is a WebSEAL error message template file",
+                    "WebSEAL server received an invalid HTTP request"
+                ]
+            }
+        },
+        {
+            "name": "WebTotem (WebTotem)",
+            "errors": {
+                "content": [
+                    "The current request was blocked.{0,8}?WebTotem"
+                ]
+            }
+        },
+        {
+            "name": "West263 CDN (West263CDN)",
+            "errors": {
+                "header": [
+                    "X-Cache: WS?T263CDN"
+                ]
+            }
+        },
+        {
+            "name": "Wordfence (Defiant)",
+            "errors": {
+                "header": [
+                    "Server: wf[_\\-]?WAF"
+                ],
+                "content": [
+                    "Generated by Wordfence",
+                    "broke one of (the )?Wordfence (advanced )?blocking rules",
+                    "/plugins/wordfence"
+                ]
+            }
+        },
+        {
+            "name": "wpmudev WAF (Incsub)",
+            "errors": {
+                "content": [
+                    "href=\"http(s)?\\/\\/wpmudev.com\\/.{0,15}?\"",
+                    "Click on the Logs tab, then the WAF Log.",
+                    "Choose your site from the list",
+                    "<h1>Whoops, this request has been blocked!</h1>",
+                    "This request has been deemed suspicious",
+                    "possible attack on our servers."
+                ],
+                "status": [
+                    "Status: 403"
+                ]
+            }
+        },
+        {
+            "name": "WTS-WAF (WTS)",
+            "errors": {
+                "header": [
+                    "Server: wts/[0-9\\.]+?"
+                ],
+                "content": [
+                    "<(title|h\\d{1})>WTS\\-WAF"
+                ]
+            }
+        },
+        {
+            "name": "360WangZhanBao (360 Technologies)",
+            "errors": {
+                "header": [
+                    "Server: qianxin\\-waf",
+                    "WZWS-Ray: .+?",
+                    "X-Powered-By-360WZB: .+?"
+                ],
+                "content": [
+                    "wzws\\-waf\\-cgi/",
+                    "wangshan\\.360\\.cn"
+                ],
+                "status": [
+                    "Status: 493"
+                ]
+            }
+        },
+        {
+            "name": "XLabs Security WAF (XLabs)",
+            "errors": {
+                "header": [
+                    "X-CDN: XLabs Security",
+                    "Secured: ^By XLabs Security",
+                    "Server: XLabs[-_]?.?WAF"
+                ]
+            }
+        },
+        {
+            "name": "Xuanwudun (Xuanwudun)",
+            "errors": {
+                "content": [
+                    "admin\\.dbappwaf\\.cn/(index\\.php/Admin/ClientMisinform/)?",
+                    "class=.(db[\\-_]?)?waf(.)?([\\-_]?row)?"
+                ]
+            }
+        },
+        {
+            "name": "Yundun (Yundun)",
+            "errors": {
+                "header": [
+                    "Server: YUNDUN",
+                    "X-Cache: YUNDUN"
+                ],
+                "cookie": [
+                    "yd_cookie="
+                ],
+                "content": [
+                    "Blocked by YUNDUN Cloud WAF",
+                    "yundun\\.com/yd[-_]http[_-]error/",
+                    "www\\.yundun\\.com/(static/js/fingerprint\\d{1}?\\.js)?"
+                ]
+            }
+        },
+        {
+            "name": "Yunsuo (Yunsuo)",
+            "errors": {
+                "cookie": [
+                    "yunsuo_session="
+                ],
+                "content": [
+                    "class=\"yunsuologo\""
+                ]
+            }
+        },
+        {
+            "name": "YXLink (YxLink Technologies)",
+            "errors": {
+                "cookie": [
+                    "yx_ci_session=",
+                    "yx_language="
+                ],
+                "header": [
+                    "Server: Yxlink([\\-_]?WAF)?"
+                ]
+            }
+        },
+        {
+            "name": "Zenedge (Zenedge)",
+            "errors": {
+                "header": [
+                    "Server: ZENEDGE",
+                    "X-Zen-Fury: .+?"
+                ],
+                "content": [
+                    "/__zenedge/"
+                ]
+            }
+        },
+        {
+            "name": "ZScaler (Accenture)",
+            "errors": {
+                "header": [
+                    "Server: ZScaler"
+                ],
+                "content": [
+                    "Access Denied.{0,10}?Accenture Policy",
+                    "policies\\.accenture\\.com",
+                    "login\\.zscloud\\.net/img_logo_new1\\.png",
+                    "Zscaler to protect you from internet threats",
+                    "Internet Security by ZScaler",
+                    "Accenture.{0,10}?webfilters indicate that the site likely contains"
+                ]
+            }
+        }
+    ]
+}

@@ -1,0 +1,8 @@
+config/waymap/secrets.json
+.env
+__pycache__/
+*.pyc
+build/
+dist/
+*.egg-info/
+sessions/
