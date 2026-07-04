@@ -126,8 +126,10 @@ def make_request(test_url: str, baseline_time: float, sleep_time: int) -> bool:
         pass
     return False
 
-def time_based_sqli(url: str, test: Dict[str, str], thread_count: int) -> bool:
+def time_based_sqli(url: str, test: Dict[str, str], thread_count: int, failed_baseline_urls: set = None) -> bool:
     """Perform time-based SQLi test."""
+    from lib.injection.sqlin.sql import vulnerable_pairs
+    
     rand_numbers = random.randint(1000, 9999)
     rand_str = ''.join(random.choices('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', k=4))
     sleep_time = random.choice([3, 5, 7, 10]) 
@@ -137,7 +139,9 @@ def time_based_sqli(url: str, test: Dict[str, str], thread_count: int) -> bool:
     # Get baseline response time
     baseline_time = make_baseline_request(url)
     if baseline_time == 0.0:
-        logger.warning(f"Could not get baseline for {url}")
+        if failed_baseline_urls is not None and url not in failed_baseline_urls:
+            logger.warning(f"Could not get baseline for {url}")
+            failed_baseline_urls.add(url)
         return False
 
     # print_status(f"Testing: {test['title']}", "info")
@@ -168,6 +172,8 @@ def time_based_sqli(url: str, test: Dict[str, str], thread_count: int) -> bool:
                 domain = urlparse(url).netloc
                 result_manager = ResultManager(domain)
                 result_manager.add_finding("SQL Injection", "Technique: Time-Based", vuln_data)
+                # Add to vulnerable pairs for DB fetching
+                vulnerable_pairs.add((url, injected_param))
                 return True
         except Exception as e:
             logger.error(f"Error testing {test_url}: {e}")
@@ -181,10 +187,25 @@ def process_urls(urls: List[str], thread_count: int) -> None:
         print_status("No tests loaded from XML", "error")
         return
 
+    print_header("TIME-BASED SQLI", color="cyan")
+    
+    # Track URLs that have failed baseline check to avoid duplicate warnings
+    failed_baseline_urls = set()
+    
+    # First, show all URLs being tested
+    for url in urls:
+        parsed_url = urlparse(url)
+        params = list(parse_qs(parsed_url.query).keys())
+        if params:
+            print_status(f"Testing Time-based SQLi: {url} (Params: {', '.join(params)})", "info")
+
     def check_url_test(url_test_tuple):
         url, test = url_test_tuple
         if stop_scan.is_set(): return False
-        return time_based_sqli(url, test, thread_count)
+        # Skip if already failed baseline
+        if url in failed_baseline_urls:
+            return False
+        return time_based_sqli(url, test, thread_count, failed_baseline_urls)
 
     tasks = []
     for url in urls:

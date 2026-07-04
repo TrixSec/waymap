@@ -143,6 +143,7 @@ def make_request(test_url: str, custom_patterns: List[str]) -> bool:
 def error_based_sqli(url: str, test: Dict[str, str], thread_count: int) -> bool:
     """Perform error-based SQLi test."""
     global successful_requests, failed_requests
+    from lib.injection.sqlin.sql import vulnerable_pairs
 
     delimiters = ('0x716a6b7671', '0x7171766b71')
     rand_numbers = [random.randint(1000, 9999) for _ in range(5)]
@@ -182,6 +183,8 @@ def error_based_sqli(url: str, test: Dict[str, str], thread_count: int) -> bool:
                 domain = urlparse(url).netloc
                 result_manager = ResultManager(domain)
                 result_manager.add_finding("SQL Injection", "Technique: Error-Based", vuln_data)
+                # Add to vulnerable pairs for DB fetching
+                vulnerable_pairs.add((url, injected_param))
                 return True
         except Exception as e:
             logger.error(f"Error testing {test_url}: {e}")
@@ -191,13 +194,20 @@ def error_based_sqli(url: str, test: Dict[str, str], thread_count: int) -> bool:
 
 
 def process_urls(urls: List[str], thread_count: int) -> None:
-    """Process list of URLs for Error-based SQLi."""
-    from datetime import datetime
-    
+    """Process URLs for error-based SQLi."""
     tests = parse_error_based_tests_from_xml()
     if not tests:
         print_status("No tests loaded from XML", "error")
         return
+
+    print_header("ERROR-BASED SQLI", color="cyan")
+    
+    # First, show all URLs being tested
+    for url in urls:
+        parsed_url = urlparse(url)
+        params = list(parse_qs(parsed_url.query).keys())
+        if params:
+            print_status(f"Testing Error-based SQLi: {url} (Params: {', '.join(params)})", "info")
 
     def check_url_test(url_test_tuple):
         url, test = url_test_tuple

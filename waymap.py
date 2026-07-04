@@ -59,6 +59,7 @@ from lib.core.error_handler import validate_environment, handle_error
 from lib.ui import print_banner, print_header, print_status, print_separator, confirm_action
 from lib.ui.interactive import run_interactive_wizard
 from lib.utils import validate_url, validate_crawl_depth, validate_thread_count, validate_scan_type
+from lib.utils.url_utils import has_query_parameters, filter_urls_with_params
 
 # New Feature Imports (v7.1.0)
 from lib.core.reporting import generate_all_reports
@@ -183,6 +184,16 @@ Examples:
     wpscan_group = parser.add_argument_group('WPScan')
     wpscan_group.add_argument('--wpscan-token', type=str, help='WPScan API token (or set env WPSCAN_API_TOKEN)')
 
+    # AI/LLM Arguments
+    ai_group = parser.add_argument_group('AI/LLM')
+    ai_group.add_argument('--use-ai', action='store_true', help='Enable all AI features (result analysis + AI reports + payloads + discovery)')
+    ai_group.add_argument('--analyze', action='store_true', help='Analyze results with AI after scan')
+    ai_group.add_argument('--ai-report', action='store_true', help='Generate AI-enhanced reports')
+    ai_group.add_argument('--ai-payloads', action='store_true', help='Use AI-generated adaptive payloads')
+    ai_group.add_argument('--ai-discovery', action='store_true', help='Use AI for attack surface discovery')
+    ai_group.add_argument('--llm-provider', type=str, choices=['none', 'openai', 'anthropic', 'ollama', 'cerebras'], help='LLM provider to use')
+    ai_group.add_argument('--llm-model', type=str, help='LLM model to use')
+
     return parser.parse_args()
 
 
@@ -217,15 +228,132 @@ def main():
         exit_clean()
 
 
+def _validate_and_configure_ai(args):
+    """Validate AI configuration."""
+    from lib.ai.llm_provider import (
+        get_llm_config,
+        test_llm_connection,
+        save_llm_config_to_secrets,
+        is_llm_available,
+        LLMConfig
+    )
+    from lib.ui import print_status, prompt_line, confirm_action
+
+    # Handle --use-ai
+    if getattr(args, 'use_ai', False):
+        args.analyze = True
+        args.ai_report = True
+        args.ai_payloads = True
+        args.ai_discovery = True
+    
+    # Check if AI features are requested
+    ai_requested = getattr(args, 'analyze', False) or getattr(args, 'ai_report', False)
+    if not ai_requested:
+        return
+    
+    # Handle --llm-provider and --llm-model
+    llm_config = get_llm_config()
+    if getattr(args, 'llm_provider', None):
+        llm_config.provider = args.llm_provider
+    if getattr(args, 'llm_model', None):
+        llm_config.model = args.llm_model
+    
+    # Check existing config
+    if is_llm_available():
+        print_status("Testing LLM connection...", "info")
+        if test_llm_connection():
+            print_status("LLM connection successful!", "success")
+            return
+        else:
+            print_status("LLM connection failed!", "error")
+    else:
+        print_status("No valid LLM config found.", "warning")
+    
+    # Ask for API key if no_prompt is False
+    if not getattr(args, 'no_prompt', False):
+        if not confirm_action("Would you like to configure AI features now?", default=True):
+            args.analyze = False
+            args.ai_report = False
+            print_status("AI features disabled.", "info")
+            return
+        
+        print("\nAvailable providers:")
+        print("    1. Cerebras (default)")
+        print("    2. OpenAI")
+        print("    3. Anthropic")
+        print("    4. Ollama (local)")
+        
+        provider_choice = prompt_line("Choice", "1")
+        provider_map = {"1": "cerebras", "2": "openai", "3": "anthropic", "4": "ollama"}
+        selected_provider = provider_map.get(provider_choice, "cerebras")
+        api_key = prompt_line(f"Enter {selected_provider.capitalize()} API key")
+        if not api_key:
+            print_status("No API key provided, AI features disabled.", "warning")
+            args.analyze = False
+            args.ai_report = False
+            return
+        
+        default_model = (
+            "gpt-oss-120b" if selected_provider == "cerebras"
+            else "gpt-4o-mini" if selected_provider == "openai"
+            else "claude-3-haiku-20240307" if selected_provider == "anthropic"
+            else "llama3.1"
+        )
+        model = prompt_line(f"Model (default: {default_model})", default_model)
+        
+        llm_config.provider = selected_provider
+        llm_config.api_key = api_key
+        llm_config.model = model
+        save_llm_config_to_secrets(llm_config)
+        
+        print_status("Testing LLM connection...", "info")
+        if test_llm_connection():
+            print_status("LLM connection successful!", "success")
+        else:
+            print_status("LLM connection failed! AI features disabled.", "error")
+            args.analyze = False
+            args.ai_report = False
+            return
+
+
+def _auto_set_crawl_depth(args):
+    """Auto-set crawl depth to 0 if all targets already have query parameters."""
+    # Get target URLs
+    urls = []
+    if args.multi_target:
+        from lib.utils.file_utils import load_file_lines
+        try:
+            urls = load_file_lines(args.multi_target)
+        except Exception:
+            urls = []
+    elif args.target:
+        urls = [args.target]
+    
+    if len(urls) == 0:
+        return
+    
+    parameterized_urls = filter_urls_with_params(urls)
+    non_parameterized_urls = [url for url in urls if url not in parameterized_urls]
+    
+    if len(non_parameterized_urls) == 0 and len(urls) > 0:
+        # All URLs have parameters, auto-set crawl to 0
+        args.crawl = 0
+        print_status("All targets already have parameters, auto-setting crawl depth to 0.", "info")
+
+
 def _run():
     """Main scan logic."""
     print_banner()
     
     # Check if running in interactive mode (no args)
     if len(sys.argv) == 1:
-        args = interactive_wizard()
+        args = run_interactive_wizard()
     else:
         args = parse_arguments()
+    # Validate and configure AI
+    _validate_and_configure_ai(args)
+    # Auto-set crawl depth
+    _auto_set_crawl_depth(args)
     
     # Handle update check
     if args.check_updates:
@@ -402,6 +530,98 @@ def _run():
             if args.target:
                 standard_results = load_standard_scan_results(args.target)
                 scan_results['scans'].extend(standard_results)
+                
+                # Analyze vulnerabilities with AI if enabled
+                if getattr(args, 'analyze', False) or getattr(args, 'use_ai', False):
+                    print_separator()
+                    print_header("AI Vulnerability Analysis", color="cyan")
+                    
+                    from lib.ai.result_analyzer import analyze_vulnerability
+                    from lib.core.result_manager import ResultManager
+                    from urllib.parse import urlparse
+                    
+                    domain = urlparse(args.target).netloc
+                    result_manager = ResultManager(domain)
+                    results = result_manager.get_results()
+                    
+                    # Analyze each finding
+                    for scan_entry in results.get('scans', []):
+                        for scan_type, findings in scan_entry.items():
+                            if isinstance(findings, dict):
+                                for sub_type, sub_findings in findings.items():
+                                    for finding in sub_findings:
+                                        if isinstance(finding, dict):
+                                            # Skip if already has ai analysis
+                                            if 'ai_analysis' in finding and finding['ai_analysis']:
+                                                continue
+                                                
+                                            vuln_url = finding.get('url') or finding.get('Vulnerable URL') or ''
+                                            vuln_param = finding.get('parameter') or finding.get('Parameter') or ''
+                                            vuln_payload = finding.get('payload') or finding.get('Payload') or ''
+                                            vuln_details = finding.get('details') or ''
+                                            
+                                            analysis = analyze_vulnerability(
+                                                vuln_type=scan_type,
+                                                url=vuln_url,
+                                                parameter=vuln_param,
+                                                payload=vuln_payload,
+                                                details=vuln_details
+                                            )
+                                            
+                                            if analysis:
+                                                # Save AI analysis to finding
+                                                finding['ai_analysis'] = analysis
+                                                result_manager.replace_all(results)  # Save updated findings
+                                                # Pretty output
+                                                from lib.ui import print_separator, colored
+                                                print()
+                                                print_separator()
+                                                print(colored(f"AI Analysis: {vuln_url}", "cyan"))
+                                                print_separator()
+                                                print(colored("Severity Justification:", "yellow") + " " + analysis.get('severity_justification', 'N/A'))
+                                                print(colored("Impact:", "yellow") + " " + analysis.get('impact', 'N/A'))
+                                                print(colored("Remediation Steps:", "yellow"))
+                                                for step in analysis.get('remediation_steps', []):
+                                                    print(f"  - {step}")
+                                                print(colored("False Positive Likelihood:", "yellow") + f" {analysis.get('false_positive_likelihood', 'N/A')}")
+                                                print(colored("Confidence Score:", "yellow") + f" {analysis.get('confidence_score', 'N/A')}")
+                            elif isinstance(findings, list):
+                                for finding in findings:
+                                    if isinstance(finding, dict):
+                                        # Skip if already has ai analysis
+                                        if 'ai_analysis' in finding and finding['ai_analysis']:
+                                            continue
+                                            
+                                        vuln_url = finding.get('url') or finding.get('Vulnerable URL') or ''
+                                        vuln_param = finding.get('parameter') or finding.get('Parameter') or ''
+                                        vuln_payload = finding.get('payload') or finding.get('Payload') or ''
+                                        vuln_details = finding.get('details') or ''
+                                        
+                                        analysis = analyze_vulnerability(
+                                            vuln_type=scan_type,
+                                            url=vuln_url,
+                                            parameter=vuln_param,
+                                            payload=vuln_payload,
+                                            details=vuln_details
+                                        )
+                                        
+                                        if analysis:
+                                            # Save AI analysis to finding
+                                            finding['ai_analysis'] = analysis
+                                            result_manager.replace_all(results)  # Save updated findings
+                                            # Pretty output
+                                            from lib.ui import print_separator, colored
+                                            print()
+                                            print_separator()
+                                            print(colored(f"AI Analysis: {vuln_url}", "cyan"))
+                                            print_separator()
+                                            print(colored("Severity Justification:", "yellow") + " " + analysis.get('severity_justification', 'N/A'))
+                                            print(colored("Impact:", "yellow") + " " + analysis.get('impact', 'N/A'))
+                                            print(colored("Remediation Steps:", "yellow"))
+                                            for step in analysis.get('remediation_steps', []):
+                                                print(f"  - {step}")
+                                            print(colored("False Positive Likelihood:", "yellow") + f" {analysis.get('false_positive_likelihood', 'N/A')}")
+                                            print(colored("Confidence Score:", "yellow") + f" {analysis.get('confidence_score', 'N/A')}")
 
         # Generate Reports
         if args.report_format:

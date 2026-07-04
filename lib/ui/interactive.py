@@ -21,6 +21,10 @@ from lib.utils.validators import (
     validate_thread_count,
     validate_url,
 )
+from lib.utils.url_utils import (
+    has_query_parameters,
+    filter_urls_with_params,
+)
 
 config = get_config()
 
@@ -159,6 +163,20 @@ def _select_scan_type() -> str:
         )
 
 
+def _get_target_urls(args: argparse.Namespace) -> List[str]:
+    """Load target URLs from args.multi_target or args.target."""
+    urls = []
+    if args.multi_target:
+        try:
+            with open(args.multi_target, "r", encoding="utf-8") as f:
+                urls = [line.strip() for line in f if line.strip()]
+        except Exception:
+            urls = []
+    elif args.target:
+        urls = [args.target]
+    return urls
+
+
 def _configure_target(args: argparse.Namespace, *, required: bool = True, allow_multi: bool = True) -> None:
     print(colored("\n[?] Target Configuration", "yellow"))
 
@@ -195,13 +213,23 @@ def _configure_scan_options(args: argparse.Namespace, *, include_crawl: bool = T
     print(colored("\n[?] Scan Options", "yellow"))
 
     if include_crawl:
-        args.crawl = _prompt_int(
-            "Crawl depth (0 = no crawl, 1-10 to discover parameterized URLs)",
-            default=0,
-            minimum=0,
-            maximum=10,
-            validator=validate_crawl_depth,
-        )
+        # Check if we need to ask about crawling
+        urls = _get_target_urls(args)
+        parameterized_urls = filter_urls_with_params(urls)
+        non_parameterized_urls = [url for url in urls if url not in parameterized_urls]
+        
+        if len(non_parameterized_urls) == 0 and len(urls) > 0:
+            # All URLs already have parameters, skip crawl prompt
+            args.crawl = 0
+            print_status("All targets already have parameters, skipping crawl.", "info")
+        else:
+            args.crawl = _prompt_int(
+                "Crawl depth (0 = no crawl, 1-10 to discover parameterized URLs)",
+                default=0,
+                minimum=0,
+                maximum=10,
+                validator=validate_crawl_depth,
+            )
 
     args.threads = _prompt_int(
         "Thread count",
@@ -308,6 +336,100 @@ def _configure_auth(args: argparse.Namespace) -> None:
         args.auth_url = _prompt("Login URL (optional)", "")
 
 
+def _configure_ai(args: argparse.Namespace) -> None:
+    from lib.ai.llm_provider import (
+        get_llm_config,
+        test_llm_connection,
+        save_llm_config_to_secrets,
+        is_llm_available
+    )
+
+    print(colored("\n[?] AI Configuration", "yellow"))
+    
+    # First, simple "use AI?" prompt
+    if not _prompt_yes_no("Would you like to use AI features?", default=False):
+        args.analyze = False
+        args.ai_report = False
+        args.ai_payloads = False
+        args.ai_discovery = False
+        print_status("AI features disabled.", "info")
+        return
+    
+    # Check existing config first
+    existing_config = get_llm_config()
+    if is_llm_available():
+        print_status("Existing LLM config found. Testing connection...", "info")
+        if test_llm_connection():
+            print_status("Connection successful!", "success")
+            args.analyze = True
+            args.ai_report = True
+            return
+        else:
+            print_status("Existing config failed to connect!", "error")
+
+    # Ask if user wants to configure AI
+    if not _prompt_yes_no("Would you like to configure AI now?", default=True):
+        args.analyze = False
+        args.ai_report = False
+        args.ai_payloads = False
+        args.ai_discovery = False
+        print_status("AI features disabled.", "info")
+        return
+
+    # Provider selection
+    print("\n    1. Cerebras (default)")
+    print("    2. OpenAI")
+    print("    3. Anthropic")
+    print("    4. Ollama (local)")
+    provider_choice = _prompt("Choice", "1")
+    provider_map = {
+        "1": "cerebras",
+        "2": "openai",
+        "3": "anthropic",
+        "4": "ollama"
+    }
+    selected_provider = provider_map.get(provider_choice, "cerebras")
+    
+    # API key
+    api_key = _prompt(f"Enter {selected_provider.capitalize()} API key")
+    if not api_key:
+        print_status("No API key provided, AI features disabled.", "warning")
+        args.analyze = False
+        args.ai_report = False
+        args.ai_payloads = False
+        args.ai_discovery = False
+        return
+
+    # Model
+    default_model = "gpt-oss-120b" if selected_provider == "cerebras" else "gpt-4o-mini" if selected_provider == "openai" else "claude-3-haiku-20240307" if selected_provider == "anthropic" else "llama3.1"
+    model = _prompt(f"Model (default: {default_model})", default_model)
+
+    # Build config
+    new_config = existing_config
+    new_config.provider = selected_provider
+    new_config.api_key = api_key
+    new_config.model = model
+
+    # Test connection
+    print_status("Testing connection...", "info")
+    # Temporarily set env vars for test? Wait, no: let's save first? Or just test with new config
+    # Wait, current get_llm_config() uses secrets/env, so let's save it first, then test
+    save_llm_config_to_secrets(new_config)
+    
+    if test_llm_connection():
+        print_status("Connection successful! Config saved.", "success")
+        args.analyze = _prompt_yes_no("Enable AI result analysis?", default=True)
+        args.ai_report = _prompt_yes_no("Generate AI-enhanced reports?", default=True)
+        args.ai_payloads = _prompt_yes_no("Use AI-generated adaptive payloads?", default=True)
+        args.ai_discovery = _prompt_yes_no("Use AI for attack surface discovery?", default=True)
+    else:
+        print_status("Connection test failed! AI features will be disabled.", "error")
+        args.analyze = False
+        args.ai_report = False
+        args.ai_payloads = False
+        args.ai_discovery = False
+
+
 def _configure_reporting(args: argparse.Namespace) -> None:
     if not _prompt_yes_no("\nGenerate reports after scan?", default=True):
         return
@@ -349,6 +471,17 @@ def _print_summary(args: argparse.Namespace) -> None:
         print_status(f"Auth:         {args.auth_type}", "info")
     if args.report_format:
         print_status(f"Reports:      {args.report_format}", "info")
+    if args.analyze or args.ai_report or args.ai_payloads or args.ai_discovery:
+        ai_features = []
+        if args.analyze:
+            ai_features.append("result analysis")
+        if args.ai_report:
+            ai_features.append("AI reports")
+        if args.ai_payloads:
+            ai_features.append("adaptive payloads")
+        if args.ai_discovery:
+            ai_features.append("attack surface discovery")
+        print_status(f"AI features:  {', '.join(ai_features)}", "info")
     print_separator("─", "cyan", 60)
     print()
 
@@ -389,6 +522,13 @@ def run_interactive_wizard() -> argparse.Namespace:
         dork_api_key=None,
         dork_output=None,
         wpscan_token=None,
+        use_ai=False,
+        analyze=False,
+        ai_report=False,
+        ai_payloads=False,
+        ai_discovery=False,
+        llm_provider=None,
+        llm_model=None
     )
 
     print(colored("[?] Select Scan Mode:", "yellow"))
@@ -420,8 +560,10 @@ def run_interactive_wizard() -> argparse.Namespace:
     if not args.check_waf and not args.dork:
         _configure_auth(args)
         _configure_reporting(args)
+        _configure_ai(args)
     elif args.dork and args.scan:
         _configure_reporting(args)
+        _configure_ai(args)
 
     _print_summary(args)
 

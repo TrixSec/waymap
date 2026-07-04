@@ -99,6 +99,8 @@ def test_payload(url: str, parameter: str, payload: str, retries: int = 2) -> Li
 
 def is_vulnerable(url: str, thread_count: int) -> bool:
     """Perform boolean-based SQLi tests."""
+    from lib.injection.sqlin.sql import vulnerable_pairs
+    
     parameters = extract_parameters(url)
     if not parameters:
         return False
@@ -149,6 +151,8 @@ def is_vulnerable(url: str, thread_count: int) -> bool:
                 domain = urlparse(url).netloc
                 result_manager = ResultManager(domain)
                 result_manager.add_finding("SQL Injection", "Technique: Boolean", vuln_data)
+                # Add to vulnerable pairs for DB fetching
+                vulnerable_pairs.add((url, parameter))
                 return True
 
     return False

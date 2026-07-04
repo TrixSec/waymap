@@ -235,7 +235,13 @@ class WaymapScanner:
             print_status(f"Scanning {len(scan_urls)} URLs for {scan_type}", "info")
             
             if scan_type == 'sqli':
-                from lib.injection.sqlin.sql import run_sql_tests, run_boolean_sqli, run_error_sqli, run_time_blind_sqli
+                from lib.injection.sqlin.sql import run_sql_tests, run_boolean_sqli, run_error_sqli, run_time_blind_sqli, vulnerable_pairs
+                from lib.injection.sqlin.db_fetcher import fetch_databases
+                from lib.ui import print_separator, print_header
+                from lib.core.state import stop_scan
+                
+                # Reset vulnerable_pairs at the start of the scan
+                vulnerable_pairs.clear()
                 
                 if technique_string:
                     for char in technique_string.upper():
@@ -245,6 +251,17 @@ class WaymapScanner:
                             run_error_sqli(scan_urls, self.thread_count)
                         elif char == 'T':
                             run_time_blind_sqli(scan_urls, self.thread_count)
+                    # After all techniques, fetch DBs if any vulnerable pairs
+                    if vulnerable_pairs:
+                        print_separator()
+                        print_header("Database Extraction", color="cyan")
+                        for url, param in vulnerable_pairs:
+                            if stop_scan.is_set(): break
+                            try:
+                                fetch_databases(url, param)
+                            except Exception as e:
+                                import logging
+                                logging.error(f"Error fetching databases for {url}: {e}")
                 else:
                     run_sql_tests(scan_urls, self.thread_count)
                     
