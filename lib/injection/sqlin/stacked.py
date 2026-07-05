@@ -1,15 +1,17 @@
 # Copyright (c) 2026 waymap developers
 # See the file 'LICENSE' for copying permission.
 
-"""Time-based Blind SQL Injection Scanner."""
+"""Stacked Queries SQL Injection Scanner."""
 
 import os
+import re
 import json
 import time
 import random
 import requests
 from defusedxml import ElementTree as ET
-from urllib.parse import urlparse, parse_qs
+from datetime import datetime
+from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import List, Dict, Any, Tuple, Generator
 
@@ -26,13 +28,10 @@ from lib.core.result_manager import ResultManager
 config = get_config()
 logger = get_logger(__name__)
 
-# Track (url, param) pairs that already have findings
-_found_pairs = set()
-
-def parse_time_blind_tests_from_xml(file_path: str = None) -> List[Dict[str, str]]:
-    """Parse time-based SQLi test cases from XML."""
+def parse_stacked_tests_from_xml(file_path: str = None) -> List[Dict[str, str]]:
+    """Parse stacked query-based SQLi test cases from XML."""
     if file_path is None:
-        file_path = os.path.join(config.DATA_DIR, "time_blind.xml")
+        file_path = os.path.join(config.DATA_DIR, "stacked_queries.xml")
         
     tests = []
     try:
@@ -43,27 +42,40 @@ def parse_time_blind_tests_from_xml(file_path: str = None) -> List[Dict[str, str
             title = test.find('title').text
             payload_node = test.find('./request/payload')
             payload_template = payload_node.text if payload_node is not None else ""
+            comment_node = test.find('./request/comment')
+            comment = comment_node.text if comment_node is not None else ""
             
             details = test.find('./details')
             dbms = details.find('dbms').text if details is not None and details.find('dbms') is not None else 'Unknown'
             dbms_version = details.find('dbms_version').text if details is not None and details.find('dbms_version') is not None else ''
+            os_name = details.find('os').text if details is not None and details.find('os') is not None else ''
 
             tests.append({
                 'title': title,
                 'payload_template': payload_template,
+                'comment': comment,
                 'dbms': dbms,
-                'dbms_version': dbms_version
+                'dbms_version': dbms_version,
+                'os': os_name
             })
     except Exception as e:
         logger.error(f"Error parsing XML {file_path}: {e}")
+        
     return tests
 
-def replace_placeholders(template: str, rand_numbers: int, rand_str: str, sleep_time: int) -> str:
-    """Replace placeholders in template."""
-    replaced_template = template.replace("[RANDSTR]", rand_str)
-    replaced_template = replaced_template.replace("[RANDNUM]", str(rand_numbers))
-    replaced_template = replaced_template.replace("[SLEEPTIME]", str(sleep_time))
+
+def replace_placeholders(template: str, rand_numbers: List[int], rand_str: str, sleep_time: int) -> str:
+    """Replace placeholders in the template."""
+    replaced_template = (template
+                         .replace("[RANDSTR]", rand_str)
+                         .replace("[RANDNUM]", str(rand_numbers[0]))
+                         .replace("[SLEEPTIME]", str(sleep_time)))
+
+    for i, rand_num in enumerate(rand_numbers[:5], start=1):
+        replaced_template = replaced_template.replace(f"[RANDNUM{i}]", str(rand_num))
+
     return replaced_template
+
 
 def inject_payload(url: str, payload: str) -> Generator[Tuple[str, str], None, None]:
     """Inject payload into URL parameters."""
@@ -74,13 +86,13 @@ def inject_payload(url: str, payload: str) -> Generator[Tuple[str, str], None, N
         test_params = query_params.copy()
         test_params[param] = [f"{test_params[param][0]} {payload}"]
         
-        from urllib.parse import urlencode, urlunparse
         new_query = urlencode(test_params, doseq=True)
         new_parts = list(parsed_url)
         new_parts[4] = new_query
         test_url = urlunparse(new_parts)
         
         yield test_url, param
+
 
 def detect_server_info(url: str) -> Tuple[str, str]:
     """Detect server info."""
@@ -92,7 +104,6 @@ def detect_server_info(url: str) -> Tuple[str, str]:
         return server, technology
     except Exception:
         return 'Unknown', 'Unknown'
-
 
 
 def make_baseline_request(url: str) -> float:
@@ -120,26 +131,28 @@ def make_request(test_url: str, baseline_time: float, sleep_time: int) -> bool:
         )
         response_time = time.time() - start_time
 
-        # Check if the response is at least (sleep_time - 1) seconds longer than baseline
         baseline_threshold = baseline_time + (sleep_time - 1)
         if response_time > baseline_threshold:
-            # Double-check to reduce false positives
             return True
     except requests.RequestException:
         pass
     return False
 
-def time_based_sqli(url: str, test: Dict[str, str], thread_count: int, failed_baseline_urls: set = None) -> bool:
-    """Perform time-based SQLi test."""
+
+def stacked_based_sqli(url: str, test: Dict[str, str], thread_count: int, failed_baseline_urls: set = None) -> bool:
+    """Perform stacked query-based SQLi test."""
     from lib.injection.sqlin.sql import vulnerable_pairs
-    
-    rand_numbers = random.randint(1000, 9999)
-    rand_str = ''.join(random.choices('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', k=4))
-    sleep_time = random.choice([3, 5, 7, 10]) 
+
+    rand_numbers = [random.randint(1000, 9999) for _ in range(5)]
+    rand_str = ''.join(random.choices('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', k=6))
+    sleep_time = random.choice([3, 5, 7])
 
     payload = replace_placeholders(test['payload_template'], rand_numbers, rand_str, sleep_time)
+    
+    # Append comment if provided
+    if test.get('comment'):
+        payload = f"{payload} {test['comment']}"
 
-    # Get baseline response time
     baseline_time = make_baseline_request(url)
     if baseline_time == 0.0:
         if failed_baseline_urls is not None and url not in failed_baseline_urls:
@@ -147,25 +160,18 @@ def time_based_sqli(url: str, test: Dict[str, str], thread_count: int, failed_ba
             failed_baseline_urls.add(url)
         return False
 
-    # print_status(f"Testing: {test['title']}", "info")
-
     for test_url, injected_param in inject_payload(url, payload):
         if stop_scan.is_set(): return False
         
-        # Skip if we already found a vulnerability for this (url, param) pair
-        pair_key = (url, injected_param)
-        if pair_key in _found_pairs:
-            return False
-
         try:
             if make_request(test_url, baseline_time, sleep_time):
-                _found_pairs.add(pair_key)
                 server, technology = detect_server_info(url)
 
                 print_status("Vulnerability Found!", "success")
                 print_status(f"  URL: {url}", "info")
                 print_status(f"  Parameter: {injected_param}", "info")
                 print_status(f"  Payload: {payload}", "info")
+                print_status(f"  DBMS: {test['dbms']}", "info")
 
                 vuln_data = {
                     "Vulnerable URL": url,
@@ -176,48 +182,42 @@ def time_based_sqli(url: str, test: Dict[str, str], thread_count: int, failed_ba
                     "Web Technology": technology,
                     "Server Name": server,
                     "Severity": 10,
-                    "Timestamp": time.strftime('%Y-%m-%dT%H:%M:%S')
+                    "Timestamp": datetime.now().isoformat()
                 }
                 domain = urlparse(url).netloc
                 result_manager = ResultManager(domain)
-                result_manager.add_finding("SQL Injection", "Technique: Time-Based", vuln_data)
-                # Add to vulnerable pairs for DB fetching
-                vulnerable_pairs.add(pair_key)
+                result_manager.add_finding("SQL Injection", "Technique: Stacked-Queries", vuln_data)
+                vulnerable_pairs.add((url, injected_param))
                 return True
         except Exception as e:
             logger.error(f"Error testing {test_url}: {e}")
-
+            
     return False
 
+
 def process_urls(urls: List[str], thread_count: int) -> None:
-    """Process URLs for Time-based SQLi."""
-    from lib.core.interrupt import reset_interrupt
-    reset_interrupt()
-    _found_pairs.clear()
-    tests = parse_time_blind_tests_from_xml()
+    """Process URLs for stacked query-based SQLi."""
+    tests = parse_stacked_tests_from_xml()
     if not tests:
         print_status("No tests loaded from XML", "error")
         return
 
-    print_header("TIME-BASED SQLI", color="cyan")
+    print_header("STACKED QUERIES SQLI", color="cyan")
     
-    # Track URLs that have failed baseline check to avoid duplicate warnings
     failed_baseline_urls = set()
     
-    # First, show all URLs being tested
     for url in urls:
         parsed_url = urlparse(url)
         params = list(parse_qs(parsed_url.query).keys())
         if params:
-            print_status(f"Testing Time-based SQLi: {url} (Params: {', '.join(params)})", "info")
+            print_status(f"Testing Stacked Queries SQLi: {url} (Params: {', '.join(params)})", "info")
 
     def check_url_test(url_test_tuple):
         url, test = url_test_tuple
         if stop_scan.is_set(): return False
-        # Skip if already failed baseline
         if url in failed_baseline_urls:
             return False
-        return time_based_sqli(url, test, thread_count, failed_baseline_urls)
+        return stacked_based_sqli(url, test, thread_count, failed_baseline_urls)
 
     tasks = []
     for url in urls:
@@ -231,7 +231,8 @@ def process_urls(urls: List[str], thread_count: int) -> None:
             if stop_scan.is_set():
                 break
             try:
-                future.result()
+                if future.result():
+                    pass
             except KeyboardInterrupt:
                 from lib.core.interrupt import exit_clean
                 exit_clean()

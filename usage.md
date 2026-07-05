@@ -30,7 +30,7 @@ g) python waymap.py --dork "inurl:.php?id="
 ```bash
 python waymap.py [--target URL | --multi-target FILE] [--scan TYPE] [--crawl N] [--threads N]
                 [--profile wordpress]
-                [--technique BET]
+                [--technique BETUIS]
                 [--api-type rest|graphql] [--api-endpoints /users,/login]
                 [--auth-type form|basic|digest|bearer|api_key]
                 [--auth-url URL] [--username USER] [--password PASS]
@@ -120,6 +120,7 @@ SQLi technique string:
 
 ```bash
 python waymap.py --target "https://example.com/page.php?id=1" --scan sqli --technique BET
+python waymap.py --target "https://example.com/page.php?id=1" --scan sqli --technique BETUIS
 ```
 
 ### `--profile`, `-p`

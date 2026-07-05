@@ -95,7 +95,7 @@ python waymap.py
 |------|-------|-------------|
 | `--scan` | `-s` | Scan type (see [Scan Types](#scan-types)) |
 | `--crawl` | `-c` | Crawl depth `0–10` (finds parameterized URLs) |
-| `--technique` | `-k` | SQLi techniques: `B` boolean, `E` error, `T` time (e.g. `BET`) |
+| `--technique` | `-k` | SQLi techniques: `B` boolean, `E` error, `T` time, `U` union, `I` inline, `S` stacked (e.g. `BETUIS`) |
 | `--profile` | `-p` | Scan profile: `wordpress` |
 | `--threads` | | Worker threads (default: `1`, max: `10`) |
 | `--no-prompt` | | Skip interactive prompts (CI/automation) |
@@ -195,7 +195,8 @@ python waymap.py -t "https://example.com/item?id=1" -s sqli -k B      # boolean 
 python waymap.py -t "https://example.com/item?id=1" -s sqli -k E      # error only
 python waymap.py -t "https://example.com/item?id=1" -s sqli -k T      # time-based only
 python waymap.py -t "https://example.com/item?id=1" -s sqli -k BE     # boolean + error
-python waymap.py -t "https://example.com/item?id=1" -s sqli -k BET    # all three
+python waymap.py -t "https://example.com/item?id=1" -s sqli -k BET    # boolean, error, time
+python waymap.py -t "https://example.com/item?id=1" -s sqli -k BETUIS # all SQLi techniques
 
 # XSS
 python waymap.py -t "https://example.com/search?q=test" -s xss

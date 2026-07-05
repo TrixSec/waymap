@@ -117,6 +117,21 @@ def print_status(message: str, status_type: str = "info", icon: Optional[str] = 
     _safe_print(colored(f"[{icon_char}] {message}", color))
 
 
+def print_success(message: str) -> None:
+    """Print a success status message."""
+    print_status(message, "success")
+
+
+def print_warning(message: str) -> None:
+    """Print a warning status message."""
+    print_status(message, "warning")
+
+
+def print_error(message: str) -> None:
+    """Print an error status message."""
+    print_status(message, "error")
+
+
 def print_progress_bar(
     iteration: int,
     total: int,

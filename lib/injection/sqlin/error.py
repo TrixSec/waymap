@@ -33,6 +33,9 @@ logger = get_logger(__name__)
 successful_requests = 0
 failed_requests = 0
 
+# Track (url, param) pairs that already have findings
+_found_pairs = set()
+
 def parse_error_based_tests_from_xml(file_path: str = None) -> List[Dict[str, str]]:
     """Parse error-based SQLi test cases from XML."""
     if file_path is None:
@@ -83,22 +86,9 @@ def inject_payload(url: str, payload: str) -> Generator[Tuple[str, str], None, N
     query_params = parse_qs(parsed_url.query)
 
     for param in query_params:
-        # Reconstruct URL with injected parameter
-        # Note: This simple reconstruction might lose other params or order, 
-        # but follows original logic. 
-        # Better approach would be to use urlencode but we stick to logic for now.
-        
-        # Original logic: f"{url}&{param}={val} {payload}"
-        # This appends the param AGAIN at the end. 
-        # Ideally we should replace it.
-        # But let's stick to the original logic if it works, or improve it.
-        # Improving it:
-        
         test_params = query_params.copy()
-        # Inject into the first value of the list
         test_params[param] = [f"{test_params[param][0]} {payload}"]
         
-        # Rebuild query string
         from urllib.parse import urlencode, urlunparse
         new_query = urlencode(test_params, doseq=True)
         new_parts = list(parsed_url)
@@ -149,18 +139,59 @@ def error_based_sqli(url: str, test: Dict[str, str], thread_count: int) -> bool:
     rand_numbers = [random.randint(1000, 9999) for _ in range(5)]
     payload = replace_placeholders(test['payload_template'], delimiters, rand_numbers)
 
-    # print_status(f"Testing: {test['title']}", "info")
-
+    # Comprehensive list of SQL error patterns for various DBMS
     custom_patterns = [
-        "Duplicate entry 'qjkvq1qqvkq1' for key 'group_key'",
-        "qjkvq1qqvkq1"
+        # MySQL error patterns
+        r"Duplicate entry '.*?' for key",
+        r"MySQL server version for the right syntax to use",
+        r"You have an error in your SQL syntax",
+        r"Unknown column",
+        r"Table '\w+' doesn't exist",
+        r"Can't find record",
+        r"EXTRACTVALUE",
+        r"UPDATEXML",
+        r"XPATH syntax error",
+        r"BIGINT UNSIGNED value is out of range",
+        
+        # PostgreSQL error patterns
+        r"ERROR:  syntax error at or near",
+        r"pg_query",
+        r"column \".*?\" does not exist",
+        r"relation \"\w+\" does not exist",
+        
+        # Microsoft SQL Server error patterns
+        r"Unclosed quotation mark after the character string",
+        r"Incorrect syntax near",
+        r"Invalid column name",
+        r"Invalid object name",
+        r"Microsoft SQL Server",
+        r"ODBC SQL Server Driver",
+        
+        # Oracle error patterns
+        r"ORA-\d+",
+        r"Oracle error",
+        
+        # SQLite error patterns
+        r"SQLite error",
+        r"unrecognized token",
+        
+        # Generic SQL error patterns
+        r"SQL syntax",
+        r"SQL error",
+        r"query failed",
+        r"syntax error"
     ]
 
     for test_url, injected_param in inject_payload(url, payload):
         if stop_scan.is_set(): return False
         
+        pair_key = (url, injected_param)
+        if pair_key in _found_pairs:
+            return False
+
         try:
             if make_request(test_url, custom_patterns):
+                _found_pairs.add(pair_key)
                 server, technology = detect_server_info(url)
 
                 print_status("Vulnerability Found!", "success")
@@ -184,17 +215,20 @@ def error_based_sqli(url: str, test: Dict[str, str], thread_count: int) -> bool:
                 result_manager = ResultManager(domain)
                 result_manager.add_finding("SQL Injection", "Technique: Error-Based", vuln_data)
                 # Add to vulnerable pairs for DB fetching
-                vulnerable_pairs.add((url, injected_param))
+                vulnerable_pairs.add(pair_key)
                 return True
         except Exception as e:
             logger.error(f"Error testing {test_url}: {e}")
             failed_requests += 1
-            
+
     return False
 
 
 def process_urls(urls: List[str], thread_count: int) -> None:
     """Process URLs for error-based SQLi."""
+    from lib.core.interrupt import reset_interrupt
+    reset_interrupt()
+    _found_pairs.clear()
     tests = parse_error_based_tests_from_xml()
     if not tests:
         print_status("No tests loaded from XML", "error")
@@ -228,8 +262,6 @@ def process_urls(urls: List[str], thread_count: int) -> None:
                 break
             try:
                 if future.result():
-                    # If found, maybe stop testing this URL?
-                    # For now, we continue
                     pass
             except KeyboardInterrupt:
                 from lib.core.interrupt import exit_clean

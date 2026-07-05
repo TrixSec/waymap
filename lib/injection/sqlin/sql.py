@@ -8,6 +8,9 @@ from typing import List, Set, Tuple
 from lib.injection.sqlin.boolean import process_urls as process_boolean_urls
 from lib.injection.sqlin.error import process_urls as process_error_urls
 from lib.injection.sqlin.timeblind import process_urls as process_time_blind_urls
+from lib.injection.sqlin.union import process_urls as process_union_urls
+from lib.injection.sqlin.inline import process_urls as process_inline_urls
+from lib.injection.sqlin.stacked import process_urls as process_stacked_urls
 from lib.injection.sqlin.db_fetcher import fetch_databases_once
 from lib.core.logger import get_logger
 from lib.core.state import stop_scan
@@ -34,25 +37,35 @@ def run_sql_tests(urls: List[str], thread_count: int) -> None:
 
     stop_scan.clear()
     
-    # We pass the full list to the processors if they support it, 
-    # or iterate if we want granular control. 
-    # Given the original code's structure, let's try to pass the list if possible,
-    # but the original code iterated.
-    
-    # Let's trust the sub-modules to handle a list of URLs.
-    # We'll pass the full list.
-    
-    if stop_scan.is_set(): return
-    try:
-        process_boolean_urls(urls, thread_count)
-    except Exception as e:
-        logger.error(f"Error in boolean SQLi: {e}")
-
     if stop_scan.is_set(): return
     try:
         process_error_urls(urls, thread_count)
     except Exception as e:
         logger.error(f"Error in error-based SQLi: {e}")
+
+    if stop_scan.is_set(): return
+    try:
+        process_union_urls(urls, thread_count)
+    except Exception as e:
+        logger.error(f"Error in union-based SQLi: {e}")
+
+    if stop_scan.is_set(): return
+    try:
+        process_inline_urls(urls, thread_count)
+    except Exception as e:
+        logger.error(f"Error in inline query SQLi: {e}")
+
+    if stop_scan.is_set(): return
+    try:
+        process_stacked_urls(urls, thread_count)
+    except Exception as e:
+        logger.error(f"Error in stacked queries SQLi: {e}")
+
+    if stop_scan.is_set(): return
+    try:
+        process_boolean_urls(urls, thread_count)
+    except Exception as e:
+        logger.error(f"Error in boolean SQLi: {e}")
 
     if stop_scan.is_set(): return
     try:
@@ -87,3 +100,12 @@ def run_error_sqli(urls: List[str], thread_count: int) -> None:
 
 def run_time_blind_sqli(urls: List[str], thread_count: int) -> None:
     _run_single_sql_technique(urls, thread_count, process_time_blind_urls)
+
+def run_union_sqli(urls: List[str], thread_count: int) -> None:
+    _run_single_sql_technique(urls, thread_count, process_union_urls)
+
+def run_inline_sqli(urls: List[str], thread_count: int) -> None:
+    _run_single_sql_technique(urls, thread_count, process_inline_urls)
+
+def run_stacked_sqli(urls: List[str], thread_count: int) -> None:
+    _run_single_sql_technique(urls, thread_count, process_stacked_urls)

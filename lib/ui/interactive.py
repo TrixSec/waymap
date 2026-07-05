@@ -240,9 +240,9 @@ def _configure_scan_options(args: argparse.Namespace, *, include_crawl: bool = T
     )
 
     if args.scan == "sqli":
-        print(colored("\n  SQLi techniques: B=Boolean  E=Error  T=Time-based", "cyan"))
-        technique = _prompt("SQLi techniques (e.g. BET, BE, B)", "BET").upper()
-        valid_chars = set("BET")
+        print(colored("\n  SQLi techniques: B=Boolean  E=Error  T=Time-based  U=Union  I=Inline  S=Stacked", "cyan"))
+        technique = _prompt("SQLi techniques (e.g. BET, BETUIS, U)", "BET").upper()
+        valid_chars = set("BETUIS")
         filtered = "".join(c for c in technique if c in valid_chars)
         args.technique = filtered or "BET"
         print_status(f"SQLi techniques: {args.technique}", "info")

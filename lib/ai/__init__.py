@@ -11,4 +11,7 @@ from .result_analyzer import analyze_vulnerability
 from .payload_generator import generate_payloads
 from .attack_surface import discover_attack_surface
 from .attack_planner import plan_attack_steps
-
+from .report_enhancer import enhance_report_data, generate_executive_summary
+from .false_positive import check_false_positive
+from .crawler_enhancer import enhance_crawl_results, extract_hidden_urls
+from .chain_analyzer import analyze_finding_chains
