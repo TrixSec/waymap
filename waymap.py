@@ -154,6 +154,7 @@ Examples:
     util_group.add_argument('--waf', type=str, help='Check WAF for specific URL')
     util_group.add_argument('--check-updates', action='store_true', help='Check for updates')
     util_group.add_argument('--version', action='version', version=f'Waymap v{config.VERSION}')
+    util_group.add_argument('--flush', action='store_true', help='Flush/delete previous scan results and findings')
     
     # Reporting Arguments (New v7.1.0)
     report_group = parser.add_argument_group('Reporting')
@@ -362,6 +363,35 @@ def _run():
 
     if getattr(args, 'no_prompt', False) and not os.environ.get('WAYMAP_NO_PROMPT'):
         os.environ['WAYMAP_NO_PROMPT'] = '1'
+        
+    # Flush previous findings if requested
+    if getattr(args, 'flush', False):
+        from lib.core.result_manager import ResultManager
+        from lib.utils.file_utils import load_file_lines
+        
+        # Collect all target domains
+        domains = set()
+        
+        if args.target:
+            domain = urlparse(args.target).netloc
+            domains.add(domain)
+        elif args.multi_target:
+            try:
+                targets = load_file_lines(args.multi_target)
+                for target in targets:
+                    if target:
+                        domain = urlparse(target).netloc
+                        domains.add(domain)
+            except Exception as e:
+                logger.error(f"Could not load multi-target list: {e}")
+        
+        # Flush each domain's results
+        for domain in domains:
+            print_status(f"Flushing previous findings for domain: {domain}", "info")
+            result_manager = ResultManager(domain)
+            result_manager.flush()
+        if domains:
+            print_status("Flushed previous scan results successfully!", "success")
 
     # Export WPScan token for modules that read from environment
     if getattr(args, 'wpscan_token', None) and not os.environ.get('WPSCAN_API_TOKEN'):
@@ -538,7 +568,6 @@ def _run():
                     
                     from lib.ai.result_analyzer import analyze_vulnerability
                     from lib.core.result_manager import ResultManager
-                    from urllib.parse import urlparse
                     
                     domain = urlparse(args.target).netloc
                     result_manager = ResultManager(domain)
@@ -573,7 +602,7 @@ def _run():
                                                 finding['ai_analysis'] = analysis
                                                 result_manager.replace_all(results)  # Save updated findings
                                                 # Pretty output
-                                                from lib.ui import print_separator, colored
+                                                from lib.ui import colored
                                                 print()
                                                 print_separator()
                                                 print(colored(f"AI Analysis: {vuln_url}", "cyan"))
@@ -610,7 +639,7 @@ def _run():
                                             finding['ai_analysis'] = analysis
                                             result_manager.replace_all(results)  # Save updated findings
                                             # Pretty output
-                                            from lib.ui import print_separator, colored
+                                            from lib.ui import colored
                                             print()
                                             print_separator()
                                             print(colored(f"AI Analysis: {vuln_url}", "cyan"))

@@ -8,7 +8,7 @@ from typing import List, Set, Tuple
 from lib.injection.sqlin.boolean import process_urls as process_boolean_urls
 from lib.injection.sqlin.error import process_urls as process_error_urls
 from lib.injection.sqlin.timeblind import process_urls as process_time_blind_urls
-from lib.injection.sqlin.db_fetcher import fetch_databases
+from lib.injection.sqlin.db_fetcher import fetch_databases_once
 from lib.core.logger import get_logger
 from lib.core.state import stop_scan
 from lib.utils import filter_urls_with_params
@@ -62,12 +62,10 @@ def run_sql_tests(urls: List[str], thread_count: int) -> None:
         
     # After all tests, fetch databases for each unique vulnerable URL/param pair
     if vulnerable_pairs:
-        print_separator()
-        print_header("Database Extraction", color="cyan")
         for url, param in vulnerable_pairs:
             if stop_scan.is_set(): break
             try:
-                fetch_databases(url, param)
+                fetch_databases_once(url, param)
             except Exception as e:
                 logger.error(f"Error fetching databases for {url}: {e}")
 

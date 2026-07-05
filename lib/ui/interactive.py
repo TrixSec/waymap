@@ -252,6 +252,10 @@ def _configure_scan_options(args: argparse.Namespace, *, include_crawl: bool = T
         "Disable interactive prompts during scan? (recommended for automation)",
         default=False,
     )
+    args.flush = _prompt_yes_no(
+        "Flush/delete previous scan results and start fresh?",
+        default=False,
+    )
 
 
 def _configure_api_scan(args: argparse.Namespace) -> None:
@@ -528,7 +532,8 @@ def run_interactive_wizard() -> argparse.Namespace:
         ai_payloads=False,
         ai_discovery=False,
         llm_provider=None,
-        llm_model=None
+        llm_model=None,
+        flush=False
     )
 
     print(colored("[?] Select Scan Mode:", "yellow"))

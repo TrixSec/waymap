@@ -213,7 +213,7 @@ def print_banner() -> None:
 ┓ ┏┏┓┓┏┳┳┓┏┓┏┓
 ┃┃┃┣┫┗┫┃┃┃┣┫┃┃
 ┗┻┛┛┗┗┛┛ ┗┛┗┣┛
-  Web Vulnerability Scanner  v{cfg.VERSION}
+  Web Vulnerability Scanner  v{cfg.VERSION} beta
     """
     ascii_banner = rf"""
 
@@ -223,7 +223,7 @@ def print_banner() -> None:
    \ V  V /  | |_| | |  | |
     \_/\_/    \___/|_|  |_|
 
-  Web Vulnerability Scanner  v{cfg.VERSION}
+  Web Vulnerability Scanner  v{cfg.VERSION} beta
     """
     try:
         _safe_print(colored(banner, 'cyan'))

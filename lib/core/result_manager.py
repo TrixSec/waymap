@@ -279,3 +279,18 @@ class ResultManager:
             self._write_data(data)
         finally:
             self._release_lock()
+            
+    def flush(self) -> None:
+        """Delete all findings and start fresh (thread-safe)."""
+        self._acquire_lock()
+        try:
+            if os.path.exists(self.file_path):
+                os.remove(self.file_path)
+                logger.info(f"Flushed/removed results file: {self.file_path}")
+            if os.path.exists(self.lock_file):
+                try:
+                    os.remove(self.lock_file)
+                except OSError as e:
+                    logger.debug(f"Could not remove lock file during flush: {e}")
+        finally:
+            self._release_lock()

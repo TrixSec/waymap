@@ -13,7 +13,7 @@ class WaymapConfig:
     """Waymap configuration settings."""
     
     # Version
-    VERSION: str = "7.2.1"  # Updated for v7.2.1 release
+    VERSION: str = "7.3.1 beta"  # Updated for v7.2.1 release
     AUTHOR: str = "Trix Cyrus (Vicky)"
     COPYRIGHT: str = "Copyright © 2024 - 26 Trixsec Org"
     
