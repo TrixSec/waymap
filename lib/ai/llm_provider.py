@@ -146,7 +146,7 @@ class OllamaProvider(LLMProvider):
         self.base_url = llm_config.base_url or "http://localhost:11434"
 
     def generate(self, prompt: str, system_prompt: Optional[str] = None, json_schema: Optional[Dict[str, Any]] = None, quiet: bool = False) -> Dict[str, Any]:
-        import requests
+        from lib.core import http
 
         payload = {
             "model": self.config.model,
@@ -163,7 +163,7 @@ class OllamaProvider(LLMProvider):
             payload["format"] = "json"
 
         try:
-            response = requests.post(f"{self.base_url}/api/generate", json=payload, timeout=60)
+            response = http.post(f"{self.base_url}/api/generate", json=payload, timeout=60)
             response.raise_for_status()
             data = response.json()
             content = data.get("response", "")

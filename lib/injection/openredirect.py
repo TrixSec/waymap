@@ -9,6 +9,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import List, Dict, Any
 
 import requests
+from lib.core import http
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -18,18 +19,10 @@ from lib.core.result_manager import ResultManager
 from lib.ui import print_status, colored, print_header, ask_continue_scanning
 from lib.parse.random_headers import generate_random_headers
 from lib.core.state import stop_scan
+from lib.utils.file_utils import load_file_lines
 
 config = get_config()
 logger = get_logger(__name__)
-
-def load_file_lines(file_path: str) -> List[str]:
-    """Load lines from a file."""
-    try:
-        with open(file_path, 'r') as file:
-            return [line.strip() for line in file if line.strip()]
-    except FileNotFoundError:
-        logger.error(f"File not found: {file_path}")
-    return []
 
 def replace_last_parameter(url: str, parameter: str, payload: str) -> str:
     """Replace the last parameter in the URL."""
@@ -50,7 +43,7 @@ def test_open_redirect_payload(url: str, parameter: str, payload: str, verbose: 
     headers = generate_random_headers()
 
     try:
-        response = requests.get(
+        response = http.get(
             test_url,
             headers=headers,
             allow_redirects=False,

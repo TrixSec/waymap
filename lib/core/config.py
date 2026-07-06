@@ -29,7 +29,6 @@ class WaymapConfig:
     DEFAULT_THREADS: int = 1
     MAX_THREADS: int = 10
     FUZZER_THREADS: int = 30
-    BACKUP_CRAWLER_THREADS: int = 200
     
     # Timeouts
     TIMEOUT: int = 30

@@ -1,4 +1,5 @@
 from typing import Dict, Any, Optional, List
+from functools import lru_cache
 from lib.ai.llm_provider import get_llm_provider, is_llm_available
 from lib.core.logger import get_logger
 from lib.ui import print_status
@@ -27,6 +28,18 @@ def generate_payloads(
     Returns:
         List of generated payloads, or None if failed/LLM not available
     """
+    return _generate_payloads_cached(vuln_type, url, parameter, context or "", waf_response or "", num_payloads)
+
+
+@lru_cache(maxsize=256)
+def _generate_payloads_cached(
+    vuln_type: str,
+    url: str,
+    parameter: str,
+    context: str = "",
+    waf_response: str = "",
+    num_payloads: int = 5
+) -> Optional[List[str]]:
     if not is_llm_available():
         logger.debug("LLM not available, skipping payload generation")
         return None

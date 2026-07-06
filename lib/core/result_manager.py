@@ -6,12 +6,34 @@
 import os
 import json
 import sys
+import atexit
 from typing import Dict, Any, Iterable, List, Optional
 from lib.core.config import get_config
 from lib.core.logger import get_logger
 
 config = get_config()
 logger = get_logger(__name__)
+
+_RESULT_CACHE: Dict[str, Dict[str, Any]] = {}
+_DIRTY_RESULTS = set()
+
+
+def flush_pending_results() -> None:
+    """Write buffered result files to disk."""
+    for file_path in list(_DIRTY_RESULTS):
+        data = _RESULT_CACHE.get(file_path)
+        if data is None:
+            continue
+        try:
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            with open(file_path, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=4)
+            _DIRTY_RESULTS.discard(file_path)
+        except Exception as e:
+            logger.error(f"Failed to flush buffered results to {file_path}: {e}")
+
+
+atexit.register(flush_pending_results)
 
 _FIELD_ALIASES = {
     "url": ("url", "Vulnerable URL"),
@@ -152,25 +174,32 @@ class ResultManager:
 
     def _read_data(self) -> Dict[str, Any]:
         """Read existing data from file."""
+        if self.file_path in _RESULT_CACHE:
+            return _RESULT_CACHE[self.file_path]
         if not os.path.exists(self.file_path):
-            return {"scans": []}
+            data = {"scans": []}
+            _RESULT_CACHE[self.file_path] = data
+            return data
         try:
             with open(self.file_path, "r", encoding="utf-8") as f:
-                return json.load(f)
+                data = json.load(f)
+                _RESULT_CACHE[self.file_path] = data
+                return data
         except json.JSONDecodeError as e:
             logger.error(f"Failed to decode JSON from {self.file_path}: {e}")
-            return {"scans": []}
+            data = {"scans": []}
+            _RESULT_CACHE[self.file_path] = data
+            return data
         except Exception as e:
             logger.error(f"Failed to read {self.file_path}: {e}")
-            return {"scans": []}
+            data = {"scans": []}
+            _RESULT_CACHE[self.file_path] = data
+            return data
 
     def _write_data(self, data: Dict[str, Any]):
         """Write data to file."""
-        try:
-            with open(self.file_path, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=4)
-        except Exception as e:
-            logger.error(f"Failed to write to {self.file_path}: {e}")
+        _RESULT_CACHE[self.file_path] = data
+        _DIRTY_RESULTS.add(self.file_path)
 
     def add_finding(self, scan_category: str, finding_key: str, finding: Dict[str, Any]):
         """
@@ -234,6 +263,22 @@ class ResultManager:
         finally:
             self._release_lock()
 
+    def append_sql_injection(
+        self,
+        url: str,
+        parameter: str,
+        details: str,
+        extra: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        finding = {
+            "url": url,
+            "parameter": parameter,
+            "details": details,
+        }
+        if extra:
+            finding.update(extra)
+        self.add_finding("SQL Injection", "Database Extraction", finding)
+
     def get_results(self) -> Dict[str, Any]:
         """Get all results."""
         self._acquire_lock()
@@ -284,6 +329,8 @@ class ResultManager:
         """Delete all findings and start fresh (thread-safe)."""
         self._acquire_lock()
         try:
+            _RESULT_CACHE.pop(self.file_path, None)
+            _DIRTY_RESULTS.discard(self.file_path)
             if os.path.exists(self.file_path):
                 os.remove(self.file_path)
                 logger.info(f"Flushed/removed results file: {self.file_path}")

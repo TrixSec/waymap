@@ -5,6 +5,8 @@
 
 import os
 import requests
+from lib.core import http
+from functools import lru_cache
 from datetime import datetime
 from urllib.parse import urlparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -17,31 +19,17 @@ from lib.core.config import get_config
 from lib.core.logger import get_logger
 from lib.core.result_manager import ResultManager
 from lib.ui import print_status, colored, print_header, ask_continue_scanning
+from lib.injection.common import load_named_payloads
 from lib.parse.random_headers import generate_random_headers
 from lib.core.state import stop_scan
 
 config = get_config()
 logger = get_logger(__name__)
 
+@lru_cache(maxsize=None)
 def load_cors_payloads(file_path: str) -> List[Dict[str, str]]:
     """Load CORS payloads from file."""
-    payloads = []
-    try:
-        with open(file_path, 'r') as file:
-            for line in file:
-                if line.strip():
-                    try:
-                        name, payload, response = line.strip().split('::')
-                        payloads.append({
-                            'name': name,
-                            'payload': payload,
-                            'response': response
-                        })
-                    except ValueError:
-                        logger.warning(f"Malformed payload: {line.strip()}")
-    except FileNotFoundError:
-        logger.error(f"Payload file not found: {file_path}")
-    return payloads
+    return load_named_payloads(file_path, ("name", "payload", "response"))
 
 def test_cors_vulnerability(url: str, payload: str, expected_response: str) -> Dict[str, Any]:
     """Test CORS vulnerability."""
@@ -52,7 +40,7 @@ def test_cors_vulnerability(url: str, payload: str, expected_response: str) -> D
     headers['Origin'] = payload
     
     try:
-        response = requests.options(
+        response = http.options(
             url, 
             headers=headers, 
             timeout=config.REQUEST_TIMEOUT, 

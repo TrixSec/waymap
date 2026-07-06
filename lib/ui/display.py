@@ -3,6 +3,7 @@
 
 """UI components and display utilities."""
 
+import os
 import time
 import sys
 from typing import List, Tuple, Optional
@@ -98,6 +99,9 @@ def print_status(message: str, status_type: str = "info", icon: Optional[str] = 
         status_type: Type of status (info, success, warning, error, debug)
         icon: Optional custom icon
     """
+    if status_type == "debug" and os.environ.get("WAYMAP_VERBOSE") != "1":
+        return
+
     colors = {
         "info": "cyan",
         "success": "green",
@@ -228,7 +232,7 @@ def print_banner() -> None:
 ┓ ┏┏┓┓┏┳┳┓┏┓┏┓
 ┃┃┃┣┫┗┫┃┃┃┣┫┃┃
 ┗┻┛┛┗┗┛┛ ┗┛┗┣┛
-  Web Vulnerability Scanner  v{cfg.VERSION} beta
+  Web Vulnerability Scanner  v{cfg.VERSION}
     """
     ascii_banner = rf"""
 
@@ -238,7 +242,7 @@ def print_banner() -> None:
    \ V  V /  | |_| | |  | |
     \_/\_/    \___/|_|  |_|
 
-  Web Vulnerability Scanner  v{cfg.VERSION} beta
+  Web Vulnerability Scanner  v{cfg.VERSION}
     """
     try:
         _safe_print(colored(banner, 'cyan'))

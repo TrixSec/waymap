@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Tuple
 from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 import requests
+from lib.core import http
 
 from lib.core.config import get_config
 from lib.core.logger import get_logger
@@ -57,7 +58,7 @@ def _test_payload(url: str, parameter: str, payload: str, marker: str) -> Dict[s
     test_url = _build_url_with_param(url, parameter, payload)
 
     try:
-        resp = requests.get(test_url, headers=headers, timeout=config.REQUEST_TIMEOUT, verify=False)
+        resp = http.get(test_url, headers=headers, timeout=config.REQUEST_TIMEOUT, verify=False)
     except requests.RequestException as e:
         logger.debug(f"Request failed for {test_url}: {e}")
         return {"vulnerable": False}

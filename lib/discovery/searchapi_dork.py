@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Optional, Set
 from urllib.parse import urlparse
 
 import requests
+from lib.core import http
 
 from lib.core.config import get_config
 from lib.core.logger import get_logger
@@ -74,7 +75,7 @@ def discover_google_dork(
         else:
             print_status(f"Fetching page {page} (discovered {len(unique)})...", "info")
 
-        response = requests.get(SEARCHAPI_URL, params=params, timeout=timeout)
+        response = http.get(SEARCHAPI_URL, params=params, timeout=timeout)
         response.raise_for_status()
 
         try:

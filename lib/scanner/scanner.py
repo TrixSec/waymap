@@ -8,7 +8,7 @@ from typing import List, Optional
 from lib.core.logger import get_logger
 from lib.core.config import get_config
 from lib.ui import print_status, print_header, print_separator
-from lib.utils import is_valid_url, has_query_parameters, filter_urls_with_params, extract_domain
+from lib.utils import is_valid_url, has_query_parameters, filter_urls_with_params, extract_domain, normalize_url
 
 logger = get_logger(__name__)
 config = get_config()
@@ -99,7 +99,7 @@ class WaymapScanner:
             print_status("No URLs provided to scan", "warning")
             return
 
-        scan_urls = [u for u in urls if isinstance(u, str) and u.strip()]
+        scan_urls = self._dedupe_urls([u for u in urls if isinstance(u, str) and u.strip()])
         if not scan_urls:
             print_status("No valid URLs provided to scan", "warning")
             return
@@ -124,6 +124,18 @@ class WaymapScanner:
 
         print_status(f"Scanning base URL: {target}", "info")
         return [target]
+
+    def _dedupe_urls(self, urls: List[str]) -> List[str]:
+        """Normalize and dedupe URLs while preserving order."""
+        seen = set()
+        unique = []
+        for url in urls:
+            normalized = normalize_url(url.strip())
+            if normalized in seen:
+                continue
+            seen.add(normalized)
+            unique.append(normalized)
+        return unique
     
     def _crawl_target(self, target: str, depth: int) -> List[str]:
         """
@@ -152,7 +164,7 @@ class WaymapScanner:
             ])
             
             print_status(f"Found {len(valid_urls)} valid URLs with parameters", "success")
-            return valid_urls
+            return self._dedupe_urls(valid_urls)
             
         except Exception as e:
             self.logger.error(f"Crawling failed: {e}", exc_info=True)
@@ -235,7 +247,7 @@ class WaymapScanner:
             technique_string: Optional SQLi techniques
         """
         try:
-            scan_urls = self._urls_for_scan_type(urls, scan_type)
+            scan_urls = self._urls_for_scan_type(self._dedupe_urls(urls), scan_type)
             if scan_urls is None:
                 return
 

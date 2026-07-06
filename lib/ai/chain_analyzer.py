@@ -1,3 +1,5 @@
+import json
+from functools import lru_cache
 from typing import Dict, Any, Optional, List
 from lib.ai.llm_provider import get_llm_provider, is_llm_available
 from lib.core.logger import get_logger
@@ -20,6 +22,17 @@ def analyze_finding_chains(
     Returns:
         List of potential chains or None
     """
+    findings_key = json.dumps(findings, sort_keys=True, default=str)
+    return _analyze_finding_chains_cached(findings_key, target)
+
+
+@lru_cache(maxsize=128)
+def _analyze_finding_chains_cached(
+    findings_key: str,
+    target: str
+) -> Optional[List[Dict[str, Any]]]:
+    findings = json.loads(findings_key)
+
     if not is_llm_available() or len(findings) < 2:
         logger.debug("LLM not available or too few findings, skipping chain analysis")
         return None

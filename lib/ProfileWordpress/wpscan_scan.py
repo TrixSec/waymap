@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 from urllib.parse import urlparse
 
 import requests
+from lib.core import http
 
 from lib.api.wpscan_client import (
     WPScanClient,
@@ -161,7 +162,7 @@ def wpscan_wordpress_vulnerabilities(target_url: str) -> None:
     headers = generate_random_headers()
 
     try:
-        resp = requests.get(target_url, headers=headers, verify=False, timeout=config.REQUEST_TIMEOUT)
+        resp = http.get(target_url, headers=headers, verify=False, timeout=config.REQUEST_TIMEOUT)
         html = resp.text if resp is not None else ""
     except Exception as e:
         logger.error(f"Failed to fetch target for WPScan discovery: {e}")

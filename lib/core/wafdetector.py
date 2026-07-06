@@ -7,6 +7,8 @@ import os
 import re
 import json
 import requests
+from lib.core import http
+from functools import lru_cache
 from urllib.parse import urlparse, urlunparse
 from typing import Dict, List, Optional
 
@@ -20,6 +22,7 @@ from lib.ui import print_status, colored
 config = get_config()
 logger = get_logger(__name__)
 
+@lru_cache(maxsize=None)
 def load_waf_rules(json_file: str) -> List[Dict]:
     """Load WAF rules from JSON file."""
     try:
@@ -52,7 +55,6 @@ def detect_waf(url: str) -> str:
     if not waf_rules:
         return "Unknown"
     
-    session = requests.Session()
     detected_waf = "Unknown"
     
     parsed_url = urlparse(url)
@@ -62,7 +64,7 @@ def detect_waf(url: str) -> str:
     
     for payload_name, payload in config.WAFPAYLOADS.items():
         try:
-            response = session.get(
+            response = http.get(
                 url, 
                 params={'q': payload}, 
                 timeout=config.REQUEST_TIMEOUT, 

@@ -4,7 +4,13 @@
 """URL utility functions."""
 
 from urllib.parse import urlparse, parse_qs
+from functools import lru_cache
 from typing import List, Optional
+
+
+@lru_cache(maxsize=8192)
+def _parse_url(url: str):
+    return urlparse(url)
 
 
 def is_valid_url(url: str) -> bool:
@@ -18,7 +24,7 @@ def is_valid_url(url: str) -> bool:
         True if URL is valid, False otherwise
     """
     try:
-        parsed = urlparse(url)
+        parsed = _parse_url(url)
         return bool(parsed.netloc) and bool(parsed.scheme)
     except Exception:
         return False
@@ -35,7 +41,7 @@ def has_query_parameters(url: str) -> bool:
         True if URL has query parameters, False otherwise
     """
     try:
-        return bool(parse_qs(urlparse(url).query))
+        return bool(parse_qs(_parse_url(url).query))
     except Exception:
         return False
 
@@ -57,7 +63,7 @@ def is_within_domain(url: str, base_domain: str) -> bool:
         True if URL is within domain, False otherwise
     """
     try:
-        url_domain = urlparse(url).netloc
+        url_domain = _parse_url(url).netloc
         if url_domain == base_domain:
             return True
             
@@ -97,7 +103,7 @@ def normalize_url(url: str) -> str:
         Normalized URL
     """
     try:
-        parsed = urlparse(url)
+        parsed = _parse_url(url)
         normalized = f"{parsed.scheme}://{parsed.netloc}{parsed.path}"
         if parsed.query:
             normalized += f"?{parsed.query}"

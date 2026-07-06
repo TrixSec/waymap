@@ -5,6 +5,7 @@ Supports REST, GraphQL, and SOAP API testing
 """
 
 import requests
+from lib.core import http
 import json
 from typing import Dict, List, Optional, Any
 from urllib.parse import urljoin, urlparse
@@ -82,7 +83,7 @@ class APIScanner:
         
         # Test for missing authentication
         try:
-            response = requests.request(method, url, timeout=10, verify=False)
+            response = http.request(method, url, timeout=10, verify=False)
             
             if response.status_code == 200 and 'Authorization' not in self.session.headers:
                 self.vulnerabilities.append({
@@ -326,7 +327,7 @@ class APIScanner:
         
         # Test without authentication
         try:
-            response = requests.get(url, timeout=10, verify=False)
+            response = http.get(url, timeout=10, verify=False)
             
             if response.status_code == 200:
                 results['tests'].append({

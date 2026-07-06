@@ -45,10 +45,7 @@ setup(
     install_requires=[
         "requests>=2.31.0",
         "beautifulsoup4>=4.12.0",
-        "colorama>=0.4.6",
         "urllib3>=2.0.0",
-        "tqdm>=4.66.0",
-        "packaging>=23.0",
         "fpdf>=1.7.2",
         "defusedxml>=0.7.1",
     ],

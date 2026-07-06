@@ -8,6 +8,8 @@ import json
 import time
 import random
 import requests
+from lib.core import http
+from functools import lru_cache
 from defusedxml import ElementTree as ET
 from urllib.parse import urlparse, parse_qs
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -22,6 +24,7 @@ from lib.ui import print_status, colored, print_header, print_separator
 from lib.parse.random_headers import generate_random_headers
 from lib.core.state import stop_scan
 from lib.core.result_manager import ResultManager
+from lib.injection.sqlin.common import baseline_response_time, detect_server_info, inject_payload, parameter_names
 
 config = get_config()
 logger = get_logger(__name__)
@@ -29,6 +32,7 @@ logger = get_logger(__name__)
 # Track (url, param) pairs that already have findings
 _found_pairs = set()
 
+@lru_cache(maxsize=None)
 def parse_time_blind_tests_from_xml(file_path: str = None) -> List[Dict[str, str]]:
     """Parse time-based SQLi test cases from XML."""
     if file_path is None:
@@ -65,54 +69,13 @@ def replace_placeholders(template: str, rand_numbers: int, rand_str: str, sleep_
     replaced_template = replaced_template.replace("[SLEEPTIME]", str(sleep_time))
     return replaced_template
 
-def inject_payload(url: str, payload: str) -> Generator[Tuple[str, str], None, None]:
-    """Inject payload into URL parameters."""
-    parsed_url = urlparse(url)
-    query_params = parse_qs(parsed_url.query)
-
-    for param in query_params:
-        test_params = query_params.copy()
-        test_params[param] = [f"{test_params[param][0]} {payload}"]
-        
-        from urllib.parse import urlencode, urlunparse
-        new_query = urlencode(test_params, doseq=True)
-        new_parts = list(parsed_url)
-        new_parts[4] = new_query
-        test_url = urlunparse(new_parts)
-        
-        yield test_url, param
-
-def detect_server_info(url: str) -> Tuple[str, str]:
-    """Detect server info."""
-    try:
-        headers = generate_random_headers()
-        response = requests.head(url, headers=headers, verify=False, timeout=config.REQUEST_TIMEOUT)
-        server = response.headers.get('Server', 'Unknown')
-        technology = response.headers.get('X-Powered-By', 'Unknown')
-        return server, technology
-    except Exception:
-        return 'Unknown', 'Unknown'
-
-
-
-def make_baseline_request(url: str) -> float:
-    """Make a baseline request without payload to get normal response time."""
-    try:
-        headers = generate_random_headers()
-        start_time = time.time()
-        requests.get(url, headers=headers, verify=False, timeout=config.REQUEST_TIMEOUT)
-        return time.time() - start_time
-    except requests.RequestException:
-        return 0.0
-
-
 def make_request(test_url: str, baseline_time: float, sleep_time: int) -> bool:
     """Make request and check response time against baseline."""
     try:
         headers = generate_random_headers()
         start_time = time.time()
         request_timeout = int(config.REQUEST_TIMEOUT) + int(sleep_time)
-        response = requests.get(
+        response = http.get(
             test_url,
             headers=headers,
             verify=False,
@@ -140,7 +103,7 @@ def time_based_sqli(url: str, test: Dict[str, str], thread_count: int, failed_ba
     payload = replace_placeholders(test['payload_template'], rand_numbers, rand_str, sleep_time)
 
     # Get baseline response time
-    baseline_time = make_baseline_request(url)
+    baseline_time = baseline_response_time(url)
     if baseline_time == 0.0:
         if failed_baseline_urls is not None and url not in failed_baseline_urls:
             logger.warning(f"Could not get baseline for {url}")
@@ -206,8 +169,7 @@ def process_urls(urls: List[str], thread_count: int) -> None:
     
     # First, show all URLs being tested
     for url in urls:
-        parsed_url = urlparse(url)
-        params = list(parse_qs(parsed_url.query).keys())
+        params = parameter_names(url)
         if params:
             print_status(f"Testing Time-based SQLi: {url} (Params: {', '.join(params)})", "info")
 

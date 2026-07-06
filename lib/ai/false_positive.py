@@ -1,4 +1,5 @@
 from typing import Dict, Any, Optional
+from functools import lru_cache
 from lib.ai.llm_provider import get_llm_provider, is_llm_available
 from lib.core.logger import get_logger
 from lib.ui import print_status
@@ -28,6 +29,18 @@ def check_false_positive(
     Returns:
         Dictionary with false positive analysis or None
     """
+    return _check_false_positive_cached(vuln_type, url, parameter, payload, response_content or "", request_method)
+
+
+@lru_cache(maxsize=1024)
+def _check_false_positive_cached(
+    vuln_type: str,
+    url: str,
+    parameter: str,
+    payload: str,
+    response_content: str = "",
+    request_method: str = "GET"
+) -> Optional[Dict[str, Any]]:
     if not is_llm_available():
         logger.debug("LLM not available, skipping false positive check")
         return None

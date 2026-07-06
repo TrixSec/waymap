@@ -8,12 +8,15 @@ import re
 import json
 import time
 import random
+import threading
 import requests
+from lib.core import http
+from functools import lru_cache
 from defusedxml import ElementTree as ET
 from datetime import datetime
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import List, Dict, Any, Tuple, Generator
+from typing import List, Dict, Any, Tuple, Generator, Optional
 
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -24,10 +27,14 @@ from lib.ui import print_status, colored, print_header, print_separator
 from lib.parse.random_headers import generate_random_headers
 from lib.core.state import stop_scan
 from lib.core.result_manager import ResultManager
+from lib.injection.sqlin.common import detect_server_info, inject_payload, parameter_names
 
 config = get_config()
 logger = get_logger(__name__)
+_found_pairs = set()
+_found_lock = threading.Lock()
 
+@lru_cache(maxsize=None)
 def parse_inline_tests_from_xml(file_path: str = None) -> List[Dict[str, str]]:
     """Parse inline query-based SQLi test cases from XML."""
     if file_path is None:
@@ -41,7 +48,9 @@ def parse_inline_tests_from_xml(file_path: str = None) -> List[Dict[str, str]]:
         for test in root.findall('test'):
             title = test.find('title').text
             payload_node = test.find('./request/payload')
-            payload_template = payload_node.text if payload_node is not None else ""
+            payload_template = (payload_node.text or "").strip() if payload_node is not None else ""
+            if not payload_template:
+                continue
             
             details = test.find('./details')
             dbms = details.find('dbms').text if details is not None and details.find('dbms') is not None else 'Unknown'
@@ -72,40 +81,11 @@ def replace_placeholders(template: str, delimiters: Tuple[str, str], rand_number
     return replaced_template
 
 
-def inject_payload(url: str, payload: str) -> Generator[Tuple[str, str], None, None]:
-    """Inject payload into URL parameters."""
-    parsed_url = urlparse(url)
-    query_params = parse_qs(parsed_url.query)
-
-    for param in query_params:
-        test_params = query_params.copy()
-        test_params[param] = [f"{test_params[param][0]} {payload}"]
-        
-        new_query = urlencode(test_params, doseq=True)
-        new_parts = list(parsed_url)
-        new_parts[4] = new_query
-        test_url = urlunparse(new_parts)
-        
-        yield test_url, param
-
-
-def detect_server_info(url: str) -> Tuple[str, str]:
-    """Detect server info."""
-    try:
-        headers = generate_random_headers()
-        response = requests.head(url, headers=headers, verify=False, timeout=config.REQUEST_TIMEOUT)
-        server = response.headers.get('Server', 'Unknown')
-        technology = response.headers.get('X-Powered-By', 'Unknown')
-        return server, technology
-    except Exception:
-        return 'Unknown', 'Unknown'
-
-
 def make_request(test_url: str, delimiters: Tuple[str, str]) -> Tuple[bool, Optional[str]]:
     """Make request and check for delimiters."""
     try:
         headers = generate_random_headers()
-        response = requests.get(test_url, headers=headers, verify=False, timeout=config.REQUEST_TIMEOUT)
+        response = http.get(test_url, headers=headers, verify=False, timeout=config.REQUEST_TIMEOUT)
         
         pattern = re.compile(f"{re.escape(delimiters[0])}(.*?){re.escape(delimiters[1])}")
         match = pattern.search(response.text)
@@ -126,10 +106,18 @@ def inline_based_sqli(url: str, test: Dict[str, str], thread_count: int) -> bool
 
     for test_url, injected_param in inject_payload(url, payload):
         if stop_scan.is_set(): return False
+        pair_key = (url, injected_param)
+        with _found_lock:
+            if pair_key in _found_pairs:
+                return False
         
         try:
             found, extracted = make_request(test_url, delimiters)
             if found:
+                with _found_lock:
+                    if pair_key in _found_pairs:
+                        return False
+                    _found_pairs.add(pair_key)
                 server, technology = detect_server_info(url)
 
                 print_status("Vulnerability Found!", "success")
@@ -162,6 +150,7 @@ def inline_based_sqli(url: str, test: Dict[str, str], thread_count: int) -> bool
 
 def process_urls(urls: List[str], thread_count: int) -> None:
     """Process URLs for inline query-based SQLi."""
+    _found_pairs.clear()
     tests = parse_inline_tests_from_xml()
     if not tests:
         print_status("No tests loaded from XML", "error")
@@ -170,8 +159,7 @@ def process_urls(urls: List[str], thread_count: int) -> None:
     print_header("INLINE QUERY SQLI", color="cyan")
     
     for url in urls:
-        parsed_url = urlparse(url)
-        params = list(parse_qs(parsed_url.query).keys())
+        params = parameter_names(url)
         if params:
             print_status(f"Testing Inline Query SQLi: {url} (Params: {', '.join(params)})", "info")
 

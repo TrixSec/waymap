@@ -29,10 +29,7 @@ def check_dependencies():
     required = {
         'requests': 'requests',
         'bs4': 'beautifulsoup4',
-        'colorama': 'colorama',
         'urllib3': 'urllib3',
-        'tqdm': 'tqdm',
-        'packaging': 'packaging',
         'defusedxml': 'defusedxml',
     }
     missing = []
@@ -61,13 +58,6 @@ from lib.ui.interactive import run_interactive_wizard
 from lib.utils import validate_url, validate_crawl_depth, validate_thread_count, validate_scan_type
 from lib.utils.url_utils import has_query_parameters, filter_urls_with_params
 
-# New Feature Imports (v7.1.0)
-from lib.core.reporting import generate_all_reports
-from lib.core.auth import setup_authentication
-from lib.api.api_scanner import perform_api_scan
-from lib.discovery.searchapi_dork import discover_google_dork, save_discovered_urls
-from lib.core.secrets import get_secret
-
 try:
     from urllib3.exceptions import InsecureRequestWarning
 
@@ -83,10 +73,10 @@ def check_for_updates() -> None:
     """Check for waymap updates."""
     try:
         from lib.ui import animate_loading
-        import requests
+        from lib.core import http
         
         animate_loading("Checking for updates", 1)
-        response = requests.get(config.VERSION_CHECK_URL, timeout=5)
+        response = http.get(config.VERSION_CHECK_URL, timeout=5)
         response.raise_for_status()
         latest_version = response.text.strip()
 
@@ -140,7 +130,7 @@ Examples:
                         ],
                         help='Type of scan to perform')
     scan_group.add_argument('--technique', '-k', type=str, 
-                        help='SQL injection technique [B (boolean), E (error), T (time)]. Combine like BET')
+                        help='SQL injection techniques [B boolean, E error, T time, U union, I inline, S stacked]. Combine like BETUIS')
     scan_group.add_argument('--profile', '-p', type=str,
                         choices=['wordpress'],
                         help='Scan profile to use')
@@ -405,6 +395,9 @@ def _run():
 
     # Handle Google dork discovery (SearchAPI)
     if getattr(args, 'dork', None):
+        from lib.core.secrets import get_secret
+        from lib.discovery.searchapi_dork import discover_google_dork, save_discovered_urls
+
         api_key = args.dork_api_key or os.environ.get('SEARCHAPI_API_KEY')
         if not api_key:
             api_key = get_secret('searchapi_api_key', env_var='SEARCHAPI_API_KEY')
@@ -498,6 +491,7 @@ def _run():
             print_status(f"Token required for {args.auth_type} auth", "error")
             return
             
+        from lib.core.auth import setup_authentication
         auth_manager = setup_authentication(auth_config)
         if auth_manager and auth_manager.authenticated:
             auth_session = auth_manager.get_session()
@@ -518,6 +512,7 @@ def _run():
                  return
                  
             endpoints = args.api_endpoints.split(',') if args.api_endpoints else None
+            from lib.api.api_scanner import perform_api_scan
             vulns = perform_api_scan(
                 base_url=args.target,
                 api_type=args.api_type,
@@ -591,6 +586,7 @@ def _run():
                     
                     # Collect all findings for chain analysis
                     all_findings = []
+                    analyzed_ai = {}
                     
                     # Analyze each finding
                     for scan_entry in results.get('scans', []):
@@ -608,6 +604,10 @@ def _run():
                                             vuln_param = finding.get('parameter') or finding.get('Parameter') or ''
                                             vuln_payload = finding.get('payload') or finding.get('Payload') or ''
                                             vuln_details = finding.get('details') or ''
+                                            ai_key = (scan_type, vuln_url, vuln_param)
+                                            if ai_key in analyzed_ai:
+                                                finding['ai_analysis'] = analyzed_ai[ai_key]
+                                                continue
                                             
                                             analysis = analyze_vulnerability(
                                                 vuln_type=scan_type,
@@ -618,6 +618,7 @@ def _run():
                                             )
                                             
                                             if analysis:
+                                                analyzed_ai[ai_key] = analysis
                                                 # Save AI analysis to finding
                                                 finding['ai_analysis'] = analysis
                                                 result_manager.replace_all(results)  # Save updated findings
@@ -646,6 +647,10 @@ def _run():
                                         vuln_param = finding.get('parameter') or finding.get('Parameter') or ''
                                         vuln_payload = finding.get('payload') or finding.get('Payload') or ''
                                         vuln_details = finding.get('details') or ''
+                                        ai_key = (scan_type, vuln_url, vuln_param)
+                                        if ai_key in analyzed_ai:
+                                            finding['ai_analysis'] = analyzed_ai[ai_key]
+                                            continue
                                         
                                         analysis = analyze_vulnerability(
                                             vuln_type=scan_type,
@@ -656,6 +661,7 @@ def _run():
                                         )
                                         
                                         if analysis:
+                                            analyzed_ai[ai_key] = analysis
                                             # Save AI analysis to finding
                                             finding['ai_analysis'] = analysis
                                             result_manager.replace_all(results)  # Save updated findings
@@ -701,6 +707,8 @@ def _run():
 
         # Generate Reports
         if args.report_format:
+            from lib.core.reporting import generate_all_reports
+
             print_separator()
             print_status("Generating Reports...", "info")
             formats = [f.strip() for f in args.report_format.split(',') if f.strip()]

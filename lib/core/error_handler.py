@@ -130,7 +130,7 @@ def validate_environment() -> bool:
     
     # Check required files
     required_files = [
-        'cmdipayload.txt', 'basicxsspayload.txt', 'filtersbypassxss.txt',
+        'cmdipayload.txt',
         'lfipayload.txt', 'openredirectpayloads.txt', 'openredirectparameters.txt', 'crlfpayload.txt',
         'corspayload.txt', 'sstipayload.txt', 'wafsig.json', 'ua.txt', 'cmdi.xml', 'error_based.xml', 'headers.json'
     ]

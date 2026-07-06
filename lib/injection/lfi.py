@@ -6,6 +6,8 @@
 import os
 import json
 import requests
+from lib.core import http
+from functools import lru_cache
 import threading
 import multiprocessing
 from urllib.parse import urlparse, parse_qs
@@ -18,6 +20,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 from lib.core.config import get_config
 from lib.core.logger import get_logger
 from lib.ui import print_status, colored, print_header, ask_continue_scanning
+from lib.injection.common import load_named_payloads
 from lib.parse.random_headers import generate_random_headers
 from lib.core.state import stop_scan
 from lib.core.result_manager import ResultManager
@@ -31,25 +34,10 @@ def extract_parameters(url: str) -> List[str]:
     params = parse_qs(parsed_url.query)
     return list(params.keys())
 
+@lru_cache(maxsize=None)
 def load_lfi_payloads(file_path: str) -> List[Dict[str, str]]:
     """Load LFI payloads from a file."""
-    payloads = []
-    try:
-        with open(file_path, 'r') as file:
-            for line in file:
-                if line.strip():
-                    try:
-                        name, payload, expected_response = line.strip().split('::')
-                        payloads.append({
-                            'name': name,
-                            'payload': payload,
-                            'response': expected_response
-                        })
-                    except ValueError:
-                        logger.warning(f"Malformed payload: {line.strip()}")
-    except FileNotFoundError:
-        logger.error(f"Payload file not found: {file_path}")
-    return payloads
+    return load_named_payloads(file_path, ("name", "payload", "response"))
 
 
 
@@ -60,7 +48,7 @@ def test_lfi_payload(url: str, parameter: str, payload: str, expected_response: 
 
     headers = generate_random_headers()
     try:
-        response = requests.get(
+        response = http.get(
             url, 
             params={parameter: payload}, 
             headers=headers, 

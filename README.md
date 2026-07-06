@@ -410,7 +410,7 @@ Edit `config/waymap/domain_blacklist.txt` — one domain per line.
 
 ### Payloads & wordlists
 
-Located in `data/` (e.g. `basicxsspayload.txt`, `cmdipayload.txt`, `lfipayload.txt`, `sstipayload.txt`).
+Located in `data/` (e.g. `cmdipayload.txt`, `lfipayload.txt`, `sstipayload.txt`). XSS payloads are generated from the XSStrike-style scanner logic.
 
 ---
 

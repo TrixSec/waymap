@@ -1,4 +1,5 @@
 from typing import Dict, Any, Optional
+from functools import lru_cache
 from lib.ai.llm_provider import get_llm_provider, is_llm_available
 from lib.core.logger import get_logger
 from lib.ui import print_status
@@ -15,6 +16,18 @@ def analyze_vulnerability(
     details: Optional[str] = None
 ) -> Optional[Dict[str, Any]]:
     """Analyze a vulnerability using AI and return structured analysis."""
+    return _analyze_vulnerability_cached(vuln_type, url, parameter, payload, response_snippet or "", details or "")
+
+
+@lru_cache(maxsize=1024)
+def _analyze_vulnerability_cached(
+    vuln_type: str,
+    url: str,
+    parameter: str,
+    payload: str,
+    response_snippet: str = "",
+    details: str = ""
+) -> Optional[Dict[str, Any]]:
     if not is_llm_available():
         logger.debug("LLM not available, skipping vulnerability analysis")
         return None

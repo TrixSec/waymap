@@ -1,10 +1,12 @@
 """Shared helpers for recon and misconfiguration modules."""
 
 from datetime import datetime, timezone
+from functools import lru_cache
 from typing import Any, Dict, Iterable, Optional
 from urllib.parse import urljoin, urlparse
 
 import requests
+from lib.core import http
 
 from lib.core.config import get_config
 from lib.core.logger import get_logger
@@ -14,6 +16,27 @@ from lib.ui import print_status
 
 config = get_config()
 logger = get_logger(__name__)
+
+
+@lru_cache(maxsize=2048)
+def _cached_simple_request(
+    method: str,
+    url: str,
+    timeout: int,
+    allow_redirects: bool,
+) -> Optional[requests.Response]:
+    try:
+        return http.request(
+            method,
+            url,
+            headers=generate_random_headers(),
+            timeout=timeout,
+            verify=False,
+            allow_redirects=allow_redirects,
+        )
+    except requests.RequestException as e:
+        logger.debug(f"Request failed for {url}: {e}")
+        return None
 
 
 def normalize_target(target: str) -> str:
@@ -93,10 +116,14 @@ def request_url(
     if not url:
         return None
 
+    normalized_method = method.upper()
+    if headers is None and not kwargs and normalized_method in {"GET", "HEAD"}:
+        return _cached_simple_request(normalized_method, url, timeout or config.REQUEST_TIMEOUT, allow_redirects)
+
     headers = headers or generate_random_headers()
     try:
-        response = requests.request(
-            method,
+        response = http.request(
+            normalized_method,
             url,
             headers=headers,
             timeout=timeout or config.REQUEST_TIMEOUT,

@@ -3,6 +3,7 @@ import re
 from typing import List, Optional, Union
 
 import requests
+from lib.core import http
 
 from lib.core.config import get_config
 from lib.core.logger import get_logger
@@ -18,7 +19,7 @@ def _looks_like_wordpress(target_url: str) -> bool:
     headers = generate_random_headers()
 
     try:
-        resp = requests.get(target_url, headers=headers, verify=False, timeout=config.REQUEST_TIMEOUT)
+        resp = http.get(target_url, headers=headers, verify=False, timeout=config.REQUEST_TIMEOUT)
         html = resp.text if resp is not None else ""
         hdrs = resp.headers if resp is not None else {}
     except Exception as e:

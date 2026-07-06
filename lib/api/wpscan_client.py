@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
 import requests
+from lib.core import http
 
 from lib.core.logger import get_logger
 
@@ -56,7 +57,7 @@ class WPScanClient:
         }
         payload = {"requests": requests_list}
 
-        resp = requests.post(url, headers=headers, data=json.dumps(payload), timeout=self.timeout)
+        resp = http.post(url, headers=headers, data=json.dumps(payload), timeout=self.timeout)
         resp.raise_for_status()
 
         try:

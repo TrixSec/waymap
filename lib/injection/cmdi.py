@@ -7,6 +7,8 @@ import os
 import re
 import random
 import requests
+from lib.core import http
+from functools import lru_cache
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 from defusedxml import ElementTree as ET
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -42,6 +44,7 @@ def _build_url_with_param(url: str, param: str, value: str) -> str:
     new_query = urlencode(qs, doseq=True)
     return urlunparse((parsed.scheme, parsed.netloc, parsed.path, parsed.params, new_query, parsed.fragment))
 
+@lru_cache(maxsize=None)
 def load_cmdi_errors(xml_file: str) -> Dict[str, List[str]]:
     """Load CMDi error patterns."""
     cmdi_errors = {}
@@ -77,7 +80,7 @@ def test_cmdi_payload(url: str, parameter: str, payload: str, cmdi_errors: Dict[
     test_url = _build_url_with_param(url, parameter, payload)
 
     try:
-        response = requests.get(test_url, headers=headers, timeout=config.REQUEST_TIMEOUT, verify=False)
+        response = http.get(test_url, headers=headers, timeout=config.REQUEST_TIMEOUT, verify=False)
         cmdi_error = detect_cmdi(response.text, cmdi_errors)
         
         if cmdi_error:

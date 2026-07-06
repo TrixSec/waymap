@@ -6,6 +6,7 @@
 import os
 import json
 import random
+from functools import lru_cache
 from typing import Dict, List
 
 from lib.core.config import get_config
@@ -14,6 +15,7 @@ from lib.core.logger import get_logger
 config = get_config()
 logger = get_logger(__name__)
 
+@lru_cache(maxsize=1)
 def load_user_agents() -> List[str]:
     """Load user agents from file."""
     ua_file_path = os.path.join(config.DATA_DIR, 'ua.txt')
@@ -25,6 +27,7 @@ def load_user_agents() -> List[str]:
         logger.error(f"User agents file not found: {ua_file_path}")
         return ["Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"]
 
+@lru_cache(maxsize=1)
 def load_headers_data() -> Dict:
     """Load headers data from JSON file."""
     headers_file_path = os.path.join(config.DATA_DIR, 'headers.json')

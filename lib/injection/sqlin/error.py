@@ -9,6 +9,8 @@ import json
 import time
 import random
 import requests
+from lib.core import http
+from functools import lru_cache
 from defusedxml import ElementTree as ET
 from urllib.parse import urlparse, parse_qs
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -25,6 +27,7 @@ from lib.parse.random_headers import generate_random_headers
 # Import the shared stop event
 from lib.core.state import stop_scan
 from lib.core.result_manager import ResultManager
+from lib.injection.sqlin.common import detect_server_info, inject_payload, parameter_names
 
 config = get_config()
 logger = get_logger(__name__)
@@ -36,6 +39,38 @@ failed_requests = 0
 # Track (url, param) pairs that already have findings
 _found_pairs = set()
 
+SQL_ERROR_PATTERNS = tuple(re.compile(pattern) for pattern in (
+    r"Duplicate entry '.*?' for key",
+    r"MySQL server version for the right syntax to use",
+    r"You have an error in your SQL syntax",
+    r"Unknown column",
+    r"Table '\w+' doesn't exist",
+    r"Can't find record",
+    r"EXTRACTVALUE",
+    r"UPDATEXML",
+    r"XPATH syntax error",
+    r"BIGINT UNSIGNED value is out of range",
+    r"ERROR:  syntax error at or near",
+    r"pg_query",
+    r"column \".*?\" does not exist",
+    r"relation \"\w+\" does not exist",
+    r"Unclosed quotation mark after the character string",
+    r"Incorrect syntax near",
+    r"Invalid column name",
+    r"Invalid object name",
+    r"Microsoft SQL Server",
+    r"ODBC SQL Server Driver",
+    r"ORA-\d+",
+    r"Oracle error",
+    r"SQLite error",
+    r"unrecognized token",
+    r"SQL syntax",
+    r"SQL error",
+    r"query failed",
+    r"syntax error",
+))
+
+@lru_cache(maxsize=None)
 def parse_error_based_tests_from_xml(file_path: str = None) -> List[Dict[str, str]]:
     """Parse error-based SQLi test cases from XML."""
     if file_path is None:
@@ -80,49 +115,16 @@ def replace_placeholders(template: str, delimiters: Tuple[str, str], rand_number
     return replaced_template
 
 
-def inject_payload(url: str, payload: str) -> Generator[Tuple[str, str], None, None]:
-    """Inject payload into URL parameters."""
-    parsed_url = urlparse(url)
-    query_params = parse_qs(parsed_url.query)
-
-    for param in query_params:
-        test_params = query_params.copy()
-        test_params[param] = [f"{test_params[param][0]} {payload}"]
-        
-        from urllib.parse import urlencode, urlunparse
-        new_query = urlencode(test_params, doseq=True)
-        new_parts = list(parsed_url)
-        new_parts[4] = new_query
-        test_url = urlunparse(new_parts)
-        
-        yield test_url, param
-
-
-def detect_server_info(url: str) -> Tuple[str, str]:
-    """Detect server info."""
-    try:
-        headers = generate_random_headers()
-        response = requests.head(url, headers=headers, verify=False, timeout=config.REQUEST_TIMEOUT)
-        server = response.headers.get('Server', 'Unknown')
-        technology = response.headers.get('X-Powered-By', 'Unknown')
-        return server, technology
-    except Exception:
-        return 'Unknown', 'Unknown'
-
-
-
-
-
-def make_request(test_url: str, custom_patterns: List[str]) -> bool:
+def make_request(test_url: str) -> bool:
     """Make request and check for patterns."""
     global successful_requests, failed_requests
     try:
         headers = generate_random_headers()
-        response = requests.get(test_url, headers=headers, verify=False, timeout=config.REQUEST_TIMEOUT)
+        response = http.get(test_url, headers=headers, verify=False, timeout=config.REQUEST_TIMEOUT)
         successful_requests += 1
 
-        for pattern in custom_patterns:
-            if re.search(pattern, response.text):
+        for pattern in SQL_ERROR_PATTERNS:
+            if pattern.search(response.text):
                 return True
     except requests.RequestException as e:
         logger.debug(f"Request error: {e}")
@@ -139,49 +141,6 @@ def error_based_sqli(url: str, test: Dict[str, str], thread_count: int) -> bool:
     rand_numbers = [random.randint(1000, 9999) for _ in range(5)]
     payload = replace_placeholders(test['payload_template'], delimiters, rand_numbers)
 
-    # Comprehensive list of SQL error patterns for various DBMS
-    custom_patterns = [
-        # MySQL error patterns
-        r"Duplicate entry '.*?' for key",
-        r"MySQL server version for the right syntax to use",
-        r"You have an error in your SQL syntax",
-        r"Unknown column",
-        r"Table '\w+' doesn't exist",
-        r"Can't find record",
-        r"EXTRACTVALUE",
-        r"UPDATEXML",
-        r"XPATH syntax error",
-        r"BIGINT UNSIGNED value is out of range",
-        
-        # PostgreSQL error patterns
-        r"ERROR:  syntax error at or near",
-        r"pg_query",
-        r"column \".*?\" does not exist",
-        r"relation \"\w+\" does not exist",
-        
-        # Microsoft SQL Server error patterns
-        r"Unclosed quotation mark after the character string",
-        r"Incorrect syntax near",
-        r"Invalid column name",
-        r"Invalid object name",
-        r"Microsoft SQL Server",
-        r"ODBC SQL Server Driver",
-        
-        # Oracle error patterns
-        r"ORA-\d+",
-        r"Oracle error",
-        
-        # SQLite error patterns
-        r"SQLite error",
-        r"unrecognized token",
-        
-        # Generic SQL error patterns
-        r"SQL syntax",
-        r"SQL error",
-        r"query failed",
-        r"syntax error"
-    ]
-
     for test_url, injected_param in inject_payload(url, payload):
         if stop_scan.is_set(): return False
         
@@ -190,7 +149,7 @@ def error_based_sqli(url: str, test: Dict[str, str], thread_count: int) -> bool:
             return False
 
         try:
-            if make_request(test_url, custom_patterns):
+            if make_request(test_url):
                 _found_pairs.add(pair_key)
                 server, technology = detect_server_info(url)
 
@@ -238,8 +197,7 @@ def process_urls(urls: List[str], thread_count: int) -> None:
     
     # First, show all URLs being tested
     for url in urls:
-        parsed_url = urlparse(url)
-        params = list(parse_qs(parsed_url.query).keys())
+        params = parameter_names(url)
         if params:
             print_status(f"Testing Error-based SQLi: {url} (Params: {', '.join(params)})", "info")
 

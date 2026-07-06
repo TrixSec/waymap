@@ -5,9 +5,10 @@
 
 import os
 import sys
-import time
 import threading
 import requests
+from lib.core import http
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import List, Set, Optional
 from urllib.parse import urljoin, urlparse
 from bs4 import BeautifulSoup
@@ -87,7 +88,7 @@ class WaymapCrawler:
 
         try:
             headers = generate_random_headers()
-            response = requests.get(
+            response = http.get(
                 url, 
                 timeout=config.REQUEST_TIMEOUT, 
                 allow_redirects=True, 
@@ -101,6 +102,10 @@ class WaymapCrawler:
                 return
 
             if self._is_language_related(final_url):
+                return
+
+            content_type = response.headers.get("Content-Type", "")
+            if content_type and "html" not in content_type.lower():
                 return
 
             soup = BeautifulSoup(response.text, 'html.parser')
@@ -162,17 +167,15 @@ class WaymapCrawler:
         next_urls = []
 
         if self.thread_count > 1 and len(urls) > 1:
-            threads = []
-            chunk_size = max(1, len(urls) // self.thread_count)
-            chunks = [urls[i:i + chunk_size] for i in range(0, len(urls), chunk_size)]
-            
-            for chunk in chunks:
-                t = threading.Thread(target=self._crawl_worker, args=(chunk, next_urls))
-                t.start()
-                threads.append(t)
-            
-            for t in threads:
-                t.join()
+            with ThreadPoolExecutor(max_workers=self.thread_count) as executor:
+                futures = [executor.submit(self.crawl_url, url, next_urls) for url in urls]
+                for future in as_completed(futures):
+                    if self.stop_event.is_set():
+                        break
+                    try:
+                        future.result()
+                    except Exception as e:
+                        logger.debug(f"Error in crawler worker: {e}")
         else:
             self._crawl_worker(urls, next_urls)
 
@@ -180,7 +183,6 @@ class WaymapCrawler:
         print_status(f"Found {len(next_urls)} URLs at depth {depth}", "success")
 
         if next_urls and depth < self.max_depth:
-            time.sleep(1)
             self._process_depth(next_urls, depth + 1)
 
     def start(self, no_prompt: bool = False) -> List[str]:

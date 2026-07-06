@@ -4,52 +4,34 @@
 """File utility functions."""
 
 import os
-from typing import List, Optional
+from functools import lru_cache
+from typing import List, Tuple
 import logging
 
 logger = logging.getLogger(__name__)
 
 
-def load_payloads(file_path: str) -> List[str]:
-    """
-    Load payloads from a file.
-    
-    Args:
-        file_path: Path to the payload file
-        
-    Returns:
-        List of payload strings
-    """
+@lru_cache(maxsize=None)
+def _load_lines_cached(file_path: str) -> Tuple[str, ...]:
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
-            return [line.strip() for line in f if line.strip()]
+            return tuple(line.strip() for line in f if line.strip())
     except FileNotFoundError:
-        logger.error(f"Payload file {file_path} not found")
-        return []
+        logger.error(f"File {file_path} not found")
+        return ()
     except Exception as e:
-        logger.error(f"Error loading payloads from {file_path}: {e}")
-        return []
+        logger.error(f"Error loading file {file_path}: {e}")
+        return ()
+
+
+def load_payloads(file_path: str) -> List[str]:
+    """Load payloads from a file."""
+    return list(_load_lines_cached(file_path))
 
 
 def load_file_lines(file_path: str) -> List[str]:
-    """
-    Load lines from a file.
-    
-    Args:
-        file_path: Path to the file
-        
-    Returns:
-        List of lines (stripped)
-    """
-    try:
-        with open(file_path, 'r', encoding='utf-8') as f:
-            return [line.strip() for line in f if line.strip()]
-    except FileNotFoundError:
-        logger.error(f"File {file_path} not found")
-        return []
-    except Exception as e:
-        logger.error(f"Error loading file {file_path}: {e}")
-        return []
+    """Load stripped non-empty lines from a file."""
+    return list(_load_lines_cached(file_path))
 
 
 def save_to_file(file_path: str, data: List[str], mode: str = 'w') -> bool:

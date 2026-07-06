@@ -9,6 +9,7 @@ import time
 import random
 import string
 import requests
+from lib.core import http
 from datetime import datetime
 from urllib.parse import urlparse, parse_qs
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -36,7 +37,7 @@ TRUE_PAYLOADS = [
 FALSE_PAYLOADS = [
     "' AND 2*3*8=6*9 AND 'randomString'='randomString",
     "' AND 3*3<(2*4) AND 'randomString'='randomString",
-    "' AND (3*3*0)=(2*4*1*0) AND 'randomString'='randomString"
+    "' AND (3*3*0)=(2*4*1) AND 'randomString'='randomString"
 ]
 
 # Track (url, param) pairs that already have findings
@@ -91,7 +92,7 @@ def test_payload(url: str, parameter: str, payload: str, retries: int = 2) -> Li
             break
         try:
             full_url = inject_payload_into_url(url, parameter, payload.replace("randomString", generate_random_string()))
-            response = requests.get(full_url, headers=headers, verify=False, timeout=config.REQUEST_TIMEOUT)
+            response = http.get(full_url, headers=headers, verify=False, timeout=config.REQUEST_TIMEOUT)
             signatures.append((response.status_code, len(response.text), response.text[:100]))
         except requests.RequestException:
             signatures.append(None)
