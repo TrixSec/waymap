@@ -1,7 +1,7 @@
 # Copyright (c) 2026 waymap developers
 # See the file 'LICENSE' for copying permission.
 
-"""Web Crawler Module."""
+"""Web Crawler Module - Two-Layer Architecture."""
 
 import os
 import sys
@@ -11,14 +11,17 @@ from lib.core import http
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import List, Set, Optional
 from urllib.parse import urljoin, urlparse
-from bs4 import BeautifulSoup
 import urllib3
 
 from lib.core.config import get_config
 from lib.core.logger import get_logger
 from lib.ui import print_status, print_header, prompt_line, colored
 from lib.utils import is_valid_url, has_query_parameters, is_within_domain
-from lib.parse.random_headers import generate_random_headers
+from lib.discovery.engine import DiscoveryEngine
+from lib.discovery.models import DiscoveryResults
+from lib.ai.discovery_agent import DiscoveryAgent
+from lib.events.bus import get_event_bus
+from lib.events.events import DiscoveryEvent, ScanStartEvent, ScanEndEvent, ProgressEvent
 
 # Disable warnings
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -27,13 +30,19 @@ config = get_config()
 logger = get_logger(__name__)
 
 class WaymapCrawler:
-    def __init__(self, base_url: str, max_depth: int = 2, thread_count: int = 1):
+    def __init__(self, base_url: str, max_depth: int = 2, thread_count: int = 1, use_ai: bool = True):
         self.start_url = base_url
         self.max_depth = max_depth
         self.thread_count = thread_count
+        self.use_ai = use_ai
         self.base_domain = urlparse(base_url).netloc
         
-        # State
+        # Two-layer architecture
+        self.discovery_engine: Optional[DiscoveryEngine] = None
+        self.discovery_agent: Optional[DiscoveryAgent] = None
+        self.discovery_results: Optional[DiscoveryResults] = None
+        
+        # State (for backward compatibility)
         self.visited_urls: Set[str] = set()
         self.all_urls: List[str] = []
         self.valid_urls: List[str] = []
@@ -43,6 +52,9 @@ class WaymapCrawler:
         # Synchronization
         self.lock = threading.Lock()
         self.stop_event = threading.Event()
+        
+        # Event bus
+        self.event_bus = get_event_bus()
 
     def get_crawl_file_path(self) -> str:
         """Get path to crawl results file."""
@@ -138,6 +150,18 @@ class WaymapCrawler:
                             self.valid_urls.append(full_url)
                             self.valid_url_count += 1
                             self.save_valid_url(full_url)
+                        
+                        # Emit discovery event for parameterized URLs
+                        params = list(urlparse(full_url).query.split('&'))
+                        event = DiscoveryEvent(
+                            url=full_url,
+                            source="crawler",
+                            method="link_extraction",
+                            depth=depth if hasattr(self, '_current_depth') else 0,
+                            parent_url=url,
+                            parameters=params
+                        )
+                        self.event_bus.publish(event)
 
                     # Update progress
                     with self.lock:
@@ -163,7 +187,18 @@ class WaymapCrawler:
         if depth > self.max_depth or not urls:
             return
 
+        self._current_depth = depth  # Track depth for event emission
         print_status(f"Crawling depth: {depth}", "info")
+        
+        # Emit progress event
+        progress_event = ProgressEvent(
+            phase="crawling",
+            current=depth,
+            total=self.max_depth,
+            message=f"Crawling depth {depth}"
+        )
+        self.event_bus.publish(progress_event)
+        
         next_urls = []
 
         if self.thread_count > 1 and len(urls) > 1:
@@ -186,8 +221,15 @@ class WaymapCrawler:
             self._process_depth(next_urls, depth + 1)
 
     def start(self, no_prompt: bool = False) -> List[str]:
-        """Start the crawling process."""
+        """Start the crawling process using two-layer architecture."""
         print_header("Starting Crawler")
+        
+        # Emit scan start event
+        start_event = ScanStartEvent(
+            target=self.start_url,
+            scan_types=["crawl"]
+        )
+        self.event_bus.publish(start_event)
         
         # Check previous crawl
         previous = self.load_previous_crawl()
@@ -209,17 +251,104 @@ class WaymapCrawler:
 
         self.thread_count = min(self.thread_count, config.MAX_THREADS) if use_threads else 1
 
+        # AI: ask if AI should be used for analysis
+        use_ai = self.use_ai
+        if not no_prompt and use_ai:
+            choice = prompt_line("Enable AI analysis for prioritization? [y/N]", "n").lower()
+            use_ai = choice == 'y'
+
+        import time
+        crawl_start_time = time.time()
+        
         try:
-            self._process_depth([self.start_url], 1)
+            # Layer 1: Fast deterministic discovery
+            print_status("Layer 1: Starting high-speed discovery engine", "info")
+            self.discovery_engine = DiscoveryEngine(
+                self.start_url,
+                max_depth=self.max_depth,
+                thread_count=self.thread_count
+            )
+            self.discovery_engine.show_progress = True
+            self.discovery_results = self.discovery_engine.run()
+            
+            # Update backward-compatible state
+            self.visited_urls = set(u.url for u in self.discovery_results.urls)
+            self.all_urls = [u.url for u in self.discovery_results.urls]
+            self.total_urls = len(self.all_urls)
+            
+            # Save valid URLs (parameterized) - already deduplicated by pattern
+            for url_obj in self.discovery_results.get_parameterized_urls():
+                if not self._is_language_related(url_obj.url):
+                    self.valid_urls.append(url_obj.url)
+                    self.valid_url_count += 1
+                    self.save_valid_url(url_obj.url)
+            
+            print_status(f"Layer 1 complete. Found {self.total_urls} URLs, {self.valid_url_count} parameterized", "success")
+            
+            # Layer 2: AI analysis and prioritization
+            if use_ai:
+                self.discovery_agent = DiscoveryAgent(self.discovery_results)
+                analysis = self.discovery_agent.analyze_endpoints()
+                
+                # Get prioritized scan queue
+                prioritized = self.discovery_agent.get_scan_queue(limit=50)
+                
+                # Only save and print if we have results
+                if prioritized:
+                    self._save_prioritized_results(prioritized)
+                    print_status(f"AI prioritized {len(prioritized)} endpoints for scanning", "success")
+            
+            # Print discovery summary (compact)
+            summary = self.discovery_results.get_summary()
+            print_status(f"Discovery: {summary['total_urls']} URLs, {summary['parameterized_urls']} parameterized, {summary['forms']} forms", "success")
+            
         except KeyboardInterrupt:
             from lib.core.interrupt import exit_clean
             exit_clean()
         finally:
+            crawl_duration = time.time() - crawl_start_time
             print_status(f"Crawling finished. Total: {self.total_urls}, Valid: {len(self.valid_urls)}", "success")
             
+            # Emit scan end event
+            end_event = ScanEndEvent(
+                target=self.start_url,
+                success=True,
+                duration_seconds=crawl_duration,
+                findings_count=self.valid_url_count
+            )
+            self.event_bus.publish(end_event)
+            
         return self.valid_urls
+    
+    def _save_prioritized_results(self, prioritized: List[str]) -> None:
+        """Save prioritized scan queue to file."""
+        prioritized_file = os.path.join(
+            config.get_domain_session_dir(self.base_domain),
+            'prioritized.txt'
+        )
+        try:
+            with open(prioritized_file, 'w') as f:
+                for url in prioritized:
+                    f.write(f"{url}\n")
+            print_status(f"Saved prioritized queue to {prioritized_file}", "info")
+        except Exception as e:
+            logger.error(f"Error saving prioritized results: {e}")
+    
+    def get_discovery_results(self) -> Optional[DiscoveryResults]:
+        """Get the discovery results object."""
+        return self.discovery_results
+    
+    def get_ai_analysis(self) -> Optional[dict]:
+        """Get the AI analysis results."""
+        if self.discovery_agent:
+            return {
+                "prioritized_urls": self.discovery_agent.prioritized_urls,
+                "duplicate_groups": self.discovery_agent.duplicate_groups,
+                "vulnerability_hints": self.discovery_agent.get_vulnerability_hints()
+            }
+        return None
 
 # Legacy wrapper for backward compatibility
-def run_crawler(start_url: str, max_depth: int, thread_count: int, no_prompt: bool) -> List[str]:
-    crawler = WaymapCrawler(start_url, max_depth, thread_count)
+def run_crawler(start_url: str, max_depth: int, thread_count: int, no_prompt: bool, use_ai: bool = True) -> List[str]:
+    crawler = WaymapCrawler(start_url, max_depth, thread_count, use_ai)
     return crawler.start(no_prompt)

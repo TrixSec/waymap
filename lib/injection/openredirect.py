@@ -1,12 +1,13 @@
 # Copyright (c) 2026 waymap developers
 # See the file 'LICENSE' for copying permission.
 
-"""Open Redirect Scanner Module."""
+"""Open Redirect Scanner Module - Highly Optimized."""
 
 import os
-from urllib.parse import urlparse
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import List, Dict, Any
+import time
+from datetime import datetime
+from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
+from typing import List, Dict, Any, Tuple, Generator
 
 import requests
 from lib.core import http
@@ -24,31 +25,97 @@ from lib.utils.file_utils import load_file_lines
 config = get_config()
 logger = get_logger(__name__)
 
-def replace_last_parameter(url: str, parameter: str, payload: str) -> str:
-    """Replace the last parameter in the URL."""
+# Track (url, param) pairs that already have findings
+_found_vulnerable_pairs = set()
+
+# Reusable requests session for connection pooling
+_session = None
+
+
+def get_session() -> requests.Session:
+    """Get a reusable session with connection pooling."""
+    global _session
+    if not _session:
+        _session = requests.Session()
+        _session.verify = False
+        adapter = requests.adapters.HTTPAdapter(
+            pool_connections=20,
+            pool_maxsize=20,
+            max_retries=1
+        )
+        _session.mount('http://', adapter)
+        _session.mount('https://', adapter)
+    return _session
+
+
+def extract_parameters(url: str) -> List[str]:
+    """Extract parameters from URL."""
     parsed_url = urlparse(url)
-    query = parsed_url.query.split('&')
-    query = [param.replace("{payload}", payload) for param in query]
-    if query:
-        query[-1] = f"{parameter}={payload}"
-    new_query = '&'.join(query)
-    return f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}?{new_query}"
+    params = parse_qs(parsed_url.query)
+    return list(params.keys()) if params else []
+
+
+def inject_payload_into_url(url: str, parameter: str, payload: str) -> str:
+    """Inject payload into a specific URL parameter."""
+    parsed_url = urlparse(url)
+    query_params = parse_qs(parsed_url.query)
+    
+    query_params[parameter] = [payload]
+    
+    new_query = urlencode(query_params, doseq=True)
+    new_parts = list(parsed_url)
+    new_parts[4] = new_query
+    return urlunparse(new_parts)
+
+
+def is_parameter_relevant(url: str, parameter: str) -> bool:
+    """Quick probe to check if a parameter is worth testing - avoids wasted requests."""
+    session = get_session()
+    probe_payload = "waymap_redirect_test"
+    test_url = inject_payload_into_url(url, parameter, probe_payload)
+    
+    try:
+        headers = generate_random_headers()
+        response = session.get(
+            test_url,
+            headers=headers,
+            allow_redirects=False,
+            timeout=3  # Short timeout for probe
+        )
+        
+        location = response.headers.get("Location") or response.headers.get("location", "")
+        
+        # If probe is reflected in Location header, this parameter is definitely relevant!
+        if probe_payload in location:
+            return True
+            
+        # Also check if parameter changes response status (3xx redirect)
+        if 300 <= response.status_code < 400:
+            return True
+            
+        return False
+        
+    except Exception as e:
+        logger.debug(f"Parameter probe failed: {e}")
+        # If probe fails, still try it just in case
+        return True
+
 
 def test_open_redirect_payload(url: str, parameter: str, payload: str, verbose: bool) -> Dict[str, Any]:
-    """Test the open redirect payload using HTTP redirect headers."""
+    """Test a single open redirect payload quickly with connection pooling."""
     if stop_scan.is_set():
         return {'vulnerable': False}
 
-    test_url = replace_last_parameter(url, parameter, payload)
+    test_url = inject_payload_into_url(url, parameter, payload)
     headers = generate_random_headers()
 
     try:
-        response = http.get(
+        session = get_session()
+        response = session.get(
             test_url,
             headers=headers,
             allow_redirects=False,
             timeout=config.REQUEST_TIMEOUT,
-            verify=False,
         )
         location = response.headers.get("Location") or response.headers.get("location")
         if location:
@@ -71,80 +138,129 @@ def test_open_redirect_payload(url: str, parameter: str, payload: str, verbose: 
 
     return {'vulnerable': False}
 
+
+def process_url(url: str, parameters: List[str], payloads: List[str], thread_count: int, no_prompt: bool, verbose: bool) -> None:
+    """Process a single URL for open redirect testing - ultra optimized."""
+    domain = urlparse(url).netloc
+    result_manager = ResultManager(domain)
+
+    # Step 1: First test existing parameters in the URL (highest priority)
+    existing_params = extract_parameters(url)
+    for param in existing_params:
+        if stop_scan.is_set():
+            return
+        if (url, param) in _found_vulnerable_pairs:
+            continue
+            
+        print_status(f"Probing parameter: {param}", "info")
+        if not is_parameter_relevant(url, param):
+            if verbose:
+                print_status(f"Parameter {param} doesn't seem relevant, skipping...", "debug")
+            continue
+            
+        test_parameter(url, param, payloads, thread_count, no_prompt, verbose, result_manager)
+        if stop_scan.is_set():
+            return
+
+    # Step 2: Only test a small subset of common parameters if no existing params found
+    if not existing_params:
+        # Use only the top 10 most common open redirect parameters
+        common_params = ["redirect", "url", "next", "go", "target", "destination", "continue", "return", "link", "redir"]
+        for param in common_params:
+            if stop_scan.is_set():
+                return
+            if (url, param) in _found_vulnerable_pairs:
+                continue
+                
+            print_status(f"Probing parameter: {param}", "info")
+            if not is_parameter_relevant(url, param):
+                if verbose:
+                    print_status(f"Parameter {param} doesn't seem relevant, skipping...", "debug")
+                continue
+                
+            test_parameter(url, param, payloads, thread_count, no_prompt, verbose, result_manager)
+            if stop_scan.is_set():
+                return
+
+
+def test_parameter(url: str, parameter: str, payloads: List[str], thread_count: int, no_prompt: bool, verbose: bool, result_manager: ResultManager) -> None:
+    """Test a single parameter with smart payload ordering, stop on first vulnerable."""
+    domain = urlparse(url).netloc
+    print_status(f"Testing Parameter: {parameter}", "info")
+
+    # Test payloads in priority order (most likely to succeed first)
+    for payload in payloads:
+        if stop_scan.is_set():
+            return
+
+        result = test_open_redirect_payload(url, parameter, payload, verbose)
+        if result['vulnerable']:
+            full_url = result['url']
+            param = result['parameter']
+            payload = result['payload']
+
+            # Check for duplicates using ResultManager
+            is_duplicate = result_manager.has_duplicate(
+                "Open Redirect",
+                ["url", "parameter", "payload"],
+                {"url": full_url, "parameter": param, "payload": payload}
+            )
+
+            if not is_duplicate:
+                _found_vulnerable_pairs.add((url, param))
+
+                print_status("Vulnerability Found!", "success")
+                print_status(f"  URL: {full_url}", "info")
+                print_status(f"  Parameter: {param}", "info")
+                print_status(f"  Payload: {payload}", "info")
+                if result.get('location'):
+                    print_status(f"  Location: {result['location']}", "info")
+
+                result_manager.add_finding("Open Redirect", "", {
+                    "url": full_url,
+                    "parameter": param,
+                    "payload": payload,
+                    "location": result.get("location"),
+                    "timestamp": datetime.now().isoformat()
+                })
+
+                if not no_prompt:
+                    if not ask_continue_scanning():
+                        print_status("Stopping scan...", "warning")
+                        stop_scan.set()
+                        return
+            
+            # Stop testing this parameter immediately
+            break
+
+
 def perform_redirect_scan(crawled_urls: List[str], thread_count: int = 1, no_prompt: bool = False, verbose: bool = False) -> None:
-    """Perform open redirect scanning."""
+    """Perform open redirect scanning - highly optimized and intelligent."""
+    from lib.core.interrupt import reset_interrupt
+    reset_interrupt()
+    _found_vulnerable_pairs.clear()
     stop_scan.clear()
-    
+
+    # Reset session for new scan
+    global _session
+    _session = None
+
     print_header("Open Redirect Scan", color="cyan")
-    
+
     thread_count = max(1, min(thread_count, config.MAX_THREADS))
     parameters = load_file_lines(os.path.join(config.DATA_DIR, 'openredirectparameters.txt'))
     payloads = load_file_lines(os.path.join(config.DATA_DIR, 'openredirectpayloads.txt'))
-    
-    print_status(f"Scanning {len(crawled_urls)} URLs with {len(parameters)} parameters and {len(payloads)} payloads", "info")
+
+    print_status(f"Scanning {len(crawled_urls)} URLs with {len(payloads)} targeted payloads", "info")
 
     try:
         for url in crawled_urls:
-            if stop_scan.is_set(): break
-            
+            if stop_scan.is_set():
+                break
+
             print_status(f"Testing URL: {url}", "info")
-            domain = urlparse(url).netloc
-            result_manager = ResultManager(domain)
+            process_url(url, parameters, payloads, thread_count, no_prompt, verbose)
 
-            for parameter in parameters:
-                if stop_scan.is_set(): break
-                
-                if verbose:
-                    print_status(f"Testing Parameter: {parameter}", "debug")
-
-                with ThreadPoolExecutor(max_workers=thread_count) as executor:
-                    futures = {}
-                    for payload in payloads:
-                        if stop_scan.is_set(): break
-                        
-                        future = executor.submit(
-                            test_open_redirect_payload, 
-                            url, 
-                            parameter, 
-                            payload, 
-                            verbose
-                        )
-                        futures[future] = (parameter, payload)
-
-                    for future in as_completed(futures):
-                        if stop_scan.is_set(): break
-                        
-                        try:
-                            result = future.result()
-                            if result['vulnerable']:
-                                full_url = result['url']
-                                param = result['parameter']
-                                payload = result['payload']
-
-                                print_status("Vulnerability Found!", "success")
-                                print_status(f"  URL: {full_url}", "info")
-                                print_status(f"  Parameter: {param}", "info")
-                                print_status(f"  Payload: {payload}", "info")
-                                if result.get('location'):
-                                    print_status(f"  Location: {result['location']}", "info")
-
-                                result_manager.add_finding("Open Redirect", "", {
-                                    "url": full_url,
-                                    "parameter": param,
-                                    "payload": payload,
-                                    "location": result.get("location"),
-                                })
-
-                                if not no_prompt:
-                                    if not ask_continue_scanning():
-                                        print_status("Stopping scan...", "warning")
-                                        stop_scan.set()
-                                        return
-                        except Exception as e:
-                            logger.error(f"Error in worker: {e}")
-
-            if stop_scan.is_set(): break
-            
         print_status("Open Redirect Scan completed", "info")
 
     except KeyboardInterrupt:

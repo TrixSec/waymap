@@ -697,10 +697,15 @@ def _scan_urls_with_payloads(
                 target_key = (method, base_url, param_key, context_names)
                 payload_futures[payload_future] = (full_url, param_key, payload, context_names, target_key)
 
+        total_tasks = len(payload_futures)
+        completed_tasks = 0
         reported_targets = set()
         for future in as_completed(payload_futures):
             if stop_scan.is_set():
                 break
+            completed_tasks += 1
+            if completed_tasks % 100 == 0 or completed_tasks == total_tasks:
+                print_status(f"Progress: {completed_tasks}/{total_tasks}", "info")
 
             try:
                 result = future.result()

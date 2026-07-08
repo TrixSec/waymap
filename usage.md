@@ -71,7 +71,6 @@ Select a scan type.
 - `sqli`
 - `xss`
 - `cmdi`
-- `rce`
 - `ssti`
 - `lfi`
 - `open-redirect`

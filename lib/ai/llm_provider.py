@@ -11,6 +11,7 @@ from lib.core.config import get_config
 from lib.core.secrets import get_secret
 from lib.ui import print_status
 
+
 logger = get_logger(__name__)
 config = get_config()
 
@@ -254,6 +255,63 @@ class CerebrasProvider(LLMProvider):
             print_status("All AI models failed!", "error")
         raise last_exception or Exception("All models failed")
 
+class NvidiaProvider(LLMProvider):
+    def __init__(self, llm_config: LLMConfig):
+        self.config = llm_config
+        try:
+            import openai
+            self.client = openai.OpenAI(
+                api_key=llm_config.api_key,
+                base_url=llm_config.base_url or "https://integrate.api.nvidia.com/v1"
+            )
+        except ImportError:
+            raise ImportError("openai package not installed. Install with: pip install openai")
+        
+        # NVIDIA API has 40 RPM limit
+        self.rate_limiter = RateLimiter(rpm=40)
+
+    def generate(self, prompt: str, system_prompt: Optional[str] = None, json_schema: Optional[Dict[str, Any]] = None, quiet: bool = False) -> Dict[str, Any]:
+        logger.info("Starting AI request via NVIDIA provider")
+        if not quiet:
+            print_status("Starting AI processing...", "info")
+        
+        # Acquire rate limit token
+        self.rate_limiter.acquire()
+        
+        messages = []
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+        messages.append({"role": "user", "content": prompt})
+
+        kwargs = {
+            "model": self.config.model,
+            "messages": messages,
+            "temperature": self.config.temperature,
+            "max_tokens": self.config.max_tokens
+        }
+
+        if json_schema:
+            kwargs["response_format"] = {"type": "json_object"}
+
+        try:
+            response = self.client.chat.completions.create(**kwargs)
+            content = response.choices[0].message.content
+            
+            if not quiet:
+                print_status("AI processing complete!", "success")
+            logger.info(f"Success with NVIDIA model: {self.config.model}")
+            
+            if json_schema:
+                return json.loads(content)
+            return {"content": content, "model_used": self.config.model}
+        except Exception as e:
+            logger.error(f"NVIDIA API error: {e}")
+            if not quiet:
+                print_status("NVIDIA AI model failed!", "error")
+            raise
+
+
+
 
 def get_llm_config() -> LLMConfig:
     secrets_data = _load_llm_secrets()
@@ -285,6 +343,8 @@ def get_llm_provider() -> LLMProvider:
         return AnthropicProvider(llm_config)
     elif llm_config.provider == "ollama":
         return OllamaProvider(llm_config)
+    elif llm_config.provider == "nvidia":
+        return NvidiaProvider(llm_config)
     elif llm_config.provider == "cerebras":
         return CerebrasProvider(llm_config)
     else:

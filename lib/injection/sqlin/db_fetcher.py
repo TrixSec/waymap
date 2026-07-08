@@ -3,11 +3,13 @@ import re
 import random
 import logging
 import time
+from typing import Optional
 from lib.core.result_manager import ResultManager
 from urllib.parse import urlparse, parse_qsl, urlencode, urlunparse
 
 logger = logging.getLogger(__name__)
-_processed_url_params = set()
+_processed_url_params = set()  # DEPRECATED: Use ScanContext.processed_url_params
+_processed_domains = set()  # DEPRECATED: Use ScanContext.processed_domains
 MAX_UNION_COLUMNS = 20
 
 def extract_between_delimiters(text, delimiter_start='~', delimiter_end='~'):
@@ -810,14 +812,36 @@ def fetch_stacked_queries(url, param, result_manager, domain):
         logger.error(f"Stacked queries test error: {str(e)}")
         return False
 
-def fetch_databases_once(url, param, verbose=False):
+def fetch_databases_once(url, param, verbose=False, context: Optional['ScanContext'] = None):
     key = (url, param)
-    if key in _processed_url_params:
-        return
-    _processed_url_params.add(key)
-
-    domain = urlparse(url).netloc
-    result_manager = ResultManager(domain)
+    
+    # Use context if provided, otherwise fall back to global
+    if context is not None:
+        if context.is_url_param_processed(url, param):
+            return
+        context.mark_url_param_processed(url, param)
+        
+        domain = urlparse(url).netloc
+        
+        # Skip if database names already extracted for this domain
+        if context.is_domain_processed(domain):
+            return
+        
+        if context.result_store is None:
+            context.result_store = ResultManager(domain)
+        result_manager = context.result_store
+    else:
+        if key in _processed_url_params:
+            return
+        _processed_url_params.add(key)
+        
+        domain = urlparse(url).netloc
+        
+        # Skip if database names already extracted for this domain
+        if domain in _processed_domains:
+            return
+        
+        result_manager = ResultManager(domain)
 
     from lib.ui import print_header, print_success, print_warning, print_error
 
@@ -846,3 +870,9 @@ def fetch_databases_once(url, param, verbose=False):
 
     if not success:
         print_warning("Could not extract databases with available techniques.")
+    else:
+        # Mark domain as processed if database extraction succeeded
+        if context is not None:
+            context.mark_domain_processed(domain)
+        else:
+            _processed_domains.add(domain)

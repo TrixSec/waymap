@@ -1,189 +1,300 @@
 # Copyright (c) 2026 waymap developers
 # See the file 'LICENSE' for copying permission.
 
-"""Command Injection Scanner Module."""
+"""Commix-inspired command injection scanner."""
 
 import os
 import re
-import random
+import statistics
+import time
+import secrets
 import requests
-from lib.core import http
+from dataclasses import dataclass
 from functools import lru_cache
-from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
+from typing import Any, Dict, Iterable, List, Optional
+from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
+
 from defusedxml import ElementTree as ET
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import List, Dict, Any, Optional
 
-import urllib3
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
+from lib.core import http
 from lib.core.config import get_config
 from lib.core.logger import get_logger
 from lib.core.result_manager import ResultManager
-from lib.ui import print_status, colored, print_header, ask_continue_scanning
-from lib.parse.random_headers import generate_random_headers
 from lib.core.state import stop_scan
+from lib.parse.random_headers import generate_random_headers
+from lib.ui import print_header, print_status, ask_continue_scanning
 
 config = get_config()
 logger = get_logger(__name__)
 
-def get_domain(url: str) -> str:
-    """Extract domain from URL."""
-    return urlparse(url).netloc
+RESULT_SEPARATORS = (";", "&&", "|", "\n")
+RESULT_PREFIXES = ("", "'", '"')
+RESULT_SUFFIXES = ("", "#", "//")
+TIME_SEPARATORS = (";", "&&", "|", "\n")
+TIME_DELAY = 4
+TIME_CONFIRM_MARGIN = 2.5
+MAX_RESULT_PAYLOADS = 24
 
-def extract_parameters(url: str) -> List[str]:
-    """Extract query parameters."""
-    parsed_url = urlparse(url)
-    params = parse_qs(parsed_url.query)
-    return list(params.keys())
 
-def _build_url_with_param(url: str, param: str, value: str) -> str:
+@dataclass(frozen=True)
+class CmdiAttempt:
+    technique: str
+    payload: str
+    expected: str
+    os_hint: str = "Unix/Linux"
+
+
+def _domain(url: str) -> str:
+    return urlparse(url).netloc or "unknown_domain"
+
+
+def _params(url: str) -> Dict[str, str]:
+    return {key: values[0] if values else "" for key, values in parse_qs(urlparse(url).query, keep_blank_values=True).items()}
+
+
+def _build_url(url: str, param: str, value: str) -> str:
     parsed = urlparse(url)
     qs = parse_qs(parsed.query, keep_blank_values=True)
     qs[param] = [value]
-    new_query = urlencode(qs, doseq=True)
-    return urlunparse((parsed.scheme, parsed.netloc, parsed.path, parsed.params, new_query, parsed.fragment))
+    return urlunparse((parsed.scheme, parsed.netloc, parsed.path, parsed.params, urlencode(qs, doseq=True), parsed.fragment))
+
+
+def _request(url: str):
+    started = time.perf_counter()
+    response = http.get(url, headers=generate_random_headers(), timeout=max(config.REQUEST_TIMEOUT, TIME_DELAY + 3), verify=False)
+    return response, time.perf_counter() - started
+
+
+def _token() -> str:
+    return f"WAYMAP_CMDI_{secrets.token_hex(4)}"
+
+
+def _evidence_snippet(text: str, marker: str, window: int = 90) -> str:
+    position = text.find(marker)
+    if position < 0:
+        return ""
+    start = max(0, position - window)
+    end = min(len(text), position + len(marker) + window)
+    return text[start:end].replace("\r", " ").replace("\n", " ").strip()
+
 
 @lru_cache(maxsize=None)
-def load_cmdi_errors(xml_file: str) -> Dict[str, List[str]]:
-    """Load CMDi error patterns."""
-    cmdi_errors = {}
+def _load_cmdi_errors(xml_file: str) -> Dict[str, List[str]]:
+    errors: Dict[str, List[str]] = {}
     try:
         tree = ET.parse(xml_file)
         root = tree.getroot()
-        for error in root.findall('error'):
-            error_name = error.attrib['value']
-            patterns = [pattern.attrib['regexp'] for pattern in error.findall('pattern')]
-            cmdi_errors[error_name] = patterns
+        for error in root.findall("error"):
+            errors[error.attrib["value"]] = [pattern.attrib["regexp"] for pattern in error.findall("pattern")]
     except Exception as e:
-        logger.error(f"Error loading CMDi errors: {e}")
-    return cmdi_errors
+        logger.debug(f"Error loading CMDi error signatures: {e}")
+    return errors
 
-def detect_cmdi(response_content: str, cmdi_errors: Dict[str, List[str]]) -> Optional[str]:
-    """Detect CMDi error in response."""
-    for error_name, patterns in cmdi_errors.items():
+
+def _detect_error(text: str, errors: Dict[str, List[str]]) -> Optional[str]:
+    for name, patterns in errors.items():
         for pattern in patterns:
-            if re.search(pattern, response_content, re.IGNORECASE):
-                return error_name
+            if re.search(pattern, text, re.IGNORECASE):
+                return name
     return None
 
-def detect_web_tech(headers: Dict[str, str]) -> str:
-    """Detect web technology."""
-    return headers.get('x-powered-by', headers.get('server', 'Unknown'))
 
-def test_cmdi_payload(url: str, parameter: str, payload: str, cmdi_errors: Dict[str, List[str]]) -> Dict[str, Any]:
-    """Test a single payload."""
+def _classic_attempts(marker: str) -> List[CmdiAttempt]:
+    expected = f"{marker}1337{marker}"
+    command = f"echo {expected}"
+    attempts: List[CmdiAttempt] = []
+    for separator in RESULT_SEPARATORS:
+        for prefix in RESULT_PREFIXES:
+            for suffix in RESULT_SUFFIXES:
+                if prefix and suffix in ("#", "//"):
+                    continue
+                attempts.append(CmdiAttempt("classic result-based", f"{prefix}{separator}{command}{suffix}", expected))
+                if len(attempts) >= MAX_RESULT_PAYLOADS:
+                    return attempts
+    return attempts
+
+
+def _eval_attempts(marker: str) -> List[CmdiAttempt]:
+    expected = f"{marker}7331{marker}"
+    return [
+        CmdiAttempt("eval-based", f"print(`echo {expected}`)", expected),
+        CmdiAttempt("eval-based", f"'.print(`echo {expected}`).'", expected),
+        CmdiAttempt("eval-based", f"';print(`echo {expected}`);//", expected),
+        CmdiAttempt("eval-based", f"\";print(`echo {expected}`);//", expected),
+    ]
+
+
+def _time_attempts() -> List[CmdiAttempt]:
+    return [CmdiAttempt("time-based blind", f"{separator}sleep {TIME_DELAY}", "") for separator in TIME_SEPARATORS]
+
+
+def _attempts() -> List[CmdiAttempt]:
+    marker = _token()
+    return _classic_attempts(marker) + _eval_attempts(marker) + _time_attempts()
+
+
+def _calibrate(url: str) -> float:
+    samples = []
+    for _ in range(2):
+        if stop_scan.is_set():
+            break
+        try:
+            _, elapsed = _request(url)
+            samples.append(elapsed)
+        except requests.RequestException:
+            pass
+    return statistics.median(samples) if samples else 0.0
+
+
+def _inject_value(original: str, payload: str) -> str:
+    return f"{original}{payload}" if original else payload
+
+
+def _test_attempt(url: str, parameter: str, original: str, attempt: CmdiAttempt, baseline: float, errors: Dict[str, List[str]]) -> Dict[str, Any]:
     if stop_scan.is_set():
-        return {'vulnerable': False}
-        
-    headers = generate_random_headers()
-    test_url = _build_url_with_param(url, parameter, payload)
+        return {"vulnerable": False}
 
+    injected = _inject_value(original, attempt.payload)
+    test_url = _build_url(url, parameter, injected)
     try:
-        response = http.get(test_url, headers=headers, timeout=config.REQUEST_TIMEOUT, verify=False)
-        cmdi_error = detect_cmdi(response.text, cmdi_errors)
-        
-        if cmdi_error:
-            return {
-                'vulnerable': True,
-                'cmdi_error': cmdi_error,
-                'response': response.text,
-                'headers': response.headers,
-                'url': test_url,
-                'parameter': parameter,
-                'payload': payload
-            }
+        response, elapsed = _request(test_url)
     except requests.RequestException as e:
-        logger.debug(f"Error testing {test_url}: {e}")
+        logger.debug(f"CMDi request failed for {test_url}: {e}")
+        return {"vulnerable": False}
 
-    return {'vulnerable': False}
+    error_name = _detect_error(response.text, errors)
+    if attempt.technique == "time-based blind":
+        threshold = baseline + TIME_CONFIRM_MARGIN
+        if elapsed >= threshold and elapsed >= TIME_DELAY - 0.5:
+            return {
+                "vulnerable": True,
+                "url": test_url,
+                "parameter": parameter,
+                "payload": injected,
+                "technique": attempt.technique,
+                "evidence": f"baseline={baseline:.2f}s delayed={elapsed:.2f}s threshold={threshold:.2f}s",
+                "headers": dict(response.headers),
+            }
+    elif attempt.expected and attempt.expected in response.text:
+        return {
+            "vulnerable": True,
+            "url": test_url,
+            "parameter": parameter,
+            "payload": injected,
+            "technique": attempt.technique,
+            "expected": attempt.expected,
+            "evidence": _evidence_snippet(response.text, attempt.expected),
+            "headers": dict(response.headers),
+        }
+    elif error_name:
+        return {
+            "vulnerable": True,
+            "url": test_url,
+            "parameter": parameter,
+            "payload": injected,
+            "technique": "error-based",
+            "evidence": error_name,
+            "headers": dict(response.headers),
+        }
 
-def perform_cmdi_scan(crawled_urls: List[str], cmdi_payloads: List[str], thread_count: int = 1, no_prompt: bool = False, verbose: bool = False) -> None:
-    """Perform Command Injection scan."""
+    return {"vulnerable": False}
+
+
+def _technology(headers: Dict[str, str]) -> str:
+    lower = {key.lower(): value for key, value in headers.items()}
+    return lower.get("x-powered-by", lower.get("server", "Unknown"))
+
+
+def perform_cmdi_scan(crawled_urls: List[str], thread_count: int = 1, no_prompt: bool = False, verbose: bool = False) -> None:
+    """Perform Commix-style command injection scan."""
+    if not crawled_urls:
+        print_status("No URLs to scan", "warning")
+        return
+
     stop_scan.clear()
-    
-    print_header("Command Injection Scan", color="cyan")
-    
     thread_count = max(1, min(thread_count, config.MAX_THREADS))
-    cmdi_errors = load_cmdi_errors(os.path.join(config.DATA_DIR, 'cmdi.xml'))
-    detected_tech = None
-    
+    print_header("Command Injection Scan", color="cyan")
     print_status(f"Scanning {len(crawled_urls)} URLs", "info")
 
-    try:
-        for url in crawled_urls:
-            if stop_scan.is_set(): break
-            
-            print_status(f"Testing URL: {url}", "info")
-            domain = get_domain(url)
-            result_manager = ResultManager(domain)
-            parameters = extract_parameters(url)
+    errors = _load_cmdi_errors(os.path.join(config.DATA_DIR, "cmdi.xml"))
+    detected_tech = None
 
-            if not parameters:
-                if verbose:
-                    print_status(f"No parameters in {url}, skipping", "debug")
-                continue
+    for url in crawled_urls:
+        if stop_scan.is_set():
+            break
 
-            found_vulnerability = False
-            
-            # Limit payloads to random sample of 10 if too many
-            payloads_to_test = cmdi_payloads
-            if len(cmdi_payloads) > 10:
-                payloads_to_test = random.sample(cmdi_payloads, 10)
-                if verbose:
-                    print_status(f"Selected 10 random payloads from {len(cmdi_payloads)}", "debug")
+        params = _params(url)
+        if not params:
+            if verbose:
+                print_status(f"No parameters in {url}, skipping", "debug")
+            continue
 
-            with ThreadPoolExecutor(max_workers=thread_count) as executor:
-                futures = {}
-                for param in parameters:
-                    for payload in payloads_to_test:
-                        if stop_scan.is_set(): break
-                        
-                        if verbose:
-                            print_status(f"Testing payload on {param}", "debug")
-                            
-                        future = executor.submit(test_cmdi_payload, url, param, payload, cmdi_errors)
-                        futures[future] = (param, payload)
+        result_manager = ResultManager(_domain(url))
+        baseline = _calibrate(url)
+        if verbose:
+            print_status(f"Baseline response time: {baseline:.2f}s", "debug")
 
-                for future in as_completed(futures):
-                    if stop_scan.is_set(): break
-                    
-                    try:
-                        result = future.result()
-                        if result['vulnerable']:
-                            found_vulnerability = True
-                            payload = result['payload']
-                            parameter = result['parameter']
+        futures = {}
+        with ThreadPoolExecutor(max_workers=thread_count) as executor:
+            for param, original in params.items():
+                for attempt in _attempts():
+                    if stop_scan.is_set():
+                        break
+                    future = executor.submit(_test_attempt, url, param, original, attempt, baseline, errors)
+                    futures[future] = (param, attempt.technique)
 
-                            if not detected_tech:
-                                detected_tech = detect_web_tech(result['headers'])
-                                print_status(f"Web Technology: {detected_tech}", "info")
+            total_tasks = len(futures)
+            completed_tasks = 0
+            reported_params = set()
+            for future in as_completed(futures):
+                if stop_scan.is_set():
+                    break
+                completed_tasks += 1
+                if completed_tasks % 100 == 0 or completed_tasks == total_tasks:
+                    print_status(f"Progress: {completed_tasks}/{total_tasks}", "info")
+                try:
+                    result = future.result()
+                except Exception as e:
+                    logger.error(f"CMDi worker error: {e}")
+                    continue
 
-                            print_status("Vulnerability Found!", "success")
-                            print_status(f"  URL: {result['url']}", "info")
-                            print_status(f"  Parameter: {parameter}", "info")
-                            print_status(f"  Payload: {payload}", "info")
-                            print_status(f"  Error: {result['cmdi_error']}", "info")
+                if not result.get("vulnerable"):
+                    continue
 
-                            result_manager.add_finding("Command Injection", "", {
-                                "url": result['url'],
-                                "parameter": parameter,
-                                "payload": payload,
-                            })
+                param = result["parameter"]
+                if param in reported_params:
+                    continue
+                reported_params.add(param)
 
-                            if not no_prompt:
-                                if not ask_continue_scanning():
-                                    print_status("Stopping scan...", "warning")
-                                    stop_scan.set()
-                                    return
-                    except Exception as e:
-                        logger.error(f"Error in worker: {e}")
+                if not detected_tech:
+                    detected_tech = _technology(result.get("headers", {}))
+                    print_status(f"Web Technology: {detected_tech}", "info")
 
-            if not found_vulnerability and verbose:
-                print_status(f"No vulnerabilities found on {url}", "debug")
-                
-        print_status("CMDi Scan completed", "info")
+                print_status("Vulnerability Found!", "success")
+                print_status(f"  URL: {result['url']}", "info")
+                print_status(f"  Parameter: {param}", "info")
+                print_status(f"  Technique: {result['technique']}", "info")
+                print_status(f"  Payload: {result['payload']}", "info")
+                print_status(f"  Evidence: {result['evidence']}", "info")
 
-    except KeyboardInterrupt:
-        from lib.core.interrupt import exit_clean
-        exit_clean()
+                result_manager.add_finding("Command Injection", "", {
+                    "url": result["url"],
+                    "parameter": param,
+                    "payload": result["payload"],
+                    "technique": result["technique"],
+                    "evidence": result["evidence"],
+                    "confirmations": [
+                        "Commix-style separator/prefix payload generated",
+                        "safe echo/time proof used",
+                        "unique marker or timing threshold confirmed",
+                    ],
+                })
+
+                if not no_prompt:
+                    if not ask_continue_scanning():
+                        print_status("Stopping scan...", "warning")
+                        stop_scan.set()
+                        return
+
+    print_status("CMDi Scan completed", "info")

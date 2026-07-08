@@ -124,7 +124,7 @@ Examples:
     scan_group.add_argument('--crawl', '-c', type=int, help='Crawl depth (0-10)')
     scan_group.add_argument('--scan', '-s', type=str, 
                         choices=[
-                            'sqli', 'cmdi', 'rce', 'ssti', 'xss', 'lfi', 'open-redirect', 'crlf', 'cors', 'api', 'all',
+                            'sqli', 'cmdi', 'ssti', 'xss', 'lfi', 'open-redirect', 'crlf', 'cors', 'api', 'all',
                             'recon', 'misconfig', 'redirect', 'injection-advanced', 'graphql-suite', 'auth-logic',
                             'cache-smuggling', 'wordpress-extras', 'optional'
                         ],

@@ -15,7 +15,7 @@ from defusedxml import ElementTree as ET
 from datetime import datetime
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import List, Dict, Any, Tuple, Generator
+from typing import List, Dict, Any, Tuple, Generator, Optional
 
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -30,6 +30,10 @@ from lib.injection.sqlin.common import baseline_response_time, detect_server_inf
 
 config = get_config()
 logger = get_logger(__name__)
+
+# Track (url, param) pairs that already have findings
+# DEPRECATED: Use ScanContext.vulnerable_pairs instead
+_found_pairs = set()
 
 @lru_cache(maxsize=None)
 def parse_stacked_tests_from_xml(file_path: str = None) -> List[Dict[str, str]]:
@@ -103,9 +107,17 @@ def make_request(test_url: str, baseline_time: float, sleep_time: int) -> bool:
     return False
 
 
-def stacked_based_sqli(url: str, test: Dict[str, str], thread_count: int, failed_baseline_urls: set = None) -> bool:
+def stacked_based_sqli(url: str, test: Dict[str, str], thread_count: int, context: Optional['ScanContext'] = None, found_pairs: Optional[set] = None, failed_baseline_urls: set = None) -> bool:
     """Perform stacked query-based SQLi test."""
-    from lib.injection.sqlin.sql import vulnerable_pairs
+    # Use context if provided, otherwise fall back to global
+    if context is not None:
+        stop_event = context.stop_event
+        if found_pairs is None:
+            found_pairs = context.vulnerable_pairs
+    else:
+        stop_event = stop_scan
+        if found_pairs is None:
+            found_pairs = _found_pairs
 
     rand_numbers = [random.randint(1000, 9999) for _ in range(5)]
     rand_str = ''.join(random.choices('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', k=6))
@@ -125,10 +137,15 @@ def stacked_based_sqli(url: str, test: Dict[str, str], thread_count: int, failed
         return False
 
     for test_url, injected_param in inject_payload(url, payload):
-        if stop_scan.is_set(): return False
+        if stop_event.is_set(): return False
+        
+        pair_key = (url, injected_param)
+        if pair_key in found_pairs:
+            return False
         
         try:
             if make_request(test_url, baseline_time, sleep_time):
+                found_pairs.add(pair_key)
                 server, technology = detect_server_info(url)
 
                 print_status("Vulnerability Found!", "success")
@@ -149,9 +166,22 @@ def stacked_based_sqli(url: str, test: Dict[str, str], thread_count: int, failed
                     "Timestamp": datetime.now().isoformat()
                 }
                 domain = urlparse(url).netloc
-                result_manager = ResultManager(domain)
+                
+                # Use context result manager if available
+                if context is not None and context.result_store is not None:
+                    result_manager = context.result_store
+                else:
+                    result_manager = ResultManager(domain)
+                
                 result_manager.add_finding("SQL Injection", "Technique: Stacked-Queries", vuln_data)
-                vulnerable_pairs.add((url, injected_param))
+                
+                # Add to vulnerable pairs for DB fetching
+                if context is not None:
+                    context.mark_vulnerable(url, injected_param)
+                else:
+                    from lib.injection.sqlin.sql import vulnerable_pairs
+                    vulnerable_pairs.add((url, injected_param))
+                
                 return True
         except Exception as e:
             logger.error(f"Error testing {test_url}: {e}")
@@ -159,8 +189,18 @@ def stacked_based_sqli(url: str, test: Dict[str, str], thread_count: int, failed
     return False
 
 
-def process_urls(urls: List[str], thread_count: int) -> None:
+def process_urls(urls: List[str], thread_count: int, context: Optional['ScanContext'] = None) -> None:
     """Process URLs for stacked query-based SQLi."""
+    # Use context if provided, otherwise fall back to global
+    if context is not None:
+        context.vulnerable_pairs.clear()
+        stop_event = context.stop_event
+        found_pairs = context.vulnerable_pairs
+    else:
+        _found_pairs.clear()
+        stop_event = stop_scan
+        found_pairs = _found_pairs
+    
     tests = parse_stacked_tests_from_xml()
     if not tests:
         print_status("No tests loaded from XML", "error")
@@ -177,10 +217,10 @@ def process_urls(urls: List[str], thread_count: int) -> None:
 
     def check_url_test(url_test_tuple):
         url, test = url_test_tuple
-        if stop_scan.is_set(): return False
+        if stop_event.is_set(): return False
         if url in failed_baseline_urls:
             return False
-        return stacked_based_sqli(url, test, thread_count, failed_baseline_urls)
+        return stacked_based_sqli(url, test, thread_count, context, found_pairs, failed_baseline_urls)
 
     tasks = []
     for url in urls:

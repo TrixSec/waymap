@@ -4,26 +4,30 @@
 """Main scanner module for waymap."""
 
 import os
+import time
 from typing import List, Optional
 from lib.core.logger import get_logger
 from lib.core.config import get_config
 from lib.ui import print_status, print_header, print_separator
 from lib.utils import is_valid_url, has_query_parameters, filter_urls_with_params, extract_domain, normalize_url
+from lib.app.context import ScanContext, ScanConfig
+from lib.events.bus import get_event_bus
+from lib.events.events import FindingEvent, ScanStartEvent, ScanEndEvent, ProgressEvent
 
 logger = get_logger(__name__)
 config = get_config()
 
 # Scans that require query parameters for injection testing
 PARAM_SCANS = frozenset({
-    'sqli', 'cmdi', 'rce', 'ssti', 'xss', 'lfi',
-    'open-redirect', 'crlf', 'injection-advanced',
+    'sqli', 'cmdi', 'ssti', 'xss', 'lfi',
+    'crlf', 'injection-advanced',
 })
 
 
 class WaymapScanner:
     """Main scanner class for waymap."""
     
-    def __init__(self, thread_count: int = 1, no_prompt: bool = False, ai_payloads: bool = False, ai_discovery: bool = False):
+    def __init__(self, thread_count: int = 1, no_prompt: bool = False, ai_payloads: bool = False, ai_discovery: bool = False, context: Optional[ScanContext] = None):
         # Set up interrupt handler (in case it wasn't done yet)
         from lib.core.interrupt import setup_interrupt_handler
         setup_interrupt_handler()
@@ -35,12 +39,41 @@ class WaymapScanner:
             no_prompt: Skip interactive prompts
             ai_payloads: Use AI-generated payloads
             ai_discovery: Use AI for attack surface discovery
+            context: Optional ScanContext for dependency injection
         """
         self.thread_count = thread_count
         self.no_prompt = no_prompt
         self.ai_payloads = ai_payloads
         self.ai_discovery = ai_discovery
         self.logger = get_logger(f"{__name__}.WaymapScanner")
+        
+        # Use provided context or create new one
+        if context is None:
+            scan_config = ScanConfig(
+                thread_count=thread_count,
+                no_prompt=no_prompt,
+                ai_payloads=ai_payloads,
+                ai_discovery=ai_discovery
+            )
+            self.context = ScanContext(config=scan_config)
+        else:
+            self.context = context
+            # Update context config if needed
+            self.context.config.thread_count = thread_count
+            self.context.config.no_prompt = no_prompt
+            self.context.config.ai_payloads = ai_payloads
+            self.context.config.ai_discovery = ai_discovery
+        
+        # Event bus
+        self.event_bus = get_event_bus()
+        
+        # Fingerprint engine for deduplication
+        from lib.fingerprint.engine import FingerprintEngine
+        self.fingerprint_engine = FingerprintEngine()
+        
+        # AI features
+        self.ai_payloads = ai_payloads
+        self.ai_discovery = ai_discovery
     
     def scan(
         self,
@@ -68,6 +101,9 @@ class WaymapScanner:
         domain = extract_domain(target)
         if domain:
             self.logger = get_logger(f"{__name__}.WaymapScanner", domain)
+        
+        # Run reconnaissance intelligence
+        self._run_reconnaissance(target)
         
         # Determine URLs to scan
         urls_to_scan = self._resolve_urls_to_scan(target, crawl_depth)
@@ -126,16 +162,81 @@ class WaymapScanner:
         return [target]
 
     def _dedupe_urls(self, urls: List[str]) -> List[str]:
-        """Normalize and dedupe URLs while preserving order."""
+        """Deduplicate URLs - remove exact duplicates but keep different parameter values."""
+        # Simple deduplication: remove exact duplicates but keep URLs with different parameter values
         seen = set()
-        unique = []
+        unique_urls = []
+        
         for url in urls:
-            normalized = normalize_url(url.strip())
-            if normalized in seen:
-                continue
-            seen.add(normalized)
-            unique.append(normalized)
-        return unique
+            normalized = url.strip()
+            if normalized not in seen:
+                seen.add(normalized)
+                unique_urls.append(normalized)
+        
+        self.logger.info(f"Deduplication: {len(urls)} → {len(unique_urls)} URLs")
+        return unique_urls
+    
+    def _run_reconnaissance(self, target: str) -> None:
+        """Run reconnaissance intelligence on target."""
+        try:
+            from lib.recon.intelligence import ReconIntelligenceEngine
+            
+            print_status("Running reconnaissance intelligence...", "info")
+            recon_engine = ReconIntelligenceEngine(target)
+            intelligence = recon_engine.run_full_recon()
+            
+            # Store intelligence in context for later use
+            self.context.recon_intelligence = intelligence
+            
+            # Print summary
+            summary = intelligence.get_summary()
+            print_status(f"Recon: {summary['passive']['headers_count']} headers, "
+                        f"{summary['passive']['js_files_count']} JS files, "
+                        f"{summary['passive']['technologies']}", "success")
+            
+            if summary['cheap']['robots_urls_count'] > 0:
+                print_status(f"Found {summary['cheap']['robots_urls_count']} URLs in robots.txt", "info")
+            if summary['cheap']['sitemap_urls_count'] > 0:
+                print_status(f"Found {summary['cheap']['sitemap_urls_count']} URLs in sitemap.xml", "info")
+            if summary['deep']['admin_panels_count'] > 0:
+                print_status(f"Found {summary['deep']['admin_panels_count']} potential admin panels:", "warning")
+                for panel in intelligence.deep.admin_panels:
+                    print_status(f"  - {panel}", "info")
+            if summary['deep']['waf_detected']:
+                print_status(f"WAF detected: {summary['deep']['waf_detected']}", "warning")
+            
+            # AI-enhanced attack surface discovery if enabled
+            if self.ai_discovery:
+                self._run_ai_attack_surface_discovery(target, intelligence)
+            
+        except Exception as e:
+            self.logger.error(f"Reconnaissance failed: {e}", exc_info=True)
+            print_status(f"Reconnaissance failed: {e}", "warning")
+    
+    def _run_ai_attack_surface_discovery(self, target: str, intelligence: Any) -> None:
+        """Run AI-enhanced attack surface discovery."""
+        try:
+            from lib.ai.attack_surface import discover_attack_surface
+            from lib.ai.crawler_enhancer import enhance_crawl_results
+            
+            print_status("Running AI attack surface discovery...", "info")
+            
+            # Analyze main page for attack surface
+            surface = discover_attack_surface(
+                target,
+                html_content=None,  # Could fetch if needed
+                js_content=intelligence.passive.js_files,
+                headers=intelligence.passive.headers
+            )
+            
+            if surface:
+                print_status(f"AI found {len(surface.get('endpoints', []))} potential endpoints", "success")
+                print_status(f"AI found {len(surface.get('parameters', []))} potential parameters", "success")
+                self.context.knowledge['ai_attack_surface'] = surface
+            
+        except Exception as e:
+            self.logger.error(f"AI attack surface discovery failed: {e}", exc_info=True)
+            print_status(f"AI attack surface discovery failed: {e}", "warning")
     
     def _crawl_target(self, target: str, depth: int) -> List[str]:
         """
@@ -155,7 +256,8 @@ class WaymapScanner:
                 target,
                 depth,
                 thread_count=self.thread_count,
-                no_prompt=self.no_prompt
+                no_prompt=self.no_prompt,
+                use_ai=False  # Disable AI for scanner - not needed for vulnerability scanning
             )
             
             # Filter valid URLs with parameters
@@ -199,10 +301,16 @@ class WaymapScanner:
             scan_type: Type of scan
             technique_string: Optional SQLi techniques
         """
+        # Store AI config in context for use by injection modules
+        self.context.config.ai_payloads = self.ai_payloads
+        self.context.config.ai_discovery = self.ai_discovery
+        
+        if self.ai_payloads:
+            print_status("AI payload generation enabled", "info")
+        
         scan_configs = {
             'sqli': ('SQL Injection', 'yellow'),
             'cmdi': ('Command Injection', 'red'),
-            'rce': ('RCE (Command Injection)', 'red'),
             'ssti': ('Server Side Template Injection', 'magenta'),
             'xss': ('Cross Site Scripting', 'cyan'),
             'lfi': ('Local File Inclusion', 'blue'),
@@ -269,8 +377,11 @@ class WaymapScanner:
                 from lib.core.state import stop_scan
                 from lib.core.interrupt import reset_interrupt
                 
-                # Reset vulnerable_pairs at the start of the scan
-                vulnerable_pairs.clear()
+                # Set context target
+                self.context.target = urls[0] if urls else ""
+                
+                # Reset context state at the start of the scan
+                self.context.reset()
                 
                 if technique_string:
                     technique_map = {
@@ -282,59 +393,30 @@ class WaymapScanner:
                         'S': run_stacked_sqli,
                     }
                     for char in technique_string.upper():
-                        if stop_scan.is_set():
+                        if self.context.should_stop():
                             reset_interrupt()
                         runner = technique_map.get(char)
                         if runner:
-                            runner(scan_urls, self.thread_count)
+                            runner(scan_urls, self.thread_count, self.context)
                         else:
                             print_status(f"Unknown SQLi technique '{char}' ignored", "warning")
                         # Reset interrupt after each technique to allow next technique to run
                         reset_interrupt()
                     # After all techniques, fetch DBs if any vulnerable pairs
-                    if vulnerable_pairs:
-                        for url, param in vulnerable_pairs:
-                            if stop_scan.is_set(): break
+                    if self.context.vulnerable_pairs:
+                        for url, param in self.context.vulnerable_pairs:
+                            if self.context.should_stop(): break
                             try:
-                                fetch_databases_once(url, param)
+                                fetch_databases_once(url, param, context=self.context)
                             except Exception as e:
                                 import logging
                                 logging.error(f"Error fetching databases for {url}: {e}")
                 else:
-                    run_sql_tests(scan_urls, self.thread_count)
+                    run_sql_tests(scan_urls, self.thread_count, self.context)
                     
             elif scan_type == 'cmdi':
                 from lib.injection.cmdi import perform_cmdi_scan
-                payloads = self._load_payloads('cmdipayload.txt')
-                
-                # Add AI-generated payloads if enabled
-                if self.ai_payloads:
-                    from lib.ai.payload_generator import generate_payloads
-                    from lib.ai.llm_provider import is_llm_available
-                    
-                    if is_llm_available() and scan_urls:
-                        # Use first URL to generate payloads
-                        first_url = scan_urls[0]
-                        # Extract first parameter
-                        from urllib.parse import urlparse, parse_qs
-                        parsed = urlparse(first_url)
-                        params = parse_qs(parsed.query)
-                        if params:
-                            first_param = list(params.keys())[0]
-                            ai_payloads = generate_payloads(
-                                vuln_type='cmdi',
-                                url=first_url,
-                                parameter=first_param,
-                                num_payloads=5
-                            )
-                            if ai_payloads:
-                                payloads.extend(ai_payloads)
-                
-                perform_cmdi_scan(scan_urls, payloads, self.thread_count, self.no_prompt)
-
-            elif scan_type == 'rce':
-                from lib.injection.rce import perform_rce_scan
-                perform_rce_scan(scan_urls, self.thread_count, self.no_prompt, verbose=True)
+                perform_cmdi_scan(scan_urls, self.thread_count, self.no_prompt, verbose=True)
                 
             elif scan_type == 'ssti':
                 from lib.injection.ssti import perform_ssti_scan

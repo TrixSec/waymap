@@ -41,6 +41,7 @@ FALSE_PAYLOADS = [
 ]
 
 # Track (url, param) pairs that already have findings
+# DEPRECATED: Use ScanContext.vulnerable_pairs instead
 _found_pairs = set()
 
 def generate_random_string(length: int = 8) -> str:
@@ -99,19 +100,27 @@ def test_payload(url: str, parameter: str, payload: str, retries: int = 2) -> Li
     return signatures
 
 
-def is_vulnerable(url: str, thread_count: int) -> bool:
+def is_vulnerable(url: str, thread_count: int, context: Optional['ScanContext'] = None, found_pairs: Optional[set] = None) -> bool:
     """Perform boolean-based SQLi tests."""
-    from lib.injection.sqlin.sql import vulnerable_pairs
+    # Use context if provided, otherwise fall back to global
+    if context is not None:
+        stop_event = context.stop_event
+        if found_pairs is None:
+            found_pairs = context.vulnerable_pairs
+    else:
+        stop_event = stop_scan
+        if found_pairs is None:
+            found_pairs = _found_pairs
     
     parameters = extract_parameters(url)
     if not parameters:
         return False
 
     for parameter in parameters:
-        if stop_scan.is_set(): return False
+        if stop_event.is_set(): return False
         
         pair_key = (url, parameter)
-        if pair_key in _found_pairs:
+        if pair_key in found_pairs:
             return False
         
         if check_if_already_vulnerable(url, parameter):
@@ -125,12 +134,12 @@ def is_vulnerable(url: str, thread_count: int) -> bool:
         print_status(f"Testing Boolean SQLi: {url} (Param: {parameter})", "info")
 
         for payload in TRUE_PAYLOADS:
-            if stop_scan.is_set(): break
+            if stop_event.is_set(): break
             replaced_payload = replace_placeholders(payload, rand_str)
             true_signatures.extend(test_payload(url, parameter, replaced_payload))
 
         for payload in FALSE_PAYLOADS:
-            if stop_scan.is_set(): break
+            if stop_event.is_set(): break
             replaced_payload = replace_placeholders(payload, rand_str)
             false_signatures.extend(test_payload(url, parameter, replaced_payload))
 
@@ -142,7 +151,7 @@ def is_vulnerable(url: str, thread_count: int) -> bool:
             false_pattern = set(false_signatures)
 
             if true_pattern != false_pattern:
-                _found_pairs.add(pair_key)
+                found_pairs.add(pair_key)
                 print_status("Vulnerability Found!", "success")
                 print_status(f"  URL: {url}", "info")
                 print_status(f"  Parameter: {parameter}", "info")
@@ -156,26 +165,51 @@ def is_vulnerable(url: str, thread_count: int) -> bool:
                     "Timestamp": datetime.now().isoformat()
                 }
                 domain = urlparse(url).netloc
-                result_manager = ResultManager(domain)
+                
+                # Use context result manager if available
+                if context is not None and context.result_store is not None:
+                    result_manager = context.result_store
+                else:
+                    result_manager = ResultManager(domain)
+                
                 result_manager.add_finding("SQL Injection", "Technique: Boolean", vuln_data)
+                
                 # Add to vulnerable pairs for DB fetching
-                vulnerable_pairs.add(pair_key)
+                if context is not None:
+                    context.mark_vulnerable(url, parameter)
+                else:
+                    from lib.injection.sqlin.sql import vulnerable_pairs
+                    vulnerable_pairs.add(pair_key)
+                
                 return True
 
     return False
 
-def process_urls(urls: List[str], thread_count: int) -> None:
+def process_urls(urls: List[str], thread_count: int, context: Optional['ScanContext'] = None) -> None:
     """Process URLs for Boolean-based SQLi."""
     from lib.core.interrupt import reset_interrupt
     reset_interrupt()
-    _found_pairs.clear()
     
+    # Use context if provided, otherwise fall back to global
+    if context is not None:
+        context.vulnerable_pairs.clear()
+        stop_event = context.stop_event
+    else:
+        _found_pairs.clear()
+        stop_event = stop_scan
+    
+    total_tasks = len(urls)
+    completed_tasks = 0
+
     with ThreadPoolExecutor(max_workers=thread_count) as executor:
-        futures = {executor.submit(is_vulnerable, url, thread_count): url for url in urls}
+        futures = {executor.submit(is_vulnerable, url, thread_count, context): url for url in urls}
         
         for future in as_completed(futures):
-            if stop_scan.is_set():
+            if stop_event.is_set():
                 break
+            completed_tasks += 1
+            if completed_tasks % 100 == 0 or completed_tasks == total_tasks:
+                print_status(f"Progress: {completed_tasks}/{total_tasks}", "info")
             try:
                 future.result()
             except KeyboardInterrupt:

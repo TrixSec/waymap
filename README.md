@@ -4,7 +4,7 @@
 **Author:** Trix Cyrus (Vicky)  
 **License:** GPLv3
 
-Waymap is a fast, practical **web vulnerability scanner** for authorized security testing. It automates SQLi, XSS, RCE, LFI, CORS, CRLF, open redirect, API, recon, misconfiguration, and WordPress checks—with session-based results, multi-threading, crawling, authentication, reporting, and Google dork discovery.
+Waymap is a fast, practical **web vulnerability scanner** for authorized security testing. It automates SQLi, XSS, command injection, SSTI, LFI, CORS, CRLF, open redirect, API, recon, misconfiguration, and WordPress checks—with session-based results, multi-threading, crawling, authentication, reporting, and Google dork discovery.
 
 ---
 
@@ -30,7 +30,7 @@ Waymap is a fast, practical **web vulnerability scanner** for authorized securit
 
 All of the following now use `ResultManager`:
 
-`sqli` · `xss` · `lfi` · `cmdi` · `rce` · `ssti` · `cors` · `crlf` · `open-redirect` · `advanced` · `wpscan` · `recon/misconfig`
+`sqli` · `xss` · `lfi` · `cmdi` · `ssti` · `cors` · `crlf` · `open-redirect` · `advanced` · `wpscan` · `recon/misconfig`
 
 ---
 
@@ -38,7 +38,7 @@ All of the following now use `ResultManager`:
 
 - SearchAPI Google dork discovery (`--dork`)
 - WPScan API WordPress profile (`--profile wordpress`)
-- RCE / command injection scan (`--scan rce`)
+- Commix-style command injection scan (`--scan cmdi`)
 - Secrets file support (`config/waymap/secrets.json`)
 - Domain blacklist for dork discovery
 
@@ -158,9 +158,8 @@ Use with `--scan` / `-s`:
 | Scan | Description |
 |------|-------------|
 | `sqli` | SQL injection (boolean, error, time-based) |
-| `xss` | Cross-site scripting (basic + optional bypass payloads) |
-| `cmdi` | Command injection (error-based) |
-| `rce` | Remote code execution (marker-based, safe) |
+| `xss` | Context-aware cross-site scripting |
+| `cmdi` | Commix-style command injection (result, eval, blind time) |
 | `ssti` | Server-side template injection |
 | `lfi` | Local file inclusion |
 | `open-redirect` | Open redirect |
@@ -203,9 +202,6 @@ python waymap.py -t "https://example.com/search?q=test" -s xss
 
 # Command injection
 python waymap.py -t "https://example.com/ping?host=127.0.0.1" -s cmdi
-
-# RCE (safe marker-based)
-python waymap.py -t "https://example.com/exec?cmd=whoami" -s rce
 
 # SSTI
 python waymap.py -t "https://example.com/render?name=test" -s ssti
@@ -410,7 +406,7 @@ Edit `config/waymap/domain_blacklist.txt` — one domain per line.
 
 ### Payloads & wordlists
 
-Located in `data/` (e.g. `cmdipayload.txt`, `lfipayload.txt`, `sstipayload.txt`). XSS payloads are generated from the XSStrike-style scanner logic.
+Located in `data/` (e.g. `lfipayload.txt`, `sstipayload.txt`). XSS and CMDi payloads are generated from their scanner logic.
 
 ---
 
@@ -431,7 +427,7 @@ Result structure:
   "scans": [
     { "XSS": { "Findings": [ { "url": "...", "parameter": "...", "payload": "..." } ] } },
     { "SQL Injection": { "Technique: Boolean": [ ... ] } },
-    { "rce": [ ... ] }
+    { "Command Injection": [ ... ] }
   ]
 }
 ```
@@ -449,7 +445,7 @@ waymap/
 ├── config/waymap/         # Secrets, blacklist, mode config
 ├── sessions/              # Per-domain scan results
 ├── lib/
-│   ├── injection/         # XSS, SQLi, RCE, LFI, etc.
+│   ├── injection/         # XSS, SQLi, CMDi, SSTI, LFI, etc.
 │   ├── recon/             # Recon, misconfig, redirects
 │   ├── api/               # REST/GraphQL/auth logic
 │   ├── core/              # Config, ResultManager, reporting
@@ -494,5 +490,5 @@ Waymap is intended for **authorized security testing and educational use only**.
 | Version | Highlights |
 |---------|------------|
 | **7.2.1** | Thread-safe results, SQLi/CMDi/CRLF fixes, defusedxml, Windows UI fix, report loading fix |
-| **7.2.0** | Google dork discovery, WPScan profile, RCE scan, secrets management |
+| **7.2.0** | Google dork discovery, WPScan profile, secrets management |
 | **7.1.0** | API scanning, auth support, HTML/CSV/Markdown/PDF reports |

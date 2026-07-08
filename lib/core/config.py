@@ -25,10 +25,12 @@ class WaymapConfig:
     SESSION_DIR: str = os.path.join(BASE_DIR, 'sessions')
     CONFIG_DIR: str = os.path.join(BASE_DIR, 'config', 'waymap')
     
-    # Threading
+    # Threading (Fixed thread pools - no adaptive scaling)
     DEFAULT_THREADS: int = 1
     MAX_THREADS: int = 10
     FUZZER_THREADS: int = 30
+    # Thread pools are fixed based on configuration to ensure predictable resource usage
+    # No adaptive scaling is implemented to avoid unpredictable behavior during scans
     
     # Timeouts
     TIMEOUT: int = 30
@@ -73,7 +75,7 @@ class WaymapConfig:
         "xss": r'<script>alert("XSS");</script>',
         "sqli": r'UNION SELECT ALL FROM information_schema AND " or SLEEP(5) or "',
         "lfi": r'../../etc/passwd',
-        "rce": r'/bin/cat /etc/passwd; ping 127.0.0.1; curl google.com',
+        "cmdi": r'; echo WAYMAP_CMDI_WAF_TEST',
         "xxe": r'<!ENTITY xxe SYSTEM "file:///etc/shadow">]><pwn>&hack;</pwn>'
     })
 

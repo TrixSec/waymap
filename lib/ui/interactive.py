@@ -35,9 +35,8 @@ SCAN_CATALOG: List[Tuple[str, List[Tuple[str, str, str]]]] = [
         [
             ("all", "Full comprehensive scan", "Runs every standard vulnerability module"),
             ("sqli", "SQL Injection", "Boolean, error, and time-based techniques"),
-            ("xss", "Cross-Site Scripting", "Basic + optional filter-bypass payloads"),
-            ("cmdi", "Command Injection", "Error-based OS command injection"),
-            ("rce", "Remote Code Execution", "Safe marker-based RCE detection"),
+            ("xss", "Cross-Site Scripting", "Context-aware payload generation"),
+            ("cmdi", "Command Injection", "Commix-style result and blind techniques"),
             ("ssti", "Server-Side Template Injection", "Template engine payload testing"),
             ("lfi", "Local File Inclusion", "Path traversal / file read"),
             ("open-redirect", "Open Redirect", "Unvalidated redirect parameters"),

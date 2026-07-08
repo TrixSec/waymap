@@ -31,6 +31,9 @@ from lib.injection.sqlin.common import detect_server_info, inject_payload, param
 
 config = get_config()
 logger = get_logger(__name__)
+
+# Track (url, param) pairs that already have findings
+# DEPRECATED: Use ScanContext.vulnerable_pairs instead
 _found_pairs = set()
 _found_lock = threading.Lock()
 
@@ -96,28 +99,36 @@ def make_request(test_url: str, delimiters: Tuple[str, str]) -> Tuple[bool, Opti
     return False, None
 
 
-def inline_based_sqli(url: str, test: Dict[str, str], thread_count: int) -> bool:
+def inline_based_sqli(url: str, test: Dict[str, str], thread_count: int, context: Optional['ScanContext'] = None, found_pairs: Optional[set] = None) -> bool:
     """Perform inline query-based SQLi test."""
-    from lib.injection.sqlin.sql import vulnerable_pairs
+    # Use context if provided, otherwise fall back to global
+    if context is not None:
+        stop_event = context.stop_event
+        if found_pairs is None:
+            found_pairs = context.vulnerable_pairs
+    else:
+        stop_event = stop_scan
+        if found_pairs is None:
+            found_pairs = _found_pairs
 
     delimiters = ('qjkvq', 'qwvkq')
     rand_numbers = [random.randint(1000, 9999) for _ in range(5)]
     payload = replace_placeholders(test['payload_template'], delimiters, rand_numbers)
 
     for test_url, injected_param in inject_payload(url, payload):
-        if stop_scan.is_set(): return False
+        if stop_event.is_set(): return False
         pair_key = (url, injected_param)
         with _found_lock:
-            if pair_key in _found_pairs:
+            if pair_key in found_pairs:
                 return False
         
         try:
             found, extracted = make_request(test_url, delimiters)
             if found:
                 with _found_lock:
-                    if pair_key in _found_pairs:
+                    if pair_key in found_pairs:
                         return False
-                    _found_pairs.add(pair_key)
+                    found_pairs.add(pair_key)
                 server, technology = detect_server_info(url)
 
                 print_status("Vulnerability Found!", "success")
@@ -138,9 +149,22 @@ def inline_based_sqli(url: str, test: Dict[str, str], thread_count: int) -> bool
                     "Timestamp": datetime.now().isoformat()
                 }
                 domain = urlparse(url).netloc
-                result_manager = ResultManager(domain)
+                
+                # Use context result manager if available
+                if context is not None and context.result_store is not None:
+                    result_manager = context.result_store
+                else:
+                    result_manager = ResultManager(domain)
+                
                 result_manager.add_finding("SQL Injection", "Technique: Inline-Query", vuln_data)
-                vulnerable_pairs.add((url, injected_param))
+                
+                # Add to vulnerable pairs for DB fetching
+                if context is not None:
+                    context.mark_vulnerable(url, injected_param)
+                else:
+                    from lib.injection.sqlin.sql import vulnerable_pairs
+                    vulnerable_pairs.add((url, injected_param))
+                
                 return True
         except Exception as e:
             logger.error(f"Error testing {test_url}: {e}")
@@ -148,9 +172,16 @@ def inline_based_sqli(url: str, test: Dict[str, str], thread_count: int) -> bool
     return False
 
 
-def process_urls(urls: List[str], thread_count: int) -> None:
+def process_urls(urls: List[str], thread_count: int, context: Optional['ScanContext'] = None) -> None:
     """Process URLs for inline query-based SQLi."""
-    _found_pairs.clear()
+    # Use context if provided, otherwise fall back to global
+    if context is not None:
+        context.vulnerable_pairs.clear()
+        stop_event = context.stop_event
+    else:
+        _found_pairs.clear()
+        stop_event = stop_scan
+    
     tests = parse_inline_tests_from_xml()
     if not tests:
         print_status("No tests loaded from XML", "error")
@@ -165,8 +196,8 @@ def process_urls(urls: List[str], thread_count: int) -> None:
 
     def check_url_test(url_test_tuple):
         url, test = url_test_tuple
-        if stop_scan.is_set(): return False
-        return inline_based_sqli(url, test, thread_count)
+        if stop_event.is_set(): return False
+        return inline_based_sqli(url, test, thread_count, context)
 
     tasks = []
     for url in urls:
@@ -177,7 +208,7 @@ def process_urls(urls: List[str], thread_count: int) -> None:
         futures = {executor.submit(check_url_test, task): task for task in tasks}
         
         for future in as_completed(futures):
-            if stop_scan.is_set():
+            if stop_event.is_set():
                 break
             try:
                 if future.result():

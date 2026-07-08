@@ -10,6 +10,8 @@ import atexit
 from typing import Dict, Any, Iterable, List, Optional
 from lib.core.config import get_config
 from lib.core.logger import get_logger
+from lib.events.bus import get_event_bus
+from lib.events.events import FindingEvent
 
 config = get_config()
 logger = get_logger(__name__)
@@ -243,6 +245,8 @@ class ResultManager:
                     scan_block.append(finding)
                     self._write_data(data)
                     logger.info(f"Saved finding to {self.file_path}")
+                    # Emit finding event
+                    self._emit_finding_event(scan_category, finding_key, finding)
             else:
                 # Normal case with finding_key
                 if not isinstance(scan_block, dict):
@@ -259,9 +263,42 @@ class ResultManager:
                     scan_block[finding_key].append(finding)
                     self._write_data(data)
                     logger.info(f"Saved finding to {self.file_path}")
+                    # Emit finding event
+                    self._emit_finding_event(scan_category, finding_key, finding)
 
         finally:
             self._release_lock()
+    
+    def _emit_finding_event(self, scan_category: str, finding_key: str, finding: Dict[str, Any]) -> None:
+        """Emit a FindingEvent to the event bus."""
+        try:
+            event_bus = get_event_bus()
+            
+            # Convert confidence string to float
+            confidence_str = finding.get("confidence") or finding.get("Confidence") or "1.0"
+            if isinstance(confidence_str, str):
+                confidence_map = {
+                    "high": 0.9, "High": 0.9, "HIGH": 0.9,
+                    "medium": 0.7, "Medium": 0.7, "MEDIUM": 0.7,
+                    "low": 0.5, "Low": 0.5, "LOW": 0.5
+                }
+                confidence = confidence_map.get(confidence_str, 1.0)
+            else:
+                confidence = float(confidence_str) if confidence_str else 1.0
+            
+            event = FindingEvent(
+                vulnerability_type=scan_category,
+                technique=finding_key,
+                url=_get_field(finding, "url") or "",
+                parameter=_get_field(finding, "parameter"),
+                payload=_get_field(finding, "payload"),
+                severity=float(finding.get("severity") or finding.get("Severity") or 0),
+                confidence=confidence,
+                evidence=finding
+            )
+            event_bus.publish(event)
+        except Exception as e:
+            logger.error(f"Failed to emit finding event: {e}")
 
     def append_sql_injection(
         self,
