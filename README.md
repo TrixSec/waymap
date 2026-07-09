@@ -578,3 +578,5 @@ Waymap is intended for **authorized security testing and educational use only**.
 | **7.2.1** | Thread-safe results, SQLi/CMDi/CRLF fixes, defusedxml, Windows UI fix, report loading fix |
 | **7.2.0** | Google dork discovery, WPScan profile, secrets management |
 | **7.1.0** | API scanning, auth support, HTML/CSV/Markdown/PDF reports |
+
+![Views](https://komarev.com/ghpvc/?username=waymap)
