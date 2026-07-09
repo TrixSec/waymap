@@ -1,10 +1,96 @@
-# Waymap v7.2.1 — Web Vulnerability Scanner & Security Toolkit
+# Waymap v8.0.0 — Web Vulnerability Scanner & Security Toolkit
 
-**Current Version:** 7.2.1  
+**Current Version:** 8.0.0  
 **Author:** Trix Cyrus (Vicky)  
 **License:** GPLv3
 
-Waymap is a fast, practical **web vulnerability scanner** for authorized security testing. It automates SQLi, XSS, command injection, SSTI, LFI, CORS, CRLF, open redirect, API, recon, misconfiguration, and WordPress checks—with session-based results, multi-threading, crawling, authentication, reporting, and Google dork discovery.
+Waymap is a fast, practical **web vulnerability scanner** for authorized security testing. It automates SQLi, XSS, command injection, SSTI, LFI, CORS, CRLF, open redirect, API, recon, misconfiguration, and WordPress checks—with session-based results, multi-threading, crawling, authentication, reporting, Google dork discovery, and **AI-powered vulnerability analysis**.
+
+---
+
+## What’s New in v8.0.0
+
+### 🤖 AI/LLM Integration (Major Release)
+
+**AI-Powered Vulnerability Analysis:**
+- **AI Adaptive Payload Generation** — Uses LLMs to generate context-aware, WAF-evading payloads for SQLi, XSS, CMDi, and other injection attacks
+- **AI False Positive Reduction** — Analyzes findings with AI to reduce false positives and provide confidence scores
+- **AI Attack Surface Discovery** — Leverages AI to discover hidden endpoints, parameters, and attack vectors from HTML/JavaScript
+- **AI Crawler Enhancer** — Extracts hidden URLs and API endpoints using AI analysis of page content
+- **AI Result Analysis** — Provides detailed severity justification, impact assessment, and remediation steps for findings
+- **AI Chain Analysis** — Identifies potential vulnerability chains that could lead to more severe exploits
+
+**Supported LLM Providers:**
+- **Groq** (default, fastest) — llama-4-scout, compound, compound-mini models
+- **Cerebras** — gpt-oss-120b, zai-glm-4.7, gemma-4-31b
+- **OpenAI** — gpt-4o-mini, gpt-4, etc.
+- **Anthropic** — claude-3-haiku, claude-3-opus, etc.
+- **Ollama** — Local models (llama3.1, etc.)
+- **NVIDIA** — nemotron-3-super-120b-a12b
+
+**AI Usage:**
+```bash
+# Enable all AI features
+python waymap.py --target https://example.com --scan xss --use-ai
+
+# Individual AI features
+python waymap.py --target https://example.com --scan xss --ai-payloads    # AI-generated payloads
+python waymap.py --target https://example.com --scan xss --ai-discovery   # AI attack surface discovery
+python waymap.py --target https://example.com --scan xss --analyze        # AI result analysis
+python waymap.py --target https://example.com --scan xss --ai-report      # AI-enhanced reports
+```
+
+### 🏗️ Architecture Improvements
+
+**Event Bus System:**
+- New event-driven architecture for finding events
+- Real-time finding emission to subscribers
+- Improved result tracking and reporting
+
+**Reconnaissance Intelligence Engine:**
+- Passive recon (subdomain enumeration, technology detection)
+- Cheap active recon (robots.txt, sitemap.xml, meta tags)
+- Deep active recon (admin panel discovery, WAF detection)
+- Comprehensive reconnaissance reporting
+
+**Fingerprint Engine:**
+- Intelligent request deduplication
+- Pattern-based URL normalization
+- Reduced redundant scanning
+
+**Enhanced HTTP Layer:**
+- Retry logic with exponential backoff
+- Connection pooling optimization
+- Persistent keep-alive headers
+- Improved error handling
+
+### 🔧 Scanner Improvements
+
+**XSS Scanner:**
+- Fixed URL filtering for parameterized URLs
+- Improved deduplication logic
+- Enhanced DOM XSS detection
+- Better confidence scoring
+
+**SQLi Scanner:**
+- Improved payload injection accuracy
+- Better baseline timing for time-based SQLi
+- Enhanced error detection patterns
+- Fixed boolean SQLi parameter handling
+
+**General Improvements:**
+- Fixed confidence/severity string-to-float conversion
+- Enhanced admin panel discovery and display
+- Improved result manager event emission
+- Better session management
+- Enhanced reporting capabilities
+
+### 📊 Performance & Reliability
+
+- **Fixed thread pools** — No adaptive scaling, consistent performance
+- **Improved rate limiting** — Better handling of API rate limits
+- **Enhanced error handling** — More robust error recovery
+- **Better logging** — Improved debug and error messages
 
 ---
 

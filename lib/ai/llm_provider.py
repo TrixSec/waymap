@@ -22,6 +22,13 @@ CEREBRAS_MODELS = [
     {"name": "gemma-4-31b", "rpm": 5, "tpm": 30000, "tph": 1000000, "tpd": 1000000},
 ]
 
+# Groq supported models with limits (Model, RPM, RPD, TPM, TPD)
+GROQ_MODELS = [
+    {"name": "meta-llama/llama-4-scout-17b-16e-instruct", "rpm": 30, "rpd": 1000, "tpm": 30000, "tpd": 500000},
+    {"name": "groq/compound", "rpm": 30, "rpd": 250, "tpm": 70000, "tpd": 500000},
+    {"name": "groq/compound-mini", "rpm": 30, "rpd": 250, "tpm": 70000, "tpd": 500000},
+]
+
 
 class RateLimiter:
     def __init__(self, rpm: int = 5):
@@ -47,7 +54,7 @@ class RateLimiter:
 
 @dataclass
 class LLMConfig:
-    provider: str = "none"  # "none", "openai", "anthropic", "ollama", "cerebras"
+    provider: str = "none"  # "none", "openai", "anthropic", "ollama", "cerebras", "groq"
     api_key: Optional[str] = None
     model: str = "gpt-oss-120b"
     temperature: float = 0.2
@@ -255,6 +262,87 @@ class CerebrasProvider(LLMProvider):
             print_status("All AI models failed!", "error")
         raise last_exception or Exception("All models failed")
 
+
+class GroqProvider(LLMProvider):
+    def __init__(self, llm_config: LLMConfig):
+        self.config = llm_config
+        try:
+            import openai
+            self.client = openai.OpenAI(
+                api_key=llm_config.api_key,
+                base_url=llm_config.base_url or "https://api.groq.com/openai/v1"
+            )
+        except ImportError:
+            raise ImportError("openai package not installed. Install with: pip install openai")
+        
+        # Set up model list and rate limiters
+        self.model_list = self._get_model_list(llm_config.model)
+        self.rate_limiters = {
+            model["name"]: RateLimiter(rpm=model["rpm"]) for model in GROQ_MODELS
+        }
+
+    def _get_model_list(self, primary_model: str) -> List[str]:
+        """Get ordered list of models to try (primary first, then fallbacks)"""
+        model_names = [m["name"] for m in GROQ_MODELS]
+        # Start with primary model if it's in the list, otherwise start from first
+        if primary_model in model_names:
+            idx = model_names.index(primary_model)
+            return model_names[idx:] + model_names[:idx]
+        return model_names
+
+    def generate(self, prompt: str, system_prompt: Optional[str] = None, json_schema: Optional[Dict[str, Any]] = None, quiet: bool = False) -> Dict[str, Any]:
+        import sys
+        logger.info("Starting AI request via Groq provider")
+        if not quiet:
+            print_status("Starting AI processing...", "info")
+        
+        messages = []
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+        messages.append({"role": "user", "content": prompt})
+
+        last_exception = None
+
+        for model_name in self.model_list:
+            try:
+                logger.debug(f"Trying model: {model_name}")
+                
+                # Acquire rate limit token
+                if model_name in self.rate_limiters:
+                    logger.debug(f"Acquiring rate limit for model: {model_name}")
+                    self.rate_limiters[model_name].acquire()
+                
+                kwargs = {
+                    "model": model_name,
+                    "messages": messages,
+                    "temperature": self.config.temperature,
+                    "max_tokens": self.config.max_tokens
+                }
+
+                if json_schema:
+                    kwargs["response_format"] = {"type": "json_object"}
+
+                response = self.client.chat.completions.create(**kwargs)
+                content = response.choices[0].message.content
+                
+                if not quiet:
+                    print_status("AI processing complete!", "success")
+                logger.info(f"Success with Groq model: {model_name}")
+                
+                if json_schema:
+                    return json.loads(content)
+                return {"content": content, "model_used": model_name}
+            except Exception as e:
+                logger.warning(f"Model {model_name} failed: {e}")
+                last_exception = e
+                continue
+        
+        logger.error(f"All Groq models failed! Last error: {last_exception}")
+        if not quiet:
+            print_status("All AI models failed!", "error")
+        raise last_exception or Exception("All models failed")
+
+
 class NvidiaProvider(LLMProvider):
     def __init__(self, llm_config: LLMConfig):
         self.config = llm_config
@@ -343,10 +431,12 @@ def get_llm_provider() -> LLMProvider:
         return AnthropicProvider(llm_config)
     elif llm_config.provider == "ollama":
         return OllamaProvider(llm_config)
-    elif llm_config.provider == "nvidia":
-        return NvidiaProvider(llm_config)
     elif llm_config.provider == "cerebras":
         return CerebrasProvider(llm_config)
+    elif llm_config.provider == "groq":
+        return GroqProvider(llm_config)
+    elif llm_config.provider == "nvidia":
+        return NvidiaProvider(llm_config)
     else:
         logger.warning(f"Unknown LLM provider: {llm_config.provider}, using none")
         return NoneProvider()

@@ -182,7 +182,7 @@ Examples:
     ai_group.add_argument('--ai-report', action='store_true', help='Generate AI-enhanced reports')
     ai_group.add_argument('--ai-payloads', action='store_true', help='Use AI-generated adaptive payloads')
     ai_group.add_argument('--ai-discovery', action='store_true', help='Use AI for attack surface discovery')
-    ai_group.add_argument('--llm-provider', type=str, choices=['none', 'openai', 'anthropic', 'ollama', 'cerebras'], help='LLM provider to use')
+    ai_group.add_argument('--llm-provider', type=str, choices=['none', 'openai', 'anthropic', 'ollama', 'cerebras', 'groq'], help='LLM provider to use')
     ai_group.add_argument('--llm-model', type=str, help='LLM model to use')
 
     return parser.parse_args()
@@ -271,14 +271,15 @@ def _validate_and_configure_ai(args):
             return
         
         print("\nAvailable providers:")
-        print("    1. Cerebras (default)")
-        print("    2. OpenAI")
-        print("    3. Anthropic")
-        print("    4. Ollama (local)")
+        print("    1. Groq (default - fast)")
+        print("    2. Cerebras")
+        print("    3. OpenAI")
+        print("    4. Anthropic")
+        print("    5. Ollama (local)")
         
         provider_choice = prompt_line("Choice", "1")
-        provider_map = {"1": "cerebras", "2": "openai", "3": "anthropic", "4": "ollama"}
-        selected_provider = provider_map.get(provider_choice, "cerebras")
+        provider_map = {"1": "groq", "2": "cerebras", "3": "openai", "4": "anthropic", "5": "ollama"}
+        selected_provider = provider_map.get(provider_choice, "groq")
         api_key = prompt_line(f"Enter {selected_provider.capitalize()} API key")
         if not api_key:
             print_status("No API key provided, AI features disabled.", "warning")
@@ -289,7 +290,8 @@ def _validate_and_configure_ai(args):
             return
         
         default_model = (
-            "gpt-oss-120b" if selected_provider == "cerebras"
+            "meta-llama/llama-4-scout-17b-16e-instruct" if selected_provider == "groq"
+            else "gpt-oss-120b" if selected_provider == "cerebras"
             else "gpt-4o-mini" if selected_provider == "openai"
             else "claude-3-haiku-20240307" if selected_provider == "anthropic"
             else "llama3.1"

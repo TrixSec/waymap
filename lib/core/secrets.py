@@ -25,6 +25,19 @@ def _load_secrets_file() -> Dict[str, Any]:
     return {}
 
 
+def _save_secrets_file(data: Dict[str, Any]) -> bool:
+    """Save secrets to the secrets file."""
+    path = os.path.join(config.CONFIG_DIR, "secrets.json")
+    try:
+        os.makedirs(config.CONFIG_DIR, exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
+        return True
+    except Exception as e:
+        logger.error(f"Failed to save secrets file: {e}")
+        return False
+
+
 def get_secret(name: str, env_var: Optional[str] = None) -> Optional[str]:
     if env_var:
         v = os.environ.get(env_var)
@@ -37,3 +50,10 @@ def get_secret(name: str, env_var: Optional[str] = None) -> Optional[str]:
         return v.strip()
 
     return None
+
+
+def set_secret(name: str, value: str) -> bool:
+    """Set a secret value in the secrets file."""
+    data = _load_secrets_file()
+    data[name] = value
+    return _save_secrets_file(data)

@@ -91,7 +91,16 @@ Rules:
     try:
         provider = get_llm_provider()
         result = provider.generate(prompt, system_prompt, json_schema)
-        chains = result.get("chains", [])
+        
+        # Handle different response formats from different LLM providers
+        if isinstance(result, dict):
+            chains = result.get("chains", [])
+        elif isinstance(result, list):
+            chains = result
+        else:
+            logger.error(f"Unexpected result type from LLM: {type(result)}")
+            chains = []
+        
         print_status(f"Identified {len(chains)} potential chains!", "success")
         return chains
         

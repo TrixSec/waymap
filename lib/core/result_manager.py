@@ -286,13 +286,36 @@ class ResultManager:
             else:
                 confidence = float(confidence_str) if confidence_str else 1.0
             
+            # Convert severity string or float/int to float
+            severity_val = finding.get("severity") or finding.get("Severity") or 0.0
+            if isinstance(severity_val, str):
+                severity_map = {
+                    "critical": 10.0, "Critical": 10.0, "CRITICAL": 10.0,
+                    "high": 8.0, "High": 8.0, "HIGH": 8.0,
+                    "medium": 5.0, "Medium": 5.0, "MEDIUM": 5.0,
+                    "low": 2.0, "Low": 2.0, "LOW": 2.0,
+                    "info": 0.0, "Info": 0.0, "INFO": 0.0,
+                }
+                if severity_val in severity_map:
+                    severity = severity_map[severity_val]
+                else:
+                    try:
+                        severity = float(severity_val)
+                    except ValueError:
+                        severity = 0.0
+            else:
+                try:
+                    severity = float(severity_val)
+                except (ValueError, TypeError):
+                    severity = 0.0
+            
             event = FindingEvent(
                 vulnerability_type=scan_category,
                 technique=finding_key,
                 url=_get_field(finding, "url") or "",
                 parameter=_get_field(finding, "parameter"),
                 payload=_get_field(finding, "payload"),
-                severity=float(finding.get("severity") or finding.get("Severity") or 0),
+                severity=severity,
                 confidence=confidence,
                 evidence=finding
             )

@@ -6,4 +6,3 @@ build/
 dist/
 *.egg-info/
 sessions/
-sqlmap_temp/

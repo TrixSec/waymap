@@ -221,6 +221,52 @@ python waymap.py --dork "site:example.com inurl:?" --dork-output custom_targets.
 
 ---
 
+## AI/LLM Features (v8.0.0+)
+
+### `--use-ai`
+Enable all AI features (result analysis + AI reports + payloads + discovery).
+
+### `--analyze`
+Analyze results with AI after scan for severity justification, impact assessment, and remediation steps.
+
+### `--ai-report`
+Generate AI-enhanced reports with detailed analysis.
+
+### `--ai-payloads`
+Use AI-generated adaptive payloads for SQLi, XSS, CMDi, and other injection attacks.
+
+### `--ai-discovery`
+Use AI for attack surface discovery to find hidden endpoints and parameters.
+
+### `--llm-provider`
+Select LLM provider:
+- `none` (default)
+- `groq` (fastest, recommended)
+- `cerebras`
+- `openai`
+- `anthropic`
+- `ollama`
+
+### `--llm-model`
+Specify LLM model to use.
+
+Examples:
+```bash
+# Enable all AI features
+python waymap.py --target https://example.com --scan xss --use-ai
+
+# Individual AI features
+python waymap.py --target https://example.com --scan xss --ai-payloads
+python waymap.py --target https://example.com --scan xss --ai-discovery
+python waymap.py --target https://example.com --scan xss --analyze
+python waymap.py --target https://example.com --scan xss --ai-report
+
+# Specific LLM provider
+python waymap.py --target https://example.com --scan xss --ai-payloads --llm-provider groq --llm-model meta-llama/llama-4-scout-17b-16e-instruct
+```
+
+---
+
 ## WPScan API
 
 ### `--wpscan-token`
