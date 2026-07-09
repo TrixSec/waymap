@@ -73,10 +73,16 @@ python waymap.py --target https://example.com --scan xss --ai-report      # AI-e
 - Better confidence scoring
 
 **SQLi Scanner:**
+- Added support for new SQLi techniques: **Union-Based**, **Stacked-Queries**, and **Inline-Query** injections
+- Added **Database Enumeration** support (database extraction engine)
 - Improved payload injection accuracy
 - Better baseline timing for time-based SQLi
 - Enhanced error detection patterns
 - Fixed boolean SQLi parameter handling
+
+**Crawler & Discovery Engine:**
+- Improved crawling efficiency and high-speed page discovery
+- Better target parameter extraction and deduplication mapping
 
 **General Improvements:**
 - Fixed confidence/severity string-to-float conversion
@@ -575,6 +581,7 @@ Waymap is intended for **authorized security testing and educational use only**.
 
 | Version | Highlights |
 |---------|------------|
+| **8.0.0** | AI integration, Union/Stacked/Inline SQLi techniques, Database Enumeration support, Crawler improvements |
 | **7.2.1** | Thread-safe results, SQLi/CMDi/CRLF fixes, defusedxml, Windows UI fix, report loading fix |
 | **7.2.0** | Google dork discovery, WPScan profile, secrets management |
 | **7.1.0** | API scanning, auth support, HTML/CSV/Markdown/PDF reports |
