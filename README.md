@@ -23,8 +23,8 @@ Waymap is a fast, practical **web vulnerability scanner** for authorized securit
 **Supported LLM Providers:**
 - **Groq** (default, fastest) — llama-4-scout, compound, compound-mini models
 - **Cerebras** — gpt-oss-120b, zai-glm-4.7, gemma-4-31b
-- **OpenAI** — gpt-4o-mini, gpt-4, etc.
-- **Anthropic** — claude-3-haiku, claude-3-opus, etc.
+- **OpenAI** — GPT-5.5, GPT-5, GPT-5 mini, GPT-5 nano
+- **Anthropic** — Claude Opus 4.8, Claude Sonnet 5, Claude Haiku 4.5
 - **Ollama** — Local models (llama3.1, etc.)
 - **NVIDIA** — nemotron-3-super-120b-a12b
 
