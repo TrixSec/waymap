@@ -581,7 +581,7 @@ Waymap is intended for **authorized security testing and educational use only**.
 
 | Version | Highlights |
 |---------|------------|
-| **8.0.0** | AI integration, Union/Stacked/Inline SQLi techniques, Database Enumeration support, Crawler improvements |
+| **8.0.0** | AI integration, Union/Stacked/Inline SQLi techniques, Database Enumeration support, Crawler improvements and many more  |
 | **7.2.1** | Thread-safe results, SQLi/CMDi/CRLF fixes, defusedxml, Windows UI fix, report loading fix |
 | **7.2.0** | Google dork discovery, WPScan profile, secrets management |
 | **7.1.0** | API scanning, auth support, HTML/CSV/Markdown/PDF reports |
