@@ -2,13 +2,33 @@
   <img src="logo.png" alt="Waymap Logo" width="400">
 </p>
 
-# Waymap v8.1.1 — Web Vulnerability Scanner & Security Toolkit
+<h1 align="center">Waymap v8.1.1 - Web Vulnerability Scanner & Security Toolkit</h1>
 
-**Current Version:** 8.1.1  
-**Author:** Trix Cyrus (Vicky)  
-**License:** GPLv3
+<p align="center">
+  <a href="https://pypi.org/project/waymap/"><img src="https://img.shields.io/pypi/v/waymap?style=for-the-badge&logo=pypi&logoColor=white&color=blue" alt="PyPI Version"></a>
+  <a href="https://pypi.org/project/waymap/"><img src="https://img.shields.io/pypi/pyversions/waymap?style=for-the-badge&logo=python&logoColor=white" alt="Python Versions"></a>
+  <a href="https://github.com/TrixSec/waymap/blob/main/LICENSE"><img src="https://img.shields.io/github/license/TrixSec/waymap?style=for-the-badge&logo=gnu&logoColor=white&color=green" alt="License"></a>
+  <a href="https://pypi.org/project/waymap/"><img src="https://img.shields.io/pypi/dm/waymap?style=for-the-badge&logo=pypi&logoColor=white&color=orange" alt="PyPI Downloads"></a>
+</p>
 
-Waymap is a fast, practical **web vulnerability scanner** for authorized security testing. It automates SQLi, XSS, command injection, SSTI, LFI, CORS, CRLF, open redirect, API, recon, misconfiguration, and WordPress checks—with session-based results, multi-threading, crawling, authentication, reporting, Google dork discovery, and **AI-powered vulnerability analysis**.
+<p align="center">
+  <a href="https://github.com/TrixSec/waymap/stargazers"><img src="https://img.shields.io/github/stars/TrixSec/waymap?style=for-the-badge&logo=github&color=yellow" alt="GitHub Stars"></a>
+  <a href="https://github.com/TrixSec/waymap/network/members"><img src="https://img.shields.io/github/forks/TrixSec/waymap?style=for-the-badge&logo=github&color=lightgrey" alt="GitHub Forks"></a>
+  <a href="https://github.com/TrixSec/waymap/issues"><img src="https://img.shields.io/github/issues/TrixSec/waymap?style=for-the-badge&logo=github&color=red" alt="GitHub Issues"></a>
+  <a href="https://github.com/TrixSec/waymap/commits/main"><img src="https://img.shields.io/github/last-commit/TrixSec/waymap?style=for-the-badge&logo=github&color=purple" alt="Last Commit"></a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/TrixSec/waymap"><img src="https://img.shields.io/github/repo-size/TrixSec/waymap?style=for-the-badge&logo=github&color=teal" alt="Repo Size"></a>
+  <a href="https://github.com/TrixSec/waymap/releases"><img src="https://img.shields.io/github/v/release/TrixSec/waymap?style=for-the-badge&logo=github&color=darkgreen" alt="Latest Release"></a>
+  <a href="https://t.me/Trixsec"><img src="https://img.shields.io/badge/Telegram-Channel-blue?style=for-the-badge&logo=telegram" alt="Telegram"></a>
+</p>
+
+---
+
+**Author:** Trix Cyrus (Vicky) | **License:** GPLv3
+
+Waymap is a fast, practical **web vulnerability scanner** for authorized security testing. It automates SQLi, XSS, command injection, SSTI, LFI, CORS, CRLF, open redirect, API, recon, misconfiguration, and WordPress checks - with session-based results, multi-threading, crawling, authentication, reporting, Google dork discovery, and **AI-powered vulnerability analysis**.
 
 ---
 
@@ -33,20 +53,20 @@ Waymap is a fast, practical **web vulnerability scanner** for authorized securit
 ### 🤖 AI/LLM Integration (Major Release)
 
 **AI-Powered Vulnerability Analysis:**
-- **AI Adaptive Payload Generation** — Uses LLMs to generate context-aware, WAF-evading payloads for SQLi, XSS, CMDi, and other injection attacks
-- **AI False Positive Reduction** — Analyzes findings with AI to reduce false positives and provide confidence scores
-- **AI Attack Surface Discovery** — Leverages AI to discover hidden endpoints, parameters, and attack vectors from HTML/JavaScript
-- **AI Crawler Enhancer** — Extracts hidden URLs and API endpoints using AI analysis of page content
-- **AI Result Analysis** — Provides detailed severity justification, impact assessment, and remediation steps for findings
-- **AI Chain Analysis** — Identifies potential vulnerability chains that could lead to more severe exploits
+- **AI Adaptive Payload Generation**  - Uses LLMs to generate context-aware, WAF-evading payloads for SQLi, XSS, CMDi, and other injection attacks
+- **AI False Positive Reduction**  - Analyzes findings with AI to reduce false positives and provide confidence scores
+- **AI Attack Surface Discovery**  - Leverages AI to discover hidden endpoints, parameters, and attack vectors from HTML/JavaScript
+- **AI Crawler Enhancer**  - Extracts hidden URLs and API endpoints using AI analysis of page content
+- **AI Result Analysis**  - Provides detailed severity justification, impact assessment, and remediation steps for findings
+- **AI Chain Analysis**  - Identifies potential vulnerability chains that could lead to more severe exploits
 
 **Supported LLM Providers:**
-- **Groq** (default, fastest) — llama-4-scout, compound, compound-mini models
-- **Cerebras** — gpt-oss-120b, zai-glm-4.7, gemma-4-31b
-- **OpenAI** — GPT-5.5, GPT-5, GPT-5 mini, GPT-5 nano
-- **Anthropic** — Claude Opus 4.8, Claude Sonnet 5, Claude Haiku 4.5
-- **Ollama** — Local models (llama3.1, etc.)
-- **NVIDIA** — nemotron-3-super-120b-a12b
+- **Groq** (default, fastest)  - llama-4-scout, compound, compound-mini models
+- **Cerebras**  - gpt-oss-120b, zai-glm-4.7, gemma-4-31b
+- **OpenAI**  - GPT-5.5, GPT-5, GPT-5 mini, GPT-5 nano
+- **Anthropic**  - Claude Opus 4.8, Claude Sonnet 5, Claude Haiku 4.5
+- **Ollama**  - Local models (llama3.1, etc.)
+- **NVIDIA**  - nemotron-3-super-120b-a12b
 
 **AI Usage:**
 ```bash
@@ -113,10 +133,10 @@ python waymap.py --target https://example.com --scan xss --ai-report      # AI-e
 
 ### 📊 Performance & Reliability
 
-- **Fixed thread pools** — No adaptive scaling, consistent performance
-- **Improved rate limiting** — Better handling of API rate limits
-- **Enhanced error handling** — More robust error recovery
-- **Better logging** — Improved debug and error messages
+- **Fixed thread pools**  - No adaptive scaling, consistent performance
+- **Improved rate limiting**  - Better handling of API rate limits
+- **Enhanced error handling**  - More robust error recovery
+- **Better logging**  - Improved debug and error messages
 
 ---
 
@@ -124,19 +144,19 @@ python waymap.py --target https://example.com --scan xss --ai-report      # AI-e
 
 ### Stability & Security Hardening
 
-- **Thread-safe result saving** — New `ResultManager` with file locking; all injection, recon, and profile modules now save findings safely under concurrent scans.
-- **Fixed SQLi payload injection** — Boolean SQLi correctly injects into URL parameters instead of appending to the URL.
-- **Fixed error-based SQLi** — Removed logic that stripped single quotes from payloads.
-- **Fixed config paths** — Data/session paths resolve relative to the project root, not the current working directory.
-- **Secure XML parsing** — SQLi and CMDi modules use `defusedxml` to prevent XXE.
-- **Time-based SQLi baseline** — Baseline request timing reduces false positives.
-- **CRLF detection** — Checks both response headers and body for injected markers.
-- **Open redirect** — Uses `requests` instead of `curl` (works on Windows without external tools).
-- **CMDi URL building** — Proper query-string reconstruction instead of fragile string replace.
-- **Report loading fixed** — Session JSON is correctly parsed for HTML/CSV/Markdown/PDF reports.
-- **WAF module import fixed** — `--check-waf` uses the correct module path.
-- **Windows Unicode fix** — Banner and UI render correctly on Windows terminals.
-- **Dependency check** — `defusedxml` is required and listed in `requirements.txt`.
+- **Thread-safe result saving**  - New `ResultManager` with file locking; all injection, recon, and profile modules now save findings safely under concurrent scans.
+- **Fixed SQLi payload injection**  - Boolean SQLi correctly injects into URL parameters instead of appending to the URL.
+- **Fixed error-based SQLi**  - Removed logic that stripped single quotes from payloads.
+- **Fixed config paths**  - Data/session paths resolve relative to the project root, not the current working directory.
+- **Secure XML parsing**  - SQLi and CMDi modules use `defusedxml` to prevent XXE.
+- **Time-based SQLi baseline**  - Baseline request timing reduces false positives.
+- **CRLF detection**  - Checks both response headers and body for injected markers.
+- **Open redirect**  - Uses `requests` instead of `curl` (works on Windows without external tools).
+- **CMDi URL building**  - Proper query-string reconstruction instead of fragile string replace.
+- **Report loading fixed**  - Session JSON is correctly parsed for HTML/CSV/Markdown/PDF reports.
+- **WAF module import fixed**  - `--check-waf` uses the correct module path.
+- **Windows Unicode fix**  - Banner and UI render correctly on Windows terminals.
+- **Dependency check**  - `defusedxml` is required and listed in `requirements.txt`.
 
 ### Scanner Modules Updated in v7.2.1
 
@@ -176,13 +196,13 @@ python waymap.py --help
 ## Quick Start
 
 ```bash
-# Single URL — XSS scan with crawl
+# Single URL  - XSS scan with crawl
 python waymap.py --target https://example.com --scan xss --crawl 2
 
-# Parameterized URL — SQLi (all techniques)
+# Parameterized URL  - SQLi (all techniques)
 python waymap.py --target "https://example.com/page.php?id=1" --scan sqli
 
-# Full scan — no prompts, 4 threads, reports
+# Full scan  - no prompts, 4 threads, reports
 python waymap.py --target https://example.com --scan all --crawl 2 --threads 4 --no-prompt \
   --report-format html,csv,markdown --output-dir reports
 
@@ -298,10 +318,10 @@ Use with `--scan` / `-s`:
 Each command below can be combined with `--threads N`, `--no-prompt`, and `-v` / `--verbose`.
 
 ```bash
-# SQL injection — all techniques (default)
+# SQL injection  - all techniques (default)
 python waymap.py -t "https://example.com/item?id=1" -s sqli
 
-# SQL injection — specific techniques
+# SQL injection  - specific techniques
 python waymap.py -t "https://example.com/item?id=1" -s sqli -k B      # boolean only
 python waymap.py -t "https://example.com/item?id=1" -s sqli -k E      # error only
 python waymap.py -t "https://example.com/item?id=1" -s sqli -k T      # time-based only
@@ -371,7 +391,7 @@ python waymap.py -t https://example.com -s redirect -c 1
 ### Multi-target scanning
 
 ```bash
-# targets.txt — one URL per line
+# targets.txt  - one URL per line
 python waymap.py --multi-target targets.txt -s sqli --no-prompt
 python waymap.py --multi-target targets.txt -s xss  -c 1 --threads 4
 python waymap.py --multi-target targets.txt -s all  -c 2 --threads 4 --no-prompt
@@ -469,10 +489,10 @@ python waymap.py -t https://example.com -s sqli -k BET \
 ### Recommended real-world combinations
 
 ```bash
-# Bug bounty — fast parameterized URL test
+# Bug bounty  - fast parameterized URL test
 python waymap.py -t "https://target.com/vuln?id=1" -s sqli -k BET --threads 4 --no-prompt -v
 
-# Internal pentest — crawl + full scan + reports
+# Internal pentest  - crawl + full scan + reports
 python waymap.py -t https://app.internal -s all -c 3 --threads 6 --no-prompt \
   --report-format html,markdown,pdf --output-dir pentest-reports
 
@@ -514,7 +534,7 @@ Environment variables (override secrets file):
 
 ### Domain blacklist (dork discovery)
 
-Edit `config/waymap/domain_blacklist.txt` — one domain per line.
+Edit `config/waymap/domain_blacklist.txt`  - one domain per line.
 
 ### Payloads & wordlists
 
