@@ -34,15 +34,15 @@ Waymap is a fast, practical **web vulnerability scanner** for authorized securit
 
 ## What’s New in v8.1.1
 
-### 🚀 Optimized Active Reconnaissance
+### Optimized Active Reconnaissance
 - **No More Redundant Directory Fuzzing:** Removed time-consuming brute-force checks for Admin Panels (~140 paths), Backup Files (~810 paths), and Exposed Configs (~50 paths) from the reconnaissance engine, avoiding duplicates with dedicated modules (`misconfig` and `auth-logic`). This saves over 1000 slow, synchronous requests.
 - **Enhanced Swagger & GraphQL detection:** Maintained lightweight API discovery probes and updated the scanner summary output to directly list identified Swagger/OpenAPI and GraphQL endpoints.
 
-### 🛡️ Enhanced SSTI Scan & Engine Detection
+### Enhanced SSTI Scan & Engine Detection
 - **Detailed Engine Signatures:** Added comprehensive detection signatures for various template engines.
 - **False Positive Prevention:** Incorporated timing baseline and content verification techniques.
 
-### 🐛 Scanner Module Hardening
+### Scanner Module Hardening
 - Improved validations and security checks across CORS, CRLF, LFI, and Open Redirect scan modules.
 - **Bug Fix:** Restored missing `exit_clean` import in `prompt_line()` to fix interactive UI Ctrl+C handlers.
 
@@ -50,7 +50,7 @@ Waymap is a fast, practical **web vulnerability scanner** for authorized securit
 
 ## What’s New in v8.0.0
 
-### 🤖 AI/LLM Integration (Major Release)
+### AI/LLM Integration (Major Release)
 
 **AI-Powered Vulnerability Analysis:**
 - **AI Adaptive Payload Generation**  - Uses LLMs to generate context-aware, WAF-evading payloads for SQLi, XSS, CMDi, and other injection attacks
@@ -80,7 +80,7 @@ python waymap.py --target https://example.com --scan xss --analyze        # AI r
 python waymap.py --target https://example.com --scan xss --ai-report      # AI-enhanced reports
 ```
 
-### 🏗️ Architecture Improvements
+### Architecture Improvements
 
 **Event Bus System:**
 - New event-driven architecture for finding events
@@ -104,7 +104,7 @@ python waymap.py --target https://example.com --scan xss --ai-report      # AI-e
 - Persistent keep-alive headers
 - Improved error handling
 
-### 🔧 Scanner Improvements
+### Scanner Improvements
 
 **XSS Scanner:**
 - Fixed URL filtering for parameterized URLs
@@ -131,7 +131,7 @@ python waymap.py --target https://example.com --scan xss --ai-report      # AI-e
 - Better session management
 - Enhanced reporting capabilities
 
-### 📊 Performance & Reliability
+### Performance & Reliability
 
 - **Fixed thread pools**  - No adaptive scaling, consistent performance
 - **Improved rate limiting**  - Better handling of API rate limits
