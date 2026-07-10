@@ -48,7 +48,6 @@ SCAN_CATALOG: List[Tuple[str, List[Tuple[str, str, str]]]] = [
     (
         "Recon & Hardening",
         [
-            ("recon", "Foundation Recon", "Tech fingerprint, sitemap, DNS, buckets"),
             ("misconfig", "Misconfiguration Scan", "Headers, admin panels, sensitive files"),
             ("redirect", "Redirect & Header Injection", "Host header, open redirect, CRLF bundle"),
         ],

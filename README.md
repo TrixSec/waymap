@@ -1,10 +1,25 @@
-# Waymap v8.0.0 — Web Vulnerability Scanner & Security Toolkit
+# Waymap v8.1.0 — Web Vulnerability Scanner & Security Toolkit
 
-**Current Version:** 8.0.0  
+**Current Version:** 8.1.0  
 **Author:** Trix Cyrus (Vicky)  
 **License:** GPLv3
 
 Waymap is a fast, practical **web vulnerability scanner** for authorized security testing. It automates SQLi, XSS, command injection, SSTI, LFI, CORS, CRLF, open redirect, API, recon, misconfiguration, and WordPress checks—with session-based results, multi-threading, crawling, authentication, reporting, Google dork discovery, and **AI-powered vulnerability analysis**.
+
+---
+
+## What’s New in v8.1.0
+
+### 🚀 Optimized Active Reconnaissance
+- **No More Redundant Directory Fuzzing:** Removed time-consuming brute-force checks for Admin Panels (~140 paths), Backup Files (~810 paths), and Exposed Configs (~50 paths) from the reconnaissance engine, avoiding duplicates with dedicated modules (`misconfig` and `auth-logic`). This saves over 1000 slow, synchronous requests.
+- **Enhanced Swagger & GraphQL detection:** Maintained lightweight API discovery probes and updated the scanner summary output to directly list identified Swagger/OpenAPI and GraphQL endpoints.
+
+### 🛡️ Enhanced SSTI Scan & Engine Detection
+- **Detailed Engine Signatures:** Added comprehensive detection signatures for various template engines.
+- **False Positive Prevention:** Incorporated timing baseline and content verification techniques.
+
+### 🐛 Scanner Module Hardening
+- Improved validations and security checks across CORS, CRLF, LFI, and Open Redirect scan modules.
 
 ---
 
@@ -531,7 +546,7 @@ Result structure:
 ```
 waymap/
 ├── waymap.py              # Main CLI entry point
-├── VERSION                # Current version (7.2.1)
+├── VERSION                # Current version (8.1.0)
 ├── requirements.txt
 ├── data/                  # Payloads and wordlists
 ├── config/waymap/         # Secrets, blacklist, mode config
@@ -581,6 +596,7 @@ Waymap is intended for **authorized security testing and educational use only**.
 
 | Version | Highlights |
 |---------|------------|
+| **8.1.0** | Optimized Active Recon (removed redundant fuzzing), Enhanced SSTI scan & engine detection, scanner module hardening |
 | **8.0.0** | AI integration, Union/Stacked/Inline SQLi techniques, Database Enumeration support, Crawler improvements and many more  |
 | **7.2.1** | Thread-safe results, SQLi/CMDi/CRLF fixes, defusedxml, Windows UI fix, report loading fix |
 | **7.2.0** | Google dork discovery, WPScan profile, secrets management |

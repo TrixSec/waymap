@@ -4,6 +4,7 @@
 """Open Redirect Scanner Module - Highly Optimized."""
 
 import os
+import secrets
 import time
 from datetime import datetime
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
@@ -24,6 +25,8 @@ from lib.utils.file_utils import load_file_lines
 
 config = get_config()
 logger = get_logger(__name__)
+
+EVIDENCE_WINDOW = 90
 
 # Track (url, param) pairs that already have findings
 _found_vulnerable_pairs = set()
@@ -68,6 +71,44 @@ def inject_payload_into_url(url: str, parameter: str, payload: str) -> str:
     return urlunparse(new_parts)
 
 
+def _proof_token() -> str:
+    """Generate a unique proof token for open redirect testing."""
+    return f"waymap_redirect_{secrets.token_hex(4)}"
+
+
+def _evidence_snippet(location: str) -> str:
+    """Extract evidence snippet from location header."""
+    if not location:
+        return ""
+    if len(location) <= EVIDENCE_WINDOW * 2:
+        return location
+    return location[:EVIDENCE_WINDOW] + "..." + location[-EVIDENCE_WINDOW:]
+
+
+def _proof_evidence(location: str, payload: str) -> Dict[str, Any]:
+    """Generate proof evidence for open redirect vulnerability."""
+    payload_in_location = payload in location if location else False
+    is_external_redirect = False
+    
+    if location:
+        try:
+            parsed_location = urlparse(location)
+            parsed_payload = urlparse(payload)
+            # Check if redirect goes to external domain
+            if parsed_location.netloc and parsed_payload.netloc:
+                is_external_redirect = parsed_location.netloc != parsed_payload.netloc
+        except:
+            pass
+    
+    return {
+        "confirmed": payload_in_location or is_external_redirect,
+        "location": location,
+        "payload_in_location": payload_in_location,
+        "is_external_redirect": is_external_redirect,
+        "snippet": _evidence_snippet(location),
+    }
+
+
 def is_parameter_relevant(url: str, parameter: str) -> bool:
     """Quick probe to check if a parameter is worth testing - avoids wasted requests."""
     session = get_session()
@@ -102,10 +143,11 @@ def is_parameter_relevant(url: str, parameter: str) -> bool:
 
 
 def test_open_redirect_payload(url: str, parameter: str, payload: str, verbose: bool) -> Dict[str, Any]:
-    """Test a single open redirect payload quickly with connection pooling."""
+    """Test a single open redirect payload quickly with connection pooling and proof of concept."""
     if stop_scan.is_set():
         return {'vulnerable': False}
 
+    proof_token = _proof_token()
     test_url = inject_payload_into_url(url, parameter, payload)
     headers = generate_random_headers()
 
@@ -119,6 +161,9 @@ def test_open_redirect_payload(url: str, parameter: str, payload: str, verbose: 
         )
         location = response.headers.get("Location") or response.headers.get("location")
         if location:
+            # Generate proof evidence
+            evidence = _proof_evidence(location, payload)
+            
             if verbose:
                 print_status(f"Vulnerable URL: {test_url}", "success")
                 print_status(f"Redirect URL: {location}", "info")
@@ -131,6 +176,10 @@ def test_open_redirect_payload(url: str, parameter: str, payload: str, verbose: 
                 'payload': payload,
                 'parameter': parameter,
                 'location': location,
+                'proof_token': proof_token,
+                'evidence': evidence,
+                'response': response,
+                'headers': response.headers,
             }
 
     except requests.RequestException as e:
@@ -213,16 +262,37 @@ def test_parameter(url: str, parameter: str, payloads: List[str], thread_count: 
                 print_status(f"  URL: {full_url}", "info")
                 print_status(f"  Parameter: {param}", "info")
                 print_status(f"  Payload: {payload}", "info")
+                print_status(f"  Proof Token: {result.get('proof_token', '')}", "info")
                 if result.get('location'):
                     print_status(f"  Location: {result['location']}", "info")
+                
+                evidence = result.get('evidence', {})
+                if evidence.get('snippet'):
+                    print_status(f"  Evidence: {evidence['snippet']}", "info")
+                
+                confirmations = []
+                if evidence.get('payload_in_location'):
+                    confirmations.append('payload reflected in Location header')
+                if evidence.get('is_external_redirect'):
+                    confirmations.append('external redirect detected')
+                
+                if confirmations:
+                    print_status(f"  Confirmations: {', '.join(confirmations)}", "info")
 
-                result_manager.add_finding("Open Redirect", "", {
+                finding_data = {
                     "url": full_url,
                     "parameter": param,
                     "payload": payload,
                     "location": result.get("location"),
+                    "proof_token": result.get('proof_token', ''),
+                    "poc_url": full_url,
+                    "evidence": evidence,
+                    "confirmations": confirmations,
+                    "injected": True,
                     "timestamp": datetime.now().isoformat()
-                })
+                }
+                
+                result_manager.add_finding("Open Redirect", "", finding_data)
 
                 if not no_prompt:
                     if not ask_continue_scanning():

@@ -13,7 +13,7 @@ class WaymapConfig:
     """Waymap configuration settings."""
     
     # Version
-    VERSION: str = "8.0.0"  # Major AI integration release - Groq provider, adaptive payloads, false positive reduction, attack surface discovery
+    VERSION: str = "8.1.0"  # Minor release - Optimized Active Reconnaissance, Enhanced SSTI detection, and various bug fixes
     AUTHOR: str = "Trix Cyrus (Vicky)"
     COPYRIGHT: str = "Copyright © 2024 - 26 Trixsec Org"
     

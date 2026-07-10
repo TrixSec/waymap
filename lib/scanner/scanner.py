@@ -198,10 +198,14 @@ class WaymapScanner:
                 print_status(f"Found {summary['cheap']['robots_urls_count']} URLs in robots.txt", "info")
             if summary['cheap']['sitemap_urls_count'] > 0:
                 print_status(f"Found {summary['cheap']['sitemap_urls_count']} URLs in sitemap.xml", "info")
-            if summary['deep']['admin_panels_count'] > 0:
-                print_status(f"Found {summary['deep']['admin_panels_count']} potential admin panels:", "warning")
-                for panel in intelligence.deep.admin_panels:
-                    print_status(f"  - {panel}", "info")
+            if summary['deep'].get('swagger_endpoints_count', 0) > 0:
+                print_status(f"Found {summary['deep']['swagger_endpoints_count']} Swagger/OpenAPI endpoint(s):", "success")
+                for ep in intelligence.deep.swagger_endpoints:
+                    print_status(f"  - {ep}", "info")
+            if summary['deep'].get('graphql_endpoints_count', 0) > 0:
+                print_status(f"Found {summary['deep']['graphql_endpoints_count']} GraphQL endpoint(s):", "success")
+                for ep in intelligence.deep.graphql_endpoints:
+                    print_status(f"  - {ep}", "info")
             if summary['deep']['waf_detected']:
                 print_status(f"WAF detected: {summary['deep']['waf_detected']}", "warning")
             
@@ -317,7 +321,6 @@ class WaymapScanner:
             'open-redirect': ('Open Redirect', 'green'),
             'crlf': ('CRLF Injection', 'yellow'),
             'cors': ('CORS Misconfiguration', 'red'),
-            'recon': ('Recon Scan', 'cyan'),
             'misconfig': ('Misconfiguration Scan', 'cyan'),
             'redirect': ('Redirect/Header Injection', 'cyan'),
             'injection-advanced': ('Advanced Injection', 'magenta'),
@@ -442,9 +445,7 @@ class WaymapScanner:
                 from lib.injection.cors import perform_cors_scan
                 perform_cors_scan(scan_urls, self.thread_count, self.no_prompt, verbose=True)
 
-            elif scan_type == 'recon':
-                from lib.recon.foundation import perform_recon_scan
-                perform_recon_scan(scan_urls, self.thread_count, self.no_prompt, verbose=True)
+
 
             elif scan_type == 'misconfig':
                 from lib.recon.misconfig import perform_misconfig_scan

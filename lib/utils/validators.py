@@ -95,7 +95,7 @@ def validate_scan_type(scan_type: str) -> Tuple[bool, Optional[str]]:
     valid_scan_types = [
         'sqli', 'cmdi', 'ssti', 'xss', 'lfi',
         'open-redirect', 'crlf', 'cors', 'api', 'all',
-        'recon', 'misconfig', 'redirect', 'injection-advanced',
+        'misconfig', 'redirect', 'injection-advanced',
         'graphql-suite', 'auth-logic', 'cache-smuggling',
         'wordpress-extras', 'optional'
     ]

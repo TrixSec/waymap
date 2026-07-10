@@ -1,15 +1,87 @@
-Wildcard Origin Test::Origin: *::Access-Control-Allow-Origin: *
-Reflection Test::Origin: https://evil.com::Access-Control-Allow-Origin: https://evil.com
-Null Origin Test::Origin: null::Access-Control-Allow-Origin: null
-Subdomain Origin Test::Origin: https://sub.trusted.com::Access-Control-Allow-Origin: https://sub.trusted.com
-Arbitrary Trusted Origin Test::Origin: https://malicious.com::Access-Control-Allow-Origin: https://malicious.com
-Credentials Misuse Test::Origin: https://malicious.com::Access-Control-Allow-Origin: https://malicious.com, Access-Control-Allow-Credentials: true
-Case Insensitive Origin Test::Origin: https://EVIL.com::Access-Control-Allow-Origin: https://EVIL.com
-Internal Network Origin Test::Origin: http://192.168.1.1::Access-Control-Allow-Origin: http://192.168.1.1
-Invalid TLD Origin Test::Origin: https://evil.local::Access-Control-Allow-Origin: https://evil.local
-Protocol Mismatch Test::Origin: http://trusted.com::Access-Control-Allow-Origin: http://trusted.com
-Unusual Port Origin Test::Origin: https://trusted.com:8080::Access-Control-Allow-Origin: https://trusted.com:8080
-Double Slash Origin Test::Origin: https://trusted.com//::Access-Control-Allow-Origin: https://trusted.com//
-Missing Origin Header Test::Origin: (none)::Access-Control-Allow-Origin: *
-Wildcard with Credentials Test::Origin: *::Access-Control-Allow-Origin: *, Access-Control-Allow-Credentials: true
-Wildcard Subdomain Test::Origin: https://*.trusted.com::Access-Control-Allow-Origin: https://*.trusted.com
+Wildcard origin::*::*
+Reflection test::https://evil.com::https://evil.com
+Null origin::null::null
+Subdomain origin::https://sub.trusted.com::https://sub.trusted.com
+Arbitrary origin::https://malicious.com::https://malicious.com
+Case insensitive::https://EVIL.com::https://EVIL.com
+Internal network::http://192.168.1.1::http://192.168.1.1
+Internal network 2::http://192.168.0.1::http://192.168.0.1
+Internal network 3::http://10.0.0.1::http://10.0.0.1
+Invalid TLD::https://evil.local::https://evil.local
+Invalid TLD 2::https://evil.test::https://evil.test
+Protocol mismatch::http://trusted.com::http://trusted.com
+Unusual port::https://trusted.com:8080::https://trusted.com:8080
+Unusual port 2::https://trusted.com:8443::https://trusted.com:8443
+Double slash::https://trusted.com//::https://trusted.com//
+Trailing slash::https://trusted.com/::https://trusted.com/
+Path traversal::https://trusted.com/../::https://trusted.com/../
+Dot prefix::.trusted.com::.trusted.com
+Underscore domain::https://trusted_domain.com::https://trusted_domain.com
+Special chars::https://trusted.com.com::https://trusted.com.com
+IDN encoding::https://xn--evil-6q4b.com::https://xn--evil-6q4b.com
+Punycode test::https://evil.com::https://evil.com
+Redirect chain::https://evil.com/redirect::https://evil.com/redirect
+Fragment origin::https://trusted.com#evil::https://trusted.com#evil
+Query parameter::https://trusted.com?evil::https://trusted.com?evil
+User info::https://user@evil.com::https://user@evil.com
+Password auth::https://user:pass@evil.com::https://user:pass@evil.com
+No subdomain::https://trusted.com::https://trusted.com
+WWW prefix::https://www.trusted.com::https://www.trusted.com
+Multiple subdomains::https://a.b.trusted.com::https://a.b.trusted.com
+TLD variation::https://trusted.co::https://trusted.co
+TLD variation 2::https://trusted.io::https://trusted.io
+Similar domain::https://trusted-site.com::https://trusted-site.com
+Typosquatting::https://trussted.com::https://trussted.com
+Homograph::https://trưsted.com::https://trưsted.com
+IP address origin::http://127.0.0.1::http://127.0.0.1
+IP address origin 2::http://0.0.0.0::http://0.0.0.0
+IP address origin 3::http://localhost::http://localhost
+IPv6 address::http://[::1]::http://[::1]
+IPv6 address 2::http://[2001:db8::1]::http://[2001:db8::1]
+File protocol::file:///etc/passwd::file:///etc/passwd
+FTP protocol::ftp://evil.com::ftp://evil.com
+Data URL::data:text/html,<script>alert(1)</script>::data:text/html
+Javascript protocol::javascript:alert(1)::javascript:alert(1)
+Mailto protocol::mailto:test@evil.com::mailto:test@evil.com
+Empty origin::::
+Space origin:: ::*
+Tab origin::	::*
+Newline origin::%0A::*
+Carriage return::%0D::*
+CRLF origin::%0D%0A::*
+URL encoded space::%20::*
+URL encoded null::%00::*
+Double encoded::%2520::*
+Triple encoded::%252520::*
+Mixed encoding::%20%0A::*
+Unicode space::%E2%80%8B::*
+Unicode BOM::%EF%BB%BF::*
+Overlong encoding::%C0%AE::*
+Null byte injection::evil.com%00::evil.com
+Null byte prefix::%00evil.com::evil.com
+Backslash::https://evil.com\::https://evil.com\
+Vertical bar::https://evil.com|::https://evil.com|
+At symbol::@evil.com::@evil.com
+Colon::https://:evil.com::https://:evil.com
+Semicolon::https://;evil.com::https://;evil.com
+Comma::https://,evil.com::https://,evil.com
+Brackets::https://[evil.com]::https://[evil.com]
+Braces::https://{evil.com}::https://{evil.com}
+Angle brackets::<https://evil.com>::<https://evil.com>
+Single quote::'https://evil.com'::'https://evil.com'
+Double quote::"https://evil.com"::"https://evil.com"
+Backtick::`https://evil.com`::`https://evil.com`
+Backslash escape::https://evil\.com::https://evil\.com
+Forward slash escape::https://evil\/com::https://evil\/com
+Dot escape::https://evil\.com::https://evil\.com
+Percent escape::https://%65evil.com::https://evil.com
+Hex escape::https://\x65vil.com::https://evil.com
+Octal escape::https://\145vil.com::https://evil.com
+Mixed escapes::https://%65vil\.com::https://evil.com
+Origin header bypass::https://evil.com::https://evil.com
+Referer header::https://evil.com::https://evil.com
+Host header::evil.com::evil.com
+X-Forwarded-For::evil.com::evil.com
+X-Real-IP::evil.com::evil.com
+X-Origin::https://evil.com::https://evil.com
+X-Requested-With::https://evil.com::https://evil.com

@@ -125,7 +125,7 @@ Examples:
     scan_group.add_argument('--scan', '-s', type=str, 
                         choices=[
                             'sqli', 'cmdi', 'ssti', 'xss', 'lfi', 'open-redirect', 'crlf', 'cors', 'api', 'all',
-                            'recon', 'misconfig', 'redirect', 'injection-advanced', 'graphql-suite', 'auth-logic',
+                            'misconfig', 'redirect', 'injection-advanced', 'graphql-suite', 'auth-logic',
                             'cache-smuggling', 'wordpress-extras', 'optional'
                         ],
                         help='Type of scan to perform')
@@ -340,6 +340,20 @@ def _auto_set_crawl_depth(args):
         print_status("All targets already have parameters, auto-setting crawl depth to 0.", "info")
 
 
+def _scan_type_needs_crawling(scan_type: str) -> bool:
+    """Determine if a scan type requires crawling."""
+    # Scans that don't need crawling
+    no_crawl_scans = {
+        'api',            # API scanning uses provided endpoints
+        'cors',           # CORS testing on base URL and specific endpoints
+        'auth-logic',     # Auth logic checks on base URL and specific paths
+        'misconfig',      # Misconfiguration checks on base URL/headers
+        'redirect',       # Open redirect testing on base URL
+    }
+    
+    return scan_type.lower() not in no_crawl_scans
+
+
 def _run():
     """Main scan logic."""
     print_banner()
@@ -353,6 +367,25 @@ def _run():
     _validate_and_configure_ai(args)
     # Auto-set crawl depth
     _auto_set_crawl_depth(args)
+    
+    # Smart crawling: check if scan type needs crawling
+    if getattr(args, 'crawl', None) is not None and args.crawl > 0:
+        # Check scan type
+        if args.scan and not _scan_type_needs_crawling(args.scan):
+            print_status(f"Scan type '{args.scan}' does not require crawling. Ignoring --crawl flag.", "warning")
+            args.crawl = 0
+        # Check profile scan
+        elif args.profile:
+            print_status(f"Profile scan '{args.profile}' does not require crawling. Ignoring --crawl flag.", "warning")
+            args.crawl = 0
+        # Check WAF check
+        elif args.check_waf or args.waf:
+            print_status("WAF check does not require crawling. Ignoring --crawl flag.", "warning")
+            args.crawl = 0
+        # Check dorking
+        elif args.dork:
+            print_status("Google dork discovery does not require crawling. Ignoring --crawl flag.", "warning")
+            args.crawl = 0
     
     # Handle update check
     if args.check_updates:

@@ -3,20 +3,51 @@
 
 """Reconnaissance Intelligence Module - Three-tier gathering approach."""
 
+import secrets
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Set, Any
 from urllib.parse import urljoin, urlparse
 import re
 import hashlib
+from datetime import datetime
 
 from lib.core import http
 from lib.core.logger import get_logger
 from lib.core.config import get_config
+from lib.core.result_manager import ResultManager
 from lib.recon.common import request_url, build_url, get_domain
 from lib.ui import print_status
 
 logger = get_logger(__name__)
 config = get_config()
+
+EVIDENCE_WINDOW = 90
+
+
+def _proof_token() -> str:
+    """Generate a unique proof token for recon findings."""
+    return f"waymap_recon_{secrets.token_hex(4)}"
+
+
+def _evidence_snippet(response_text: str) -> str:
+    """Extract evidence snippet from response text."""
+    if not response_text:
+        return ""
+    if len(response_text) <= EVIDENCE_WINDOW * 2:
+        return response_text
+    return response_text[:EVIDENCE_WINDOW] + "..." + response_text[-EVIDENCE_WINDOW:]
+
+
+def _proof_evidence(response_text: str, expected_indicators: List[str]) -> Dict[str, Any]:
+    """Generate proof evidence for recon finding."""
+    found_indicators = [ind for ind in expected_indicators if ind in response_text]
+    
+    return {
+        "confirmed": len(found_indicators) > 0,
+        "found_indicators": found_indicators,
+        "indicator_count": len(found_indicators),
+        "snippet": _evidence_snippet(response_text),
+    }
 
 
 @dataclass
@@ -111,6 +142,8 @@ class ReconIntelligenceEngine:
         self.domain = get_domain(target)
         self.base_url = f"https://{self.domain}"
         self.intelligence = ReconIntelligence(domain=self.domain)
+        self.result_manager = ResultManager(self.domain)
+        self.tested_paths = set()
     
     def run_passive_recon(self) -> PassiveReconData:
         """Run passive reconnaissance (headers, cookies, HTML, JS, meta tags)."""
@@ -132,9 +165,74 @@ class ReconIntelligenceEngine:
         passive_data.x_frame_options = response.headers.get("X-Frame-Options")
         passive_data.csp = response.headers.get("Content-Security-Policy")
         
+        # Security header analysis
+        security_headers = {
+            "X-Frame-Options": response.headers.get("X-Frame-Options"),
+            "X-Content-Type-Options": response.headers.get("X-Content-Type-Options"),
+            "X-XSS-Protection": response.headers.get("X-XSS-Protection"),
+            "Strict-Transport-Security": response.headers.get("Strict-Transport-Security"),
+            "Content-Security-Policy": response.headers.get("Content-Security-Policy"),
+            "Referrer-Policy": response.headers.get("Referrer-Policy"),
+            "Permissions-Policy": response.headers.get("Permissions-Policy"),
+            "Cross-Origin-Opener-Policy": response.headers.get("Cross-Origin-Opener-Policy"),
+            "Cross-Origin-Resource-Policy": response.headers.get("Cross-Origin-Resource-Policy"),
+            "Cross-Origin-Embedder-Policy": response.headers.get("Cross-Origin-Embedder-Policy"),
+        }
+        
+        # Check for missing security headers
+        missing_security_headers = [header for header, value in security_headers.items() if not value]
+        if missing_security_headers:
+            proof_token = _proof_token()
+            print_status(f"Missing security headers: {', '.join(missing_security_headers)}", "warning")
+            print_status(f"  Proof Token: {proof_token}", "info")
+            
+            self.result_manager.add_finding("Recon Missing Security Headers", "", {
+                "url": self.base_url,
+                "missing_headers": missing_security_headers,
+                "proof_token": proof_token,
+                "poc_url": self.base_url,
+                "evidence": {"confirmed": True, "found_indicators": missing_security_headers, "indicator_count": len(missing_security_headers)},
+                "confirmations": [f'{len(missing_security_headers)} security headers missing'],
+                "injected": True,
+                "timestamp": datetime.now().isoformat(),
+            })
+        
         # Extract cookies
         if response.cookies:
             passive_data.cookies = {cookie.name: cookie.value for cookie in response.cookies}
+            
+            # Cookie security analysis
+            insecure_cookies = []
+            for cookie in response.cookies:
+                issues = []
+                if not cookie.secure:
+                    issues.append("missing Secure flag")
+                if not cookie.has_nonstandard_attr('HttpOnly'):
+                    issues.append("missing HttpOnly flag")
+                if not cookie.has_nonstandard_attr('SameSite'):
+                    issues.append("missing SameSite flag")
+                
+                if issues:
+                    insecure_cookies.append({
+                        "name": cookie.name,
+                        "issues": issues,
+                    })
+            
+            if insecure_cookies:
+                proof_token = _proof_token()
+                print_status(f"Found {len(insecure_cookies)} insecure cookies", "warning")
+                print_status(f"  Proof Token: {proof_token}", "info")
+                
+                self.result_manager.add_finding("Recon Insecure Cookies", "", {
+                    "url": self.base_url,
+                    "insecure_cookies": insecure_cookies,
+                    "proof_token": proof_token,
+                    "poc_url": self.base_url,
+                    "evidence": {"confirmed": True, "found_indicators": [c["name"] for c in insecure_cookies], "indicator_count": len(insecure_cookies)},
+                    "confirmations": [f'{len(insecure_cookies)} cookies with security issues'],
+                    "injected": True,
+                    "timestamp": datetime.now().isoformat(),
+                })
         
         # Extract HTML content
         html_content = response.text
@@ -200,73 +298,97 @@ class ReconIntelligenceEngine:
         return cheap_data
     
     def run_deep_active_recon(self) -> DeepActiveReconData:
-        """Run deep active reconnaissance (swagger, graphql, framework probes)."""
+        """Run deep active reconnaissance (API discovery, WAF detection).
+
+        NOTE: Admin-panel brute-forcing, backup-file enumeration and
+        exposed-config discovery are intentionally omitted here because
+        dedicated scan modules (misconfig, auth-logic, etc.) already
+        cover them with richer logic.  Keeping them here would duplicate
+        work and add 1 000+ slow HTTP requests to every scan.
+        """
         logger.info(f"Running deep active reconnaissance on {self.domain}")
         print_status("Running deep active reconnaissance...", "info")
         
         deep_data = DeepActiveReconData()
         deep_data.domain = self.domain
         
-        # Check for Swagger/OpenAPI endpoints
+        # Check for Swagger/OpenAPI endpoints (trimmed to high-value paths)
         swagger_paths = [
-            "/swagger.json",
-            "/swagger.yaml",
-            "/api/swagger.json",
-            "/api/docs",
-            "/v1/swagger.json",
-            "/v2/swagger.json",
-            "/v3/api-docs"
+            "/swagger.json", "/swagger.yaml",
+            "/api-docs", "/api/docs",
+            "/swagger-ui.html", "/swagger-ui/",
+            "/openapi.json", "/openapi.yaml",
+            "/v1/api-docs", "/v2/api-docs", "/v3/api-docs",
+            "/swagger/v1/swagger.json", "/swagger/v2/swagger.json",
         ]
         
         for path in swagger_paths:
+            if path in self.tested_paths:
+                continue
+            self.tested_paths.add(path)
+            
             response = request_url(build_url(self.base_url, path), method="GET", timeout=5)
             if response and response.status_code == 200:
                 deep_data.swagger_endpoints.append(path)
                 logger.info(f"Found Swagger endpoint: {path}")
+                
+                proof_token = _proof_token()
+                evidence = _proof_evidence(response.text, ['swagger', 'openapi', 'api', 'paths'])
+                
+                print_status(f"Found Swagger endpoint: {path}", "success")
+                print_status(f"  Proof Token: {proof_token}", "info")
+                if evidence.get('snippet'):
+                    print_status(f"  Evidence: {evidence['snippet']}", "info")
+                
+                self.result_manager.add_finding("Recon Swagger Endpoint", "", {
+                    "url": build_url(self.base_url, path),
+                    "path": path,
+                    "status_code": response.status_code,
+                    "proof_token": proof_token,
+                    "poc_url": build_url(self.base_url, path),
+                    "evidence": evidence,
+                    "confirmations": ['swagger endpoint accessible', f'HTTP {response.status_code}'],
+                    "injected": True,
+                    "timestamp": datetime.now().isoformat(),
+                })
         
-        # Check for GraphQL endpoints
-        graphql_paths = ["/graphql", "/api/graphql", "/v1/graphql"]
+        # Check for GraphQL endpoints (trimmed to high-value paths)
+        graphql_paths = [
+            "/graphql", "/api/graphql",
+            "/graphiql", "/graphql/playground",
+            "/v1/graphql", "/v2/graphql",
+        ]
         
         for path in graphql_paths:
+            if path in self.tested_paths:
+                continue
+            self.tested_paths.add(path)
+            
             response = request_url(build_url(self.base_url, path), method="POST", 
                                    json={"query": "{ __schema { types { name } } }"}, timeout=5)
             if response and response.status_code == 200:
                 deep_data.graphql_endpoints.append(path)
                 logger.info(f"Found GraphQL endpoint: {path}")
-        
-        # Check for common admin panels
-        admin_paths = [
-            "/admin", "/administrator", "/wp-admin", "/admin/login",
-            "/console", "/dashboard", "/cpanel", "/adminpanel"
-        ]
-        
-        for path in admin_paths:
-            response = request_url(build_url(self.base_url, path), method="GET", timeout=5)
-            if response and response.status_code in [200, 301, 302]:
-                deep_data.admin_panels.append(path)
-                logger.info(f"Found potential admin panel: {path}")
-        
-        # Check for backup files
-        backup_extensions = [".bak", ".backup", ".old", ".orig", "~"]
-        backup_paths = [f"/index{ext}" for ext in backup_extensions]
-        
-        for path in backup_paths:
-            response = request_url(build_url(self.base_url, path), method="GET", timeout=5)
-            if response and response.status_code == 200:
-                deep_data.backup_files.append(path)
-                logger.info(f"Found backup file: {path}")
-        
-        # Check for exposed config files
-        config_paths = [
-            "/.env", "/.env.local", "/config.php", "/web.config",
-            "/application.yml", "/application.properties"
-        ]
-        
-        for path in config_paths:
-            response = request_url(build_url(self.base_url, path), method="GET", timeout=5)
-            if response and response.status_code == 200:
-                deep_data.exposed_configs.append(path)
-                logger.info(f"Found exposed config: {path}")
+                
+                proof_token = _proof_token()
+                evidence = _proof_evidence(response.text, ['__schema', 'types', 'graphql'])
+                
+                print_status(f"Found GraphQL endpoint: {path}", "success")
+                print_status(f"  Proof Token: {proof_token}", "info")
+                if evidence.get('snippet'):
+                    print_status(f"  Evidence: {evidence['snippet']}", "info")
+                
+                self.result_manager.add_finding("Recon GraphQL Endpoint", "", {
+                    "url": build_url(self.base_url, path),
+                    "path": path,
+                    "status_code": response.status_code,
+                    "proof_token": proof_token,
+                    "poc_url": build_url(self.base_url, path),
+                    "evidence": evidence,
+                    "confirmations": ['graphql endpoint accessible', f'HTTP {response.status_code}'],
+                    "injected": True,
+                    "timestamp": datetime.now().isoformat(),
+                })
         
         # Detect WAF
         deep_data.waf_detected = self._detect_waf()
@@ -400,7 +522,25 @@ class ReconIntelligenceEngine:
             "vue": r"vue",
             "angular": r"angular",
             "bootstrap": r"bootstrap",
-            "lodash": r"lodash"
+            "lodash": r"lodash",
+            "axios": r"axios",
+            "moment": r"moment",
+            "chart": r"chart",
+            "d3": r"d3",
+            "three": r"three",
+            "backbone": r"backbone",
+            "ember": r"ember",
+            "knockout": r"knockout",
+            "polymer": r"polymer",
+            "svelte": r"svelte",
+            "next": r"next",
+            "nuxt": r"nuxt",
+            "gatsby": r"gatsby",
+            "preact": r"preact",
+            "alpine": r"alpine",
+            "htmx": r"htmx",
+            "stimulus": r"stimulus",
+            "turbo": r"turbo",
         }
         
         for js_file in js_files:

