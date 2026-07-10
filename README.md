@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="logo.png" alt="Waymap Logo" width="400">
+</p>
+
 # Waymap v8.1.1 — Web Vulnerability Scanner & Security Toolkit
 
 **Current Version:** 8.1.1  
