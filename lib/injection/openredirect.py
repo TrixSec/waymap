@@ -200,6 +200,9 @@ def process_url(url: str, parameters: List[str], payloads: List[str], thread_cou
             return
         if (url, param) in _found_vulnerable_pairs:
             continue
+        if result_manager.has_duplicate("Open Redirect", ["url", "parameter"], {"url": url, "parameter": param}):
+            print_status(f"Skipping parameter '{param}' - Open Redirect vulnerability already found in previous scan.", "info")
+            continue
             
         print_status(f"Probing parameter: {param}", "info")
         if not is_parameter_relevant(url, param):
@@ -219,6 +222,9 @@ def process_url(url: str, parameters: List[str], payloads: List[str], thread_cou
             if stop_scan.is_set():
                 return
             if (url, param) in _found_vulnerable_pairs:
+                continue
+            if result_manager.has_duplicate("Open Redirect", ["url", "parameter"], {"url": url, "parameter": param}):
+                print_status(f"Skipping parameter '{param}' - Open Redirect vulnerability already found in previous scan.", "info")
                 continue
                 
             print_status(f"Probing parameter: {param}", "info")

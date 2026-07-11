@@ -167,9 +167,10 @@ Examples:
 
     # Discovery Arguments (New v7.2.0)
     discovery_group = parser.add_argument_group('Discovery')
-    discovery_group.add_argument('--dork', type=str, help='Google dork query for target discovery (SearchAPI)')
-    discovery_group.add_argument('--dork-api-key', type=str, help='SearchAPI api_key (or set env SEARCHAPI_API_KEY)')
+    discovery_group.add_argument('--dork', type=str, help='Google dork query for target discovery (SerpApi)')
+    discovery_group.add_argument('--dork-api-key', type=str, help='SerpApi api_key (or set env SERPAPI_API_KEY)')
     discovery_group.add_argument('--dork-output', type=str, help='Output file to save discovered URLs')
+    discovery_group.add_argument('--page', type=int, default=2, help='Number of result pages to scrape (default: 2)')
 
     # WPScan API (v7.2.0)
     wpscan_group = parser.add_argument_group('WPScan')
@@ -424,23 +425,38 @@ def _run():
         if domains:
             print_status("Flushed previous scan results successfully!", "success")
 
-    # Export WPScan token for modules that read from environment
-    if getattr(args, 'wpscan_token', None) and not os.environ.get('WPSCAN_API_TOKEN'):
+    # Save and export WPScan token
+    if getattr(args, 'wpscan_token', None):
+        from lib.core.secrets import set_secret
+        set_secret('wpscan_api_token', args.wpscan_token)
         os.environ['WPSCAN_API_TOKEN'] = args.wpscan_token
+        print_status("WPScan API token saved successfully!", "success")
 
-    # Handle Google dork discovery (SearchAPI)
+    # Save and export SerpApi key if provided
+    if getattr(args, 'dork_api_key', None):
+        from lib.core.secrets import set_secret
+        set_secret('serpapi_api_key', args.dork_api_key)
+        os.environ['SERPAPI_API_KEY'] = args.dork_api_key
+        print_status("SerpApi API key saved successfully!", "success")
+
+    # Exit cleanly if only saving credentials (no target, no multi-target, no active dork query)
+    if not args.target and not args.multi_target and not getattr(args, 'dork', None):
+        if getattr(args, 'wpscan_token', None) or getattr(args, 'dork_api_key', None):
+            return
+
+    # Handle Google dork discovery (SerpApi)
     if getattr(args, 'dork', None):
         from lib.core.secrets import get_secret
-        from lib.discovery.searchapi_dork import discover_google_dork, save_discovered_urls
+        from lib.discovery.serpapi_dork import discover_google_dork, save_discovered_urls
 
-        api_key = args.dork_api_key or os.environ.get('SEARCHAPI_API_KEY')
+        api_key = args.dork_api_key or os.environ.get('SERPAPI_API_KEY')
         if not api_key:
-            api_key = get_secret('searchapi_api_key', env_var='SEARCHAPI_API_KEY')
+            api_key = get_secret('serpapi_api_key', env_var='SERPAPI_API_KEY')
         if not api_key and not getattr(args, 'no_prompt', False):
             from lib.ui import prompt_line
-            api_key = prompt_line("[?] Enter SearchAPI API Key")
+            api_key = prompt_line("[?] Enter SerpApi API Key")
         if api_key:
-            os.environ['SEARCHAPI_API_KEY'] = api_key
+            os.environ['SERPAPI_API_KEY'] = api_key
 
         output_file = args.dork_output
         if not output_file:
@@ -455,7 +471,10 @@ def _run():
             urls = discover_google_dork(
                 query=args.dork,
                 api_key=api_key,
-                limit=None
+                limit=None,
+                target=args.target,
+                output_file=output_file,
+                max_pages=getattr(args, 'page', 2),
             )
             saved_path = save_discovered_urls(urls, output_file)
             print_status(f"Saved {len(urls)} discovered URL(s) to: {saved_path}", "success")
@@ -598,9 +617,14 @@ def _run():
             if args.profile:
                 print_status(f"Starting {args.profile} profile scan", "info")
                 if args.profile == 'wordpress':
-                    from lib.ProfileWordpress.profile_wordpress import wordpress_vuln_scan
+                    from lib.ProfileWordpress.profile_wordpress import perform_wordpress_scan
                     if args.target:
-                        wordpress_vuln_scan(args.target)
+                        perform_wordpress_scan(
+                            [args.target],
+                            thread_count=getattr(args, 'threads', 1) or 1,
+                            no_prompt=getattr(args, 'no_prompt', False),
+                            verbose=getattr(args, 'verbose', False),
+                        )
 
             # Load results from standard scans if target is provided
             if args.target:

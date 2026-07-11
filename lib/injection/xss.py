@@ -654,6 +654,22 @@ def _scan_urls_with_payloads(
             for param_key in param_dict.keys():
                 if stop_scan.is_set():
                     break
+                
+                # Skip if already found in previous scan
+                is_duplicate = False
+                existing_findings = result_manager.get_results().get("scans", [])
+                for entry in existing_findings:
+                    if isinstance(entry, dict) and "XSS" in entry:
+                        findings = entry["XSS"].get("Findings", []) if isinstance(entry["XSS"], dict) else []
+                        for existing in findings:
+                            if isinstance(existing, dict) and existing.get("parameter") == param_key:
+                                if base_url in (existing.get("url") or ""):
+                                    is_duplicate = True
+                                    break
+                if is_duplicate:
+                    print_status(f"Skipping parameter '{param_key}' - XSS vulnerability already found in previous scan.", "info")
+                    continue
+
                 if verbose:
                     print_status(f"Probing XSS reflection context for {param_key}", "debug")
                 future = executor.submit(_probe_xss_context, method, base_url, param_dict, param_key)

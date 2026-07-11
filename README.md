@@ -2,7 +2,7 @@
   <img src="logo.png" alt="Waymap Logo" width="400">
 </p>
 
-<h1 align="center">Waymap v8.1.1 - Web Vulnerability Scanner & Security Toolkit</h1>
+<h1 align="center">Waymap v8.2.0 - Web Vulnerability Scanner & Security Toolkit</h1>
 
 <p align="center">
   <a href="https://pypi.org/project/waymap/"><img src="https://img.shields.io/pypi/v/waymap?style=for-the-badge&logo=pypi&logoColor=white&color=blue" alt="PyPI Version"></a>
@@ -29,6 +29,17 @@
 **Author:** Trix Cyrus (Vicky) | **License:** GPLv3
 
 Waymap is a fast, practical **web vulnerability scanner** for authorized security testing. It automates SQLi, XSS, command injection, SSTI, LFI, CORS, CRLF, open redirect, API, recon, misconfiguration, and WordPress checks - with session-based results, multi-threading, crawling, authentication, reporting, Google dork discovery, and **AI-powered vulnerability analysis**.
+
+---
+
+## What’s New in v8.2.0
+
+### Features & Optimizations
+
+- **Consolidated WordPress Scan**: Rebuilt the WordPress profile scanner into a modular core scanning engine. Added 7 new security checks including WP-Cron, exposed debug.log / install.php, author user enumeration, REST namespace audits, directory listings, and login page verification.
+- **Intelligent Scan Skipping**: All vulnerability scanners (SQLi, XSS, CMDi, LFI, SSTI, CRLF, CORS, Open Redirect, WordPress, Recon) check if a target parameter or URL has already been found vulnerable in previous runs, skipping repetitive requests.
+- **SerpApi Target Discovery**: Switched Google dorking from SearchAPI to **SerpApi** for improved reliability, added credit-conserving cached queries, and implemented the `--page` parameter to control result page depth.
+- **Package Footprint Optimization**: Removed over 2 MB of unused wordlists, reducing final installation size by over 90%.
 
 ---
 
@@ -140,42 +151,6 @@ python waymap.py --target https://example.com --scan xss --ai-report      # AI-e
 
 ---
 
-## What’s New in v7.2.1
-
-### Stability & Security Hardening
-
-- **Thread-safe result saving**  - New `ResultManager` with file locking; all injection, recon, and profile modules now save findings safely under concurrent scans.
-- **Fixed SQLi payload injection**  - Boolean SQLi correctly injects into URL parameters instead of appending to the URL.
-- **Fixed error-based SQLi**  - Removed logic that stripped single quotes from payloads.
-- **Fixed config paths**  - Data/session paths resolve relative to the project root, not the current working directory.
-- **Secure XML parsing**  - SQLi and CMDi modules use `defusedxml` to prevent XXE.
-- **Time-based SQLi baseline**  - Baseline request timing reduces false positives.
-- **CRLF detection**  - Checks both response headers and body for injected markers.
-- **Open redirect**  - Uses `requests` instead of `curl` (works on Windows without external tools).
-- **CMDi URL building**  - Proper query-string reconstruction instead of fragile string replace.
-- **Report loading fixed**  - Session JSON is correctly parsed for HTML/CSV/Markdown/PDF reports.
-- **WAF module import fixed**  - `--check-waf` uses the correct module path.
-- **Windows Unicode fix**  - Banner and UI render correctly on Windows terminals.
-- **Dependency check**  - `defusedxml` is required and listed in `requirements.txt`.
-
-### Scanner Modules Updated in v7.2.1
-
-All of the following now use `ResultManager`:
-
-`sqli` · `xss` · `lfi` · `cmdi` · `ssti` · `cors` · `crlf` · `open-redirect` · `advanced` · `wpscan` · `recon/misconfig`
-
----
-
-## What’s New in v7.2.0 (Previous Release)
-
-- SearchAPI Google dork discovery (`--dork`)
-- WPScan API WordPress profile (`--profile wordpress`)
-- Commix-style command injection scan (`--scan cmdi`)
-- Secrets file support (`config/waymap/secrets.json`)
-- Domain blacklist for dork discovery
-
----
-
 ## Installation
 
 ```bash
@@ -267,12 +242,12 @@ python waymap.py
 | `--api-type` | `rest` (default) or `graphql` |
 | `--api-endpoints` | Comma-separated REST paths (e.g. `/users,/login`) |
 
-### Discovery (SearchAPI)
+### Discovery (SerpApi)
 
 | Flag | Description |
 |------|-------------|
 | `--dork` | Google dork query |
-| `--dork-api-key` | SearchAPI key (or `SEARCHAPI_API_KEY` env) |
+| `--dork-api-key` | SerpApi key (or `SERPAPI_API_KEY` env) |
 | `--dork-output` | Save discovered URLs to file |
 
 ### WPScan
@@ -453,7 +428,7 @@ python waymap.py -t https://wordpress-site.com -s wordpress-extras -c 1
 ### Google dork discovery
 
 ```bash
-# Discover parameterized URLs via SearchAPI
+# Discover parameterized URLs via SerpApi
 python waymap.py --dork "inurl:.php?id=" --dork-api-key "YOUR_KEY"
 
 # Save to custom file
@@ -519,7 +494,7 @@ Create `config/waymap/secrets.json`:
 
 ```json
 {
-  "searchapi_api_key": "YOUR_SEARCHAPI_KEY",
+  "serpapi_api_key": "YOUR_SERPAPI_KEY",
   "wpscan_api_token": "YOUR_WPSCAN_TOKEN"
 }
 ```
@@ -528,7 +503,7 @@ Environment variables (override secrets file):
 
 | Variable | Used by |
 |----------|---------|
-| `SEARCHAPI_API_KEY` | `--dork` discovery |
+| `SERPAPI_API_KEY` | `--dork` discovery |
 | `WPSCAN_API_TOKEN` | `--profile wordpress` |
 | `WAYMAP_NO_PROMPT` | Set automatically with `--no-prompt` |
 

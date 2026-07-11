@@ -152,6 +152,11 @@ def perform_cors_scan(crawled_urls: List[str], thread_count: int = 1, no_prompt:
             print_status(f"Testing URL: {url}", "info")
             domain = _domain(url)
             result_manager = ResultManager(domain)
+            
+            if result_manager.has_duplicate("CORS", ["url"], {"url": url}):
+                print_status(f"Skipping URL - CORS vulnerability already found in previous scan.", "info")
+                continue
+                
             found_vulnerability = False
             
             # Capture baseline CORS header for false positive prevention

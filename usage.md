@@ -203,12 +203,12 @@ python waymap.py --target https://api.example.com --scan api --api-type rest \
 ## Discovery (Google Dorks)
 
 ### `--dork`
-Run a SearchAPI-powered Google dork.
+Run a SerpApi-powered Google dork.
 
 ### `--dork-api-key`
-SearchAPI key override. If omitted, Waymap looks in:
-- `SEARCHAPI_API_KEY` env var
-- `config/waymap/secrets.json` (`searchapi_api_key`)
+SerpApi key override. If omitted, Waymap looks in:
+- `SERPAPI_API_KEY` env var
+- `config/waymap/secrets.json` (`serpapi_api_key`)
 
 ### `--dork-output`
 Save discovered URLs to a custom file.

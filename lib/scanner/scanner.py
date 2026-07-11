@@ -472,8 +472,8 @@ class WaymapScanner:
                 perform_cache_smuggling_scan(scan_urls, verbose=True)
 
             elif scan_type == 'wordpress-extras':
-                from lib.ProfileWordpress.wordpress_extras import perform_wordpress_extras_scan
-                perform_wordpress_extras_scan(scan_urls, verbose=True)
+                from lib.ProfileWordpress.profile_wordpress import perform_wordpress_scan
+                perform_wordpress_scan(scan_urls, self.thread_count, self.no_prompt, verbose=True)
 
             elif scan_type == 'optional':
                 from lib.optional.optional_checks import perform_optional_scan
@@ -504,8 +504,8 @@ class WaymapScanner:
             print_status(f"Target: {target}", "info")
             
             if profile_type == 'wordpress':
-                from lib.ProfileWordpress.profile_wordpress import wordpress_vuln_scan
-                wordpress_vuln_scan(target)
+                from lib.ProfileWordpress.profile_wordpress import perform_wordpress_scan
+                perform_wordpress_scan([target], self.thread_count, self.no_prompt, verbose=True)
             
             self.logger.info(f"Completed {profile_type} profile scan")
             

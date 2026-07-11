@@ -13,7 +13,7 @@ class WaymapConfig:
     """Waymap configuration settings."""
     
     # Version
-    VERSION: str = "8.1.1"  # Minor release - Optimized Active Reconnaissance, Enhanced SSTI detection, and various bug fixes
+    VERSION: str = "8.2.0"  # Minor release - Consolidated WordPress Scan, SerpApi Integration, Intelligent Scan Skipping, and Wordlist Optimization
     AUTHOR: str = "Trix Cyrus (Vicky)"
     COPYRIGHT: str = "Copyright © 2024 - 26 Trixsec Org"
     

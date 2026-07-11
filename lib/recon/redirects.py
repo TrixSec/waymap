@@ -106,6 +106,11 @@ def perform_redirect_injection_scan(
     base_url = normalize_target(crawled_urls[0])
     domain = get_domain(base_url)
 
+    from lib.core.result_manager import ResultManager
+    if ResultManager(domain).has_duplicate("host_header_injection", ["url"], {"url": base_url}):
+        print_status("Skipping Redirect/Header Injection scan - results already found in previous scan.", "info")
+        return
+
     print_header("Redirect/Header Injection Scan", color="cyan")
     print_status(f"Target: {base_url}", "info")
 

@@ -260,6 +260,9 @@ def perform_crlf_scan(crawled_urls: List[str], thread_count: int = 1, no_prompt:
             with ThreadPoolExecutor(max_workers=thread_count) as executor:
                 futures = {}
                 for param, original in params.items():
+                    if result_manager.has_duplicate("CRLF Injection", ["url", "parameter"], {"url": url, "parameter": param}):
+                        print_status(f"Skipping parameter '{param}' - CRLF Injection vulnerability already found in previous scan.", "info")
+                        continue
                     for payload_entry in payloads:
                         if stop_scan.is_set():
                             break

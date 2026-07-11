@@ -245,6 +245,10 @@ def perform_misconfig_scan(
     base_url = normalize_target(crawled_urls[0])
     domain = get_domain(base_url)
 
+    if ResultManager(domain).has_duplicate("security_headers_audit", ["url"], {"url": base_url}):
+        print_status("Skipping Misconfiguration scan - results already found in previous scan.", "info")
+        return
+
     print_header("Misconfiguration Scan", color="cyan")
     print_status(f"Target: {base_url}", "info")
 

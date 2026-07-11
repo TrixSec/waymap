@@ -279,13 +279,13 @@ def _configure_wordpress_profile(args: argparse.Namespace) -> None:
 
 
 def _configure_dork_discovery(args: argparse.Namespace) -> None:
-    print(colored("\n[?] Google Dork Discovery (SearchAPI)", "yellow"))
+    print(colored("\n[?] Google Dork Discovery (SerpApi)", "yellow"))
     args.dork = _prompt("Enter dork query (e.g. inurl:.php?id=)")
     if not args.dork:
         print_status("Dork query is required.", "error")
         from lib.core.interrupt import exit_clean
         exit_clean("Scan cancelled.", code=1)
-    key = _prompt("SearchAPI key (optional — uses env/secrets file if blank)", "")
+    key = _prompt("SerpApi key (optional — uses env/secrets file if blank)", "")
     if key:
         args.dork_api_key = key
     output = _prompt("Output file (optional)", "")
@@ -538,7 +538,7 @@ def run_interactive_wizard() -> argparse.Namespace:
     print("    1. Vulnerability Scan (all 19 scan types)")
     print("    2. API Security Scan (REST / GraphQL)")
     print("    3. WordPress Profile (WPScan API)")
-    print("    4. Google Dork Discovery (SearchAPI)")
+    print("    4. Google Dork Discovery (SerpApi)")
     print("    5. WAF Detection Only")
     mode = _prompt("Choice", "1")
 
