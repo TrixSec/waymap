@@ -8,3 +8,4 @@ dist/
 sessions/
 dork_targets.txt
 waymap-ai
+BUILD_DEBIAN.md
