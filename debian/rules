@@ -20,3 +20,5 @@ override_dh_install:
 	dh_install
 	# Ensure the waymap.py script is executable
 	chmod +x debian/waymap/usr/bin/waymap || true
+	# Install man page
+	install -D -m 644 debian/man/waymap.1 debian/waymap/usr/share/man/man1/waymap.1

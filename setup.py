@@ -67,12 +67,13 @@ setup(
     package_data={
         "": [
             "data/*",
-            "config/waymap/*",
+            "config/*",
             "*.txt",
             "*.json",
             "*.xml",
             "*.md",
             "VERSION",
+            "logo.png",
         ],
     },
     keywords="security scanner vulnerability web-security penetration-testing ai llm xss sqli cmdi",
