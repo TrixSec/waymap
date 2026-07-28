@@ -28,6 +28,9 @@ chmod +x debian/rules
 chmod +x debian/waymap.postinst
 chmod +x debian/waymap.prerm
 
+# Remove executable permissions from config files
+chmod -x debian/install debian/docs debian/manpages debian/links debian/watch 2>/dev/null || true
+
 # Check if we're on a Windows filesystem (WSL)
 if [[ "$(pwd)" == /mnt/* ]]; then
     echo "Detected Windows filesystem (WSL). Copying to native Linux filesystem for build..."

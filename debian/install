@@ -1,5 +1,5 @@
-data/* usr/share/waymap/data
-config/* usr/share/waymap/config
+data usr/share/waymap
+config usr/share/waymap
 logo.png usr/share/waymap
 README.md usr/share/doc/waymap
 LICENSE usr/share/doc/waymap
