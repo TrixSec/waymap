@@ -34,6 +34,7 @@ chmod -x debian/install debian/docs debian/manpages debian/links debian/watch 2>
 # Check if we're on a Windows filesystem (WSL)
 if [[ "$(pwd)" == /mnt/* ]]; then
     echo "Detected Windows filesystem (WSL). Copying to native Linux filesystem for build..."
+    ORIGINAL_DIR="$(pwd)"
     BUILD_DIR="/tmp/waymap-build-$$"
     mkdir -p "$BUILD_DIR"
     cp -r . "$BUILD_DIR/"
@@ -54,8 +55,8 @@ dpkg-buildpackage -us -uc
 # Copy results back if we were on WSL
 if [[ -n "$BUILD_DIR" ]]; then
     echo "Copying build results back..."
-    cp waymap_*.deb waymap_*.tar.xz waymap_*.dsc waymap_*.changes /mnt/c/Users/Vicky/Downloads/Backup/waymap-main_2/ 2>/dev/null || true
-    cd /mnt/c/Users/Vicky/Downloads/Backup/waymap-main_2
+    cp waymap_*.deb waymap_*.tar.xz waymap_*.dsc waymap_*.changes "$ORIGINAL_DIR/" 2>/dev/null || true
+    cd "$ORIGINAL_DIR"
     rm -rf "$BUILD_DIR"
     echo "Cleanup complete."
 fi
