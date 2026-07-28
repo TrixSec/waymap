@@ -55,10 +55,12 @@ dpkg-buildpackage -us -uc
 # Copy results back if we were on WSL
 if [[ -n "$BUILD_DIR" ]]; then
     echo "Copying build results back..."
-    cp waymap_*.deb waymap_*.tar.xz waymap_*.dsc waymap_*.changes "$ORIGINAL_DIR/" 2>/dev/null || true
+    # Files are in parent directory of build dir
+    cp ../waymap_*.deb ../waymap_*.tar.xz ../waymap_*.dsc ../waymap_*.changes "$ORIGINAL_DIR/" || echo "Warning: Some files may not have been copied"
     cd "$ORIGINAL_DIR"
     rm -rf "$BUILD_DIR"
     echo "Cleanup complete."
+    echo "Package files are now in: $ORIGINAL_DIR"
 fi
 
 echo ""
