@@ -1,7 +1,7 @@
 Source: waymap
 Section: net
 Priority: optional
-Maintainer: Trix Cyrus <trixsec@proton.me>
+Maintainer: Trix Cyrus (Vicky) <trixcyrus666@gmail.com>
 Build-Depends: debhelper-compat (= 13), 
                python3-all,
                python3-setuptools,

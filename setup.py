@@ -17,8 +17,8 @@ with open("VERSION", "r") as f:
 setup(
     name="waymap",
     version=version,
-    author="Trix Cyrus",
-    author_email="trixsec@proton.me",
+    author="Trix Cyrus (Vicky)",
+    author_email="trixcyrus666@gmail.com",
     description="Advanced Web Application Security Scanner with AI-powered vulnerability analysis",
     long_description=long_description,
     long_description_content_type="text/markdown",

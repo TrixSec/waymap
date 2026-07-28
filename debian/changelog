@@ -7,7 +7,7 @@ waymap (8.2.1-1) unstable; urgency=medium
   * Fix build script to work from any directory
   * Simplify packaging to use setup.py for data files
 
- -- Trix Cyrus <trixsec@proton.me>  Mon, 28 Jul 2026 10:30:00 +0000
+ -- Trix Cyrus (Vicky) <trixcyrus666@gmail.com>  Mon, 28 Jul 2026 10:30:00 +0000
 
 waymap (8.2.0-1) unstable; urgency=medium
 
@@ -20,4 +20,4 @@ waymap (8.2.0-1) unstable; urgency=medium
   * Multi-threaded scanning with configurable workers
   * Comprehensive reporting (HTML, CSV, Markdown, PDF)
 
- -- Trix Cyrus <trixsec@proton.me>  Sat, 26 Jul 2026 15:00:00 +0000
+ -- Trix Cyrus (Vicky) <trixcyrus666@gmail.com>  Sat, 26 Jul 2026 15:00:00 +0000
