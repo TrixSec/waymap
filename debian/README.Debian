@@ -1,0 +1,64 @@
+waymap for Debian/Kali Linux
+============================
+
+This package contains waymap, an advanced web application security scanner
+with AI-powered vulnerability analysis.
+
+Installation
+------------
+Install the package using:
+
+    sudo apt install waymap
+
+Configuration
+-------------
+Configuration files are stored in /etc/waymap. You can create a secrets.json
+file to store API keys for SerpApi and WPScan:
+
+    {
+      "serpapi_api_key": "YOUR_SERPAPI_KEY",
+      "wpscan_api_token": "YOUR_WPSCAN_TOKEN"
+    }
+
+Alternatively, you can use environment variables:
+- SERPAPI_API_KEY for Google dork discovery
+- WPSCAN_API_TOKEN for WordPress scanning
+
+Usage
+-----
+Basic usage:
+
+    waymap --target https://example.com --scan xss
+
+For more information, see the man page:
+
+    man waymap
+
+Or run:
+
+    waymap --help
+
+Legal
+-----
+Waymap is intended for authorized security testing and educational use only.
+Only scan systems you own or have explicit permission to test.
+
+The authors are not responsible for misuse.
+
+Building from Source
+---------------------
+To build this package from source, ensure you have the necessary build
+dependencies:
+
+    sudo apt build-dep waymap
+
+Then build the package:
+
+    dpkg-buildpackage -us -uc
+
+Reporting Bugs
+--------------
+Report bugs at: https://github.com/TrixSec/waymap/issues
+
+For Debian-specific issues, you may also file a bug in the Debian Bug
+Tracking System.

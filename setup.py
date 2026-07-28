@@ -60,6 +60,9 @@ setup(
             "waymap=waymap:main",
         ],
     },
+    scripts=[
+        "waymap.py",
+    ],
     include_package_data=True,
     package_data={
         "": [

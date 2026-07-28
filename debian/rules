@@ -1,0 +1,22 @@
+#!/usr/bin/make -f
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+%:
+	dh $@ --with python3 --buildsystem=pybuild
+
+override_dh_auto_clean:
+	dh_auto_clean
+	rm -rf build *.egg-info
+	find . -type d -name __pycache__ -exec rm -rf {} + || true
+	find . -type f -name '*.pyc' -delete || true
+
+override_dh_auto_test:
+	# Skip tests during package build to avoid network dependencies
+	# Tests can be run manually with: python3 -m pytest
+
+override_dh_install:
+	dh_install
+	# Ensure the waymap.py script is executable
+	chmod +x debian/waymap/usr/bin/waymap || true

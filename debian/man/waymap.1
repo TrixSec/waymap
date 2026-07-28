@@ -1,0 +1,179 @@
+.\" Man page for waymap
+.\" Contact trixsec@proton.me to correct errors or typos.
+.TH waymap 1 "26 July 2026" "8.2.0" "User Commands"
+.SH NAME
+waymap \- Advanced Web Application Security Scanner with AI-powered vulnerability analysis
+.SH SYNOPSIS
+.B waymap
+[\fIOPTIONS\fR]...
+.SH DESCRIPTION
+Waymap is a fast, practical web vulnerability scanner for authorized security testing. It automates SQLi, XSS, command injection, SSTI, LFI, CORS, CRLF, open redirect, API, recon, misconfiguration, and WordPress checks - with session-based results, multi-threading, crawling, authentication, reporting, Google dork discovery, and AI-powered vulnerability analysis.
+.SH OPTIONS
+.SS Target Options
+.TP
+.B \-t, \-\-target URL
+Single target URL to scan.
+.TP
+.B \-\-multi\-target FILE, \-mt FILE
+File containing one target URL per line.
+.SS Scan Configuration
+.TP
+.B \-s, \-\-scan TYPE
+Select a scan type. Available types: sqli, xss, cmdi, ssti, lfi, open-redirect, crlf, cors, api, all, recon, misconfig, redirect, injection-advanced, graphql-suite, auth-logic, cache-smuggling, wordpress-extras, optional.
+.TP
+.B \-c, \-\-crawl N
+Crawl depth for target discovery (0–10).
+.TP
+.B \-\-threads N
+Thread count for scan operations.
+.TP
+.B \-k, \-\-technique BETUIS
+SQLi technique string: B (boolean), E (error), T (time), U (union), I (inline), S (stacked).
+.TP
+.B \-p, \-\-profile wordpress
+Run a scan profile.
+.SS Authentication Options
+.TP
+.B \-\-auth-type TYPE
+Supported auth modes: form, basic, digest, bearer, api_key.
+.TP
+.B \-\-auth-url URL
+Login URL for form authentication.
+.TP
+.B \-u, \-\-username USER
+Username for form/basic/digest auth.
+.TP
+.B \-pw, \-\-password PASS
+Password for form/basic/digest auth.
+.TP
+.B \-\-token TOKEN
+Bearer token or API key value.
+.TP
+.B \-\-auth-header HEADER
+Header name for API key authentication (default: X-API-Key).
+.SS API Scanning
+.TP
+.B \-\-api-type TYPE
+API type: rest or graphql.
+.TP
+.B \-\-api-endpoints PATHS
+Comma-separated REST endpoints.
+.SS Discovery (Google Dorks)
+.TP
+.B \-\-dork QUERY
+Run a SerpApi-powered Google dork.
+.TP
+.B \-\-dork-api-key KEY
+SerpApi key override.
+.TP
+.B \-\-dork-output FILE
+Save discovered URLs to a custom file.
+.SS AI/LLM Features
+.TP
+.B \-\-use-ai
+Enable all AI features (result analysis + AI reports + payloads + discovery).
+.TP
+.B \-\-analyze
+Analyze results with AI after scan.
+.TP
+.B \-\-ai-report
+Generate AI-enhanced reports.
+.TP
+.B \-\-ai-payloads
+Use AI-generated adaptive payloads.
+.TP
+.B \-\-ai-discovery
+Use AI for attack surface discovery.
+.TP
+.B \-\-llm-provider PROVIDER
+Select LLM provider: none, groq, cerebras, openai, anthropic, ollama.
+.TP
+.B \-\-llm-model MODEL
+Specify LLM model to use.
+.SS WPScan API
+.TP
+.B \-\-wpscan-token TOKEN
+Token for WPScan API usage in WordPress profiles.
+.SS WAF Detection
+.TP
+.B \-\-check-waf
+Detect WAF on target.
+.TP
+.B \-\-waf URL
+Check WAF for a specific URL.
+.SS Reporting
+.TP
+.B \-\-report-format FORMAT
+Comma-separated formats: html, csv, markdown, pdf.
+.TP
+.B \-\-output-dir DIR
+Directory to store reports (default: reports).
+.SS Utility & UX
+.TP
+.B \-\-check-updates
+Check for new Waymap versions.
+.TP
+.B \-\-no-prompt
+Disable interactive confirmation prompts.
+.TP
+.B \-v, \-\-verbose
+Verbose output.
+.TP
+.B \-\-version
+Print version and exit.
+.TP
+.B \-\-help
+Show help message and exit.
+.SH EXAMPLES
+.TP
+Basic XSS scan with crawl
+waymap \-\-target https://example.com \-\-scan xss \-\-crawl 2
+.TP
+SQL injection scan
+waymap \-\-target "https://example.com/page.php?id=1" \-\-scan sqli
+.TP
+Full scan with reports
+waymap \-\-target https://example.com \-\-scan all \-\-report-format html,csv \-\-output-dir reports
+.TP
+Multi-target scan
+waymap \-\-multi-target targets.txt \-\-scan sqli
+.TP
+API scan
+waymap \-\-target https://api.example.com \-\-scan api \-\-api-type rest
+.TP
+WordPress profile
+waymap \-\-target https://example.com \-\-profile wordpress
+.TP
+Google dork discovery
+waymap \-\-dork "inurl:.php?id="
+.TP
+AI-powered scan
+waymap \-\-target https://example.com \-\-scan xss \-\-use-ai
+.SH FILES
+.TP
+.I ~/.config/waymap/secrets.json
+Configuration file for API keys (SerpApi, WPScan).
+.TP
+.I ~/.config/waymap/domain_blacklist.txt
+Domain blacklist for dork discovery.
+.TP
+.I sessions/<domain>/waymap_full_results.json
+Per-domain scan results.
+.SH ENVIRONMENT
+.TP
+.B SERPAPI_API_KEY
+API key for Google dork discovery.
+.TP
+.B WPSCAN_API_TOKEN
+API token for WordPress scanning.
+.TP
+.B WAYMAP_NO_PROMPT
+Set to disable interactive prompts.
+.SH DIAGNOSTICS
+Exit status is 0 for success, 1 for errors, and 2 for invalid usage.
+.SH BUGS
+Report bugs at https://github.com/TrixSec/waymap/issues
+.SH AUTHOR
+Trix Cyrus <trixsec@proton.me>
+.SH SEE ALSO
+Full documentation at https://github.com/TrixSec/waymap

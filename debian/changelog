@@ -1,0 +1,12 @@
+waymap (8.2.0-1) unstable; urgency=medium
+
+  * Initial Debian packaging for Kali Linux
+  * Advanced Web Application Security Scanner with AI-powered vulnerability analysis
+  * Includes SQLi, XSS, CMDi, SSTI, LFI, CORS, CRLF, open redirect, API scanning
+  * WordPress security scanning with WPScan integration
+  * Google dork discovery via SerpApi
+  * AI-powered vulnerability analysis with multiple LLM providers
+  * Multi-threaded scanning with configurable workers
+  * Comprehensive reporting (HTML, CSV, Markdown, PDF)
+
+ -- Trix Cyrus <trixsec@proton.me>  Sat, 26 Jul 2026 15:00:00 +0000

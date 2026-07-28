@@ -7,3 +7,4 @@ dist/
 *.egg-info/
 sessions/
 dork_targets.txt
+waymap-ai

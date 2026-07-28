@@ -1,0 +1,42 @@
+#!/bin/bash
+set -e
+
+case "$1" in
+    configure)
+        # Create configuration directory if it doesn't exist
+        if [ ! -d "/etc/waymap" ]; then
+            mkdir -p /etc/waymap
+        fi
+        
+        # Create user config directory
+        if [ ! -d "/usr/share/waymap" ]; then
+            mkdir -p /usr/share/waymap
+        fi
+        
+        # Set up proper permissions
+        chmod 755 /etc/waymap
+        chmod 755 /usr/share/waymap
+        
+        # Copy default configuration if not present
+        if [ ! -f "/etc/waymap/secrets.json" ] && [ -d "/usr/share/waymap/config" ]; then
+            if [ -f "/usr/share/waymap/config/waymap/secrets.json.example" ]; then
+                cp /usr/share/waymap/config/waymap/secrets.json.example /etc/waymap/secrets.json
+                chmod 640 /etc/waymap/secrets.json
+            fi
+        fi
+        
+        echo "Waymap has been installed successfully."
+        echo "Configuration files are located in /etc/waymap"
+        echo "For usage information, run: waymap --help"
+        ;;
+    
+    abort-upgrade|abort-remove|abort-deconfigure)
+        ;;
+    
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+        ;;
+esac
+
+exit 0

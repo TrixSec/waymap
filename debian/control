@@ -1,0 +1,48 @@
+Source: waymap
+Section: net
+Priority: optional
+Maintainer: Trix Cyrus <trixsec@proton.me>
+Build-Depends: debhelper-compat (= 13), 
+               python3-all,
+               python3-setuptools,
+               dh-python
+Standards-Version: 4.6.2
+Homepage: https://github.com/TrixSec/waymap
+Vcs-Git: https://github.com/TrixSec/waymap.git
+Vcs-Browser: https://github.com/TrixSec/waymap
+
+Package: waymap
+Architecture: all
+Depends: ${python3:Depends}, 
+         ${misc:Depends},
+         python3-requests,
+         python3-bs4,
+         python3-urllib3,
+         python3-fpdf,
+         python3-defusedxml,
+         python3-selectolax
+Recommends: python3-openai
+Description: Advanced Web Application Security Scanner with AI-powered vulnerability analysis
+ Waymap is a fast, practical web vulnerability scanner for authorized security testing.
+ It automates SQLi, XSS, command injection, SSTI, LFI, CORS, CRLF, open redirect, API,
+ recon, misconfiguration, and WordPress checks - with session-based results, multi-threading,
+ crawling, authentication, reporting, Google dork discovery, and AI-powered vulnerability analysis.
+ .
+ Features:
+  - SQL Injection (boolean, error, time-based, union, stacked, inline)
+  - Cross-Site Scripting (XSS) with context-aware detection
+  - Command Injection (CMDi) with multiple techniques
+  - Server-Side Template Injection (SSTI)
+  - Local File Inclusion (LFI)
+  - CRLF and Header Injection
+  - CORS Misconfiguration
+  - Open Redirect
+  - API Security Testing (REST and GraphQL)
+  - WordPress Security Scanning
+  - Google Dork Discovery via SerpApi
+  - AI-powered vulnerability analysis with multiple LLM providers
+  - Multi-threaded scanning with configurable workers
+  - Intelligent crawling and attack surface discovery
+  - Comprehensive reporting (HTML, CSV, Markdown, PDF)
+ .
+ This tool is intended for authorized security testing and educational use only.
