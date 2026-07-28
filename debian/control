@@ -18,9 +18,7 @@ Depends: ${python3:Depends},
          python3-requests,
          python3-bs4,
          python3-urllib3,
-         python3-fpdf,
-         python3-defusedxml,
-         python3-selectolax
+         python3-defusedxml
 Recommends: python3-openai
 Description: Advanced Web Application Security Scanner with AI-powered vulnerability analysis
  Waymap is a fast, practical web vulnerability scanner for authorized security testing.
