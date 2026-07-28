@@ -2,7 +2,7 @@
   <img src="logo.png" alt="Waymap Logo" width="400">
 </p>
 
-<h1 align="center">Waymap v8.2.0 - Web Vulnerability Scanner & Security Toolkit</h1>
+<h1 align="center">Waymap v8.2.1 - Web Vulnerability Scanner & Security Toolkit</h1>
 
 <p align="center">
   <a href="https://pypi.org/project/waymap/"><img src="https://img.shields.io/pypi/v/waymap?style=for-the-badge&logo=pypi&logoColor=white&color=blue" alt="PyPI Version"></a>
@@ -29,6 +29,20 @@
 **Author:** Trix Cyrus (Vicky) | **License:** GPLv3
 
 Waymap is a fast, practical **web vulnerability scanner** for authorized security testing. It automates SQLi, XSS, command injection, SSTI, LFI, CORS, CRLF, open redirect, API, recon, misconfiguration, and WordPress checks - with session-based results, multi-threading, crawling, authentication, reporting, Google dork discovery, and **AI-powered vulnerability analysis**.
+
+---
+
+## What’s New in v8.2.1
+
+### Bug Fixes
+
+- **Debian Packaging**: Fixed Debian package installation issues
+  - Removed entry_points from setup.py to fix import errors
+  - Removed unavailable dependencies (python3-fpdf, python3-selectolax)
+  - Added py3dist-overrides for Python package mapping
+  - Fixed build script to work from any directory
+  - Simplified packaging to use setup.py for data files
+- **Kali Linux Compatibility**: Package now builds and installs correctly on Kali Linux
 
 ---
 

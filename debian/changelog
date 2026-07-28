@@ -1,3 +1,14 @@
+waymap (8.2.1-1) unstable; urgency=medium
+
+  * Bug fix release: Fix Debian packaging issues
+  * Remove entry_points from setup.py to fix import errors
+  * Remove unavailable dependencies (python3-fpdf, python3-selectolax)
+  * Add py3dist-overrides for Python package mapping
+  * Fix build script to work from any directory
+  * Simplify packaging to use setup.py for data files
+
+ -- Trix Cyrus <trixsec@proton.me>  Mon, 28 Jul 2026 10:30:00 +0000
+
 waymap (8.2.0-1) unstable; urgency=medium
 
   * Initial Debian packaging for Kali Linux
