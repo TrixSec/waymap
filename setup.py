@@ -55,11 +55,6 @@ setup(
             "openai>=1.0.0",
         ],
     },
-    entry_points={
-        "console_scripts": [
-            "waymap=waymap:main",
-        ],
-    },
     scripts=[
         "waymap.py",
     ],
