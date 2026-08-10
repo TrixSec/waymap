@@ -1,0 +1,36 @@
+Format: 1.8
+Date: Mon, 28 Jul 2026 10:30:00 +0000
+Source: waymap
+Binary: waymap
+Architecture: source all
+Version: 8.2.1-1
+Distribution: unstable
+Urgency: medium
+Maintainer: Trix Cyrus (Vicky) <trixcyrus666@gmail.com>
+Changed-By: Trix Cyrus (Vicky) <trixcyrus666@gmail.com>
+Description:
+ waymap     - Advanced Web Application Security Scanner with AI-powered vulnera
+Changes:
+ waymap (8.2.1-1) unstable; urgency=medium
+ .
+   * Bug fix release: Fix Debian packaging issues
+   * Remove entry_points from setup.py to fix import errors
+   * Remove unavailable dependencies (python3-fpdf, python3-selectolax)
+   * Add py3dist-overrides for Python package mapping
+   * Fix build script to work from any directory
+   * Simplify packaging to use setup.py for data files
+Checksums-Sha1:
+ c8388598ebf0fc089e54e73eccce5ae46886ddba 709 waymap_8.2.1-1.dsc
+ 1e8b5909f75babd608803433bae009a1a10f3290 2435516 waymap_8.2.1-1.tar.xz
+ 7d21973027e58c6a3ba8e04f8f52714cdde6c42d 125928 waymap_8.2.1-1_all.deb
+ b70365d43ed674cf5cbe52bb7ca69d6e3c8fc5c3 5810 waymap_8.2.1-1_amd64.buildinfo
+Checksums-Sha256:
+ 848d14d941922498abca725c8a316c56ba872c4838f41828670e54263e54c1a5 709 waymap_8.2.1-1.dsc
+ 260bfc0a5505b1ae196758f2f7777cea97e146ad28cf74a24ee9ac8a926e89b0 2435516 waymap_8.2.1-1.tar.xz
+ c4b93229d67f7e62e8e3194ba9737f1da71261294cdd56c741578b9d883ec616 125928 waymap_8.2.1-1_all.deb
+ 9b0d52084d0a65a97043e78561bb06bc5cbf6dc58b389a1cec7c31afe8217ad3 5810 waymap_8.2.1-1_amd64.buildinfo
+Files:
+ 9129b41b866aea49e82b2ae922f01fed 709 net optional waymap_8.2.1-1.dsc
+ c8d3fd049005c772d4c1aee22087db20 2435516 net optional waymap_8.2.1-1.tar.xz
+ 85a211b8bbc85bd19e9196deef4fc0b1 125928 net optional waymap_8.2.1-1_all.deb
+ 721d143bcdcb8dca7fb00f4caafcad05 5810 net optional waymap_8.2.1-1_amd64.buildinfo

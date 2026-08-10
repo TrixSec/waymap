@@ -9,8 +9,13 @@ echo "=============================================="
 
 # Check if running on Linux
 if [[ "$OSTYPE" != "linux-gnu"* ]]; then
-    echo "Error: This script must be run on Linux"
+    echo "Error: This script must be run on Linux (Kali/Debian/Ubuntu)"
     echo "Current OS: $OSTYPE"
+    echo ""
+    echo "To build on Windows, use WSL:"
+    echo "  1. Open WSL (Kali/Ubuntu)"
+    echo "  2. cd /mnt/c/Users/Vicky/Downloads/Backup/waymap-main_2"
+    echo "  3. ./build_debian.sh"
     exit 1
 fi
 
