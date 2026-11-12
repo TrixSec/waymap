@@ -294,7 +294,7 @@ def _validate_and_configure_ai(args):
             "meta-llama/llama-4-scout-17b-16e-instruct" if selected_provider == "groq"
             else "gpt-oss-120b" if selected_provider == "cerebras"
             else "gpt-4o-mini" if selected_provider == "openai"
-            else "claude-3-haiku-20240307" if selected_provider == "anthropic"
+            else "claude-haiku-4-5-20251001" if selected_provider == "anthropic"
             else "llama3.1"
         )
         model = prompt_line(f"Model (default: {default_model})", default_model)

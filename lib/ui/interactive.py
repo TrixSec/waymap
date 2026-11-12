@@ -403,7 +403,7 @@ def _configure_ai(args: argparse.Namespace) -> None:
         return
 
     # Model
-    default_model = "gpt-oss-120b" if selected_provider == "cerebras" else "gpt-4o-mini" if selected_provider == "openai" else "claude-3-haiku-20240307" if selected_provider == "anthropic" else "llama3.1"
+    default_model = "gpt-oss-120b" if selected_provider == "cerebras" else "gpt-4o-mini" if selected_provider == "openai" else "claude-haiku-4-5-20251001" if selected_provider == "anthropic" else "llama3.1"
     model = _prompt(f"Model (default: {default_model})", default_model)
 
     # Build config
